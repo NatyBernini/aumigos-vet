@@ -1,215 +1,316 @@
-<template><v-dialog max-width="700">
-  <template v-slot:activator="{ props: activatorProps }">
-    <v-btn
-      v-bind="activatorProps"
-      class="btn-padrao"
-      text="Cadastrar Tutor"
-      variant="flat"
-    ></v-btn>
-  </template>
+<template>
+  <!-- ‑‑‑ Botão que abre o diálogo ‑‑‑ -->
+  <v-dialog max-width="700">
+    <template #activator="{ props: activatorProps }">
+      <v-btn
+        v-bind="activatorProps"
+        class="btn-padrao"
+        :text="readOnly ? 'Ver Tutor' : 'Cadastrar Tutor'"
+        variant="flat"
+      />
+    </template>
 
-  <template v-slot:default="{ isActive }">
+    <!-- ‑‑‑ Conteúdo do modal ‑‑‑ -->
+    <template #default="{ isActive }">
+      <v-card :title="readOnly ? 'Dados do Tutor' : 'Cadastrar Tutor'">
+        <v-card-text>
 
-    <v-card title="Cadastrar Tutor">
-        
-      <v-card-text>
-        <form  @submit.prevent="submit">
-         <p>Informações Básicas</p>
-          <v-col>
-            <v-row class="row-info-basicas">
-              <v-text-field v-model="nameTutor.value.value" placeholder='Nome'
-                :error-messages="nameTutor.errorMessage.value" label="Nome*" max-width="300px"></v-text-field>
+          <!-- FORM only roda validação se NÃO estiver read‑only -->
+          <form @submit.prevent="readOnly ? isActive.value = false : submit">
+            <!-- Informações básicas -->
+            <p>Informações Básicas</p>
+            <v-col>
+              <v-row class="row-info-basicas">
+                <v-text-field
+                  v-model="nameTutor.value.value"
+                  :disabled="readOnly"
+                  :error-messages="nameTutor.errorMessage.value"
+                  label="Nome*"
+                  max-width="300px"
+                />
+              </v-row>
 
-            </v-row>
-            <v-row class="row-info-basicas">
-              <v-text-field v-model="cpf.value.value" :error-messages="cpf.errorMessage.value" placeholder='CPF'
-                label="CPF*" max-width="150px" maxLength="14"></v-text-field>
+              <v-row class="row-info-basicas">
+                <v-text-field
+                  v-model="cpf.value.value"
+                  :disabled="readOnly"
+                  :error-messages="cpf.errorMessage.value"
+                  label="CPF*"
+                  maxlength="14"
+                  max-width="150px"
+                />
 
-              <v-text-field v-model="rg.value.value" :error-messages="rg.errorMessage.value" placeholder='RG'
-                type="number" label="RG*" max-width="150px"></v-text-field>
-            </v-row>
-          </v-col>
+                <v-text-field
+                  v-model="rg.value.value"
+                  :disabled="readOnly"
+                  :error-messages="rg.errorMessage.value"
+                  label="RG*"
+                  type="number"
+                  max-width="150px"
+                />
+              </v-row>
+            </v-col>
 
-          <p>Informações para Contato</p>
-          <v-col>
-            <v-row class="row-info-basicas" v-for="(item, index) in phones" :key="index">
-              <v-text-field v-model="item.number" label="Telefone*" placeholder="(00) 00000-0000" maxlength="15"
-                max-width="180px" />
-              <v-btn icon class="btn-padrao btn-plus-phone" @click="addPhone" v-if="index === phones.length - 1">
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-              <v-btn icon class="btn-padrao btn-plus-phone" @click="removePhone(index)" v-if="phones.length > 1" >
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </v-row>
+            <!-- Contatos -->
+            <p>Informações para Contato</p>
+            <v-col>
+              <v-row
+                class="row-info-basicas"
+                v-for="(item, index) in phones"
+                :key="index"
+              >
+                <v-text-field
+                  v-model="item.number"
+                  :disabled="readOnly"
+                  label="Telefone*"
+                  placeholder="(00) 00000-0000"
+                  maxlength="15"
+                  max-width="180px"
+                />
 
-            <v-row class="row-info-basicas">
-              <v-text-field v-model="email.value.value" :error-messages="email.errorMessage.value" label="E-mail"
-                max-width="400px"></v-text-field>
-            </v-row>
-          </v-col>
+                <!-- Botões de adicionar / remover só no modo edição -->
+                <template v-if="!readOnly">
+                  <v-btn
+                    icon
+                    class="btn-padrao btn-plus-phone"
+                    @click="addPhone"
+                    v-if="index === phones.length - 1"
+                  >
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                  <v-btn
+                    icon
+                    class="btn-padrao btn-plus-phone"
+                    @click="removePhone(index)"
+                    v-if="phones.length > 1"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </template>
+              </v-row>
 
-           <p>Informações de Endereço</p>
-          <v-col>
-            <v-row class="row-info-basicas">
-              <v-text-field v-model="estado.value.value" placeholder='Estado'
-                :error-messages="estado.errorMessage.value" label="Estado*" max-width="150px"></v-text-field>
+              <v-row class="row-info-basicas">
+                <v-text-field
+                  v-model="email.value.value"
+                  :disabled="readOnly"
+                  :error-messages="email.errorMessage.value"
+                  label="E‑mail"
+                  max-width="400px"
+                />
+              </v-row>
+            </v-col>
 
-              <v-text-field v-model="cidade.value.value" :error-messages="cidade.errorMessage.value" placeholder='Cidade'
-                label="Cidade*" max-width="250px"></v-text-field>
+            <!-- Endereço -->
+            <p>Informações de Endereço</p>
+            <v-col>
+              <v-row class="row-info-basicas">
+                <v-text-field
+                  v-model="estado.value.value"
+                  :disabled="readOnly"
+                  :error-messages="estado.errorMessage.value"
+                  label="Estado*"
+                  max-width="150px"
+                />
 
-           </v-row> 
-            <v-row class="row-info-basicas">    
-              <v-text-field v-model="bairro.value.value" :error-messages="bairro.errorMessage.value" placeholder='Bairro'
-                label="Bairro*" max-width="150px"></v-text-field>
+                <v-text-field
+                  v-model="cidade.value.value"
+                  :disabled="readOnly"
+                  :error-messages="cidade.errorMessage.value"
+                  label="Cidade*"
+                  max-width="250px"
+                />
+              </v-row>
 
-                
-              <v-text-field v-model="rua.value.value" :error-messages="rua.errorMessage.value" placeholder='Rua'
-                label="Rua*" max-width="250px"></v-text-field>
-            </v-row> 
-            <v-row class="row-info-basicas">    
-              <v-text-field v-model="numero.value.value" :error-messages="numero.errorMessage.value" placeholder='N'
-                type="number" label="N*" max-width="70px"></v-text-field>
+              <v-row class="row-info-basicas">
+                <v-text-field
+                  v-model="bairro.value.value"
+                  :disabled="readOnly"
+                  :error-messages="bairro.errorMessage.value"
+                  label="Bairro*"
+                  max-width="150px"
+                />
 
-                <v-text-field v-model="complemento.value.value" :error-messages="complemento.errorMessage.value" placeholder='Complemento'
-                label="Complemento*" max-width="250px"></v-text-field>
+                <v-text-field
+                  v-model="rua.value.value"
+                  :disabled="readOnly"
+                  :error-messages="rua.errorMessage.value"
+                  label="Rua*"
+                  max-width="250px"
+                />
+              </v-row>
 
-            </v-row>
-          </v-col>
+              <v-row class="row-info-basicas">
+                <v-text-field
+                  v-model="numero.value.value"
+                  :disabled="readOnly"
+                  :error-messages="numero.errorMessage.value"
+                  label="N*"
+                  type="number"
+                  max-width="70px"
+                />
+
+                <v-text-field
+                  v-model="complemento.value.value"
+                  :disabled="readOnly"
+                  :error-messages="complemento.errorMessage.value"
+                  label="Complemento*"
+                  max-width="250px"
+                />
+              </v-row>
+            </v-col>
+
+            <!-- Rodapé / botões -->
             <div class="container-btn mt-5">
-                <p class="msg-auxiliar">Campos Obrigatório*</p>
+              <p v-if="!readOnly" class="msg-auxiliar">Campos Obrigatórios*</p>
             </div>
+
             <div class="mt-5 container-btn">
-            <v-btn class="me-4 btn-padrao" text="Cancelar"
-                    @click="isActive.value = false"
-                    ></v-btn>
-            <v-btn class="me-4 btn-padrao" type="submit">
+              <v-btn
+                class="me-4 btn-padrao"
+                :text="readOnly ? 'Fechar' : 'Cancelar'"
+                @click="isActive.value = false"
+              />
+
+              <v-btn
+                v-if="!readOnly"
+                class="me-4 btn-padrao"
+                type="submit"
+              >
                 Salvar
-            </v-btn>
+              </v-btn>
             </div>
           </form>
-    </v-card-text>
-
-  
-    </v-card>
-  </template>
-</v-dialog>
+        </v-card-text>
+      </v-card>
+    </template>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+/* ───── imports ───── */
+import { ref, watch, watchEffect, computed } from 'vue'
 import { useField, useForm } from 'vee-validate'
+import { pacientesMock } from '../../mock/pacientesMock'
 
-defineOptions({
-  name: 'ModalCadastrarTutor',
+/* ───── props ───── */
+const props = withDefaults(
+  defineProps<{
+    mode?: 'create' | 'view'
+    patientId?: number | null
+  }>(),
+  {
+    mode: 'create',
+    patientId: null,
+  },
+)
+
+const readOnly = computed(() => props.mode === 'view')
+
+/* ───── formulário / validação (só quando edição) ───── */
+const { handleSubmit } = useForm({
+  validationSchema: readOnly.value
+    ? {} // sem validação no modo visualização
+    : {
+        nameTutor: v => v?.length > 0 || 'Campo obrigatório.',
+        rg: v => v?.length > 0 || 'Campo obrigatório.',
+        cpf: v => v?.length > 0 || 'Campo obrigatório.',
+        phone: v => /^\d{7,}$/.test((v ?? '').replace(/\D/g, '')) || 'Telefone inválido.',
+        email: v =>
+          !v || /^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(v) || 'E‑mail inválido.',
+        estado: v => v?.length > 0 || 'Campo obrigatório.',
+        cidade: v => v?.length > 0 || 'Campo obrigatório.',
+        bairro: v => v?.length > 0 || 'Campo obrigatório.',
+        rua: v => v?.length > 0 || 'Campo obrigatório.',
+        numero: v => v?.length > 0 || 'Campo obrigatório.',
+        complemento: v => v?.length > 0 || 'Campo obrigatório.',
+      },
 })
 
-const { handleSubmit, handleReset } = useForm({
-  validationSchema: {
-    nameTutor: value => value?.length > 0 || 'Campo obrigatório.',
-    rg: value => value?.length > 0 || 'Campo obrigatório.',
-    cpf: value => value?.length > 0 || 'Campo obrigatório.',
-    phone(value) {
-      if (/^[0-9-]{7,}$/.test(value)) return true
+/* ───── fields ───── */
+const nameTutor = useField('nameTutor')
+const rg = useField('rg')
+const cpf = useField('cpf')
+const email = useField('email')
 
-      return 'Insira um telefone válido..'
-    },
-    email(value) {
-      if (/^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(value)) return true
+/* telefone(s) */
+const phones = ref<{ number: string }[]>([{ number: '' }])
 
-      return 'Insira um email válido.'
-    },
-    estado: value => value?.length > 0 || 'Campo obrigatório.',
-    cidade: value => value?.length > 0 || 'Campo obrigatório.',
-    bairro: value => value?.length > 0 || 'Campo obrigatório.',
-    rua: value => value?.length > 0 || 'Campo obrigatório.',
-    numero: value => value?.length > 0 || 'Campo obrigatório.',
-    complemento: value => value?.length > 0 || 'Campo obrigatório.',
+/* endereço */
+const estado = useField('estado')
+const cidade = useField('cidade')
+const bairro = useField('bairro')
+const rua = useField('rua')
+const numero = useField('numero')
+const complemento = useField('complemento')
 
-
-  }
-})
-
-// CAMPOS TUTOR
-const nameTutor = useField('nameTutor', undefined, { validateOnValueUpdate: false });
-const rg = useField('rg', undefined, { validateOnValueUpdate: false });
-const cpf = useField('cpf', undefined, { validateOnValueUpdate: false });
-const email = useField('email', undefined, { validateOnValueUpdate: false });
-
-// CAMPOS DE CONTATO
-const phones = ref([{ number: '' }])
-
-// CAMPOS DE ENDEREÇO
-const estado = useField('estado', undefined, { validateOnValueUpdate: false });
-const cidade = useField('cidade', undefined, { validateOnValueUpdate: false });
-const bairro = useField('bairro', undefined, { validateOnValueUpdate: false });
-const rua = useField('rua', undefined, { validateOnValueUpdate: false });
-const numero = useField('numero', undefined, { validateOnValueUpdate: false });
-const complemento = useField('complemento', undefined, { validateOnValueUpdate: false });
-
-function formatPhoneNumber(value: string): string {
-  value = value.replace(/\D/g, ''); // remove não-dígitos
-
-  if (value.length > 11) {
-    value = value.slice(0, 11); // limita a 11 dígitos
-  }
-
-  if (value.length <= 10) {
-    // Formato fixo ou celular antigo: (00) 0000-0000
-    return value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim();
-  } else {
-    // Formato celular atual: (00) 00000-0000
-    return value.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim();
-  }
-}
+/* ───── helpers ───── */
+const submit = handleSubmit(values =>
+  alert(JSON.stringify({ ...values, phones: phones.value }, null, 2)),
+)
 
 function addPhone() {
   phones.value.push({ number: '' })
 }
-
-function removePhone(index: number) {
-  phones.value.splice(index, 1)
+function removePhone(i: number) {
+  phones.value.splice(i, 1)
 }
 
-
-const submit = handleSubmit(values => {
-  alert(JSON.stringify(values, null, 2))
-})
-
-function formatCPF(value: string): string {
-  value = value.replace(/\D/g, ''); // Remove tudo que não for dígito
-
-  if (value.length > 11) {
-    value = value.slice(0, 11); // Limita a 11 dígitos
-  }
-
-  return value.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4').replace(/[-.]$/, '');
+/* formatadores */
+function formatPhoneNumber(v: string) {
+  const digits = v.replace(/\D/g, '').slice(0, 11)
+  return digits.length <= 10
+    ? digits.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
+    : digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3')
+}
+function formatCPF(v: string) {
+  const digits = v.replace(/\D/g, '').slice(0, 11)
+  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4').replace(/[-.]$/, '')
 }
 
-
+/* watchers para formatação */
 watch(
   phones,
-  (newPhones) => {
-    newPhones.forEach((item, index) => {
-      const formatted = formatPhoneNumber(item.number);
-      if (formatted !== item.number) {
-        phones.value[index].number = formatted;
-      }
-    });
-  },
-  { deep: true }
+  ps =>
+    ps.forEach((p, i) => {
+      const f = formatPhoneNumber(p.number)
+      if (f !== p.number) phones.value[i].number = f
+    }),
+  { deep: true },
 )
 watch(
-  cpf.value,
-  (newValue) => {
-    const formatted = formatCPF(newValue);
+  () => cpf.value.value as string | undefined,
+  (newValue, oldValue) => {
+    const formatted = formatCPF(newValue ?? '')
     if (formatted !== newValue) {
-      cpf.value.value = formatted;
+      cpf.value.value = formatted
     }
   }
-);
+)
 
+/* ───── carregar tutor a partir do patientId ───── */
+watchEffect(() => {
+  if (!props.patientId) return
+
+  const paciente = pacientesMock.find(p => p.id === props.patientId)
+  if (!paciente) return
+
+  /* popular campos */
+  nameTutor.value.value = paciente.tutor
+  cpf.value.value = paciente.tutorCpf
+  rg.value.value = paciente.tutorRg
+  email.value.value = paciente.tutorEmail
+
+  estado.value.value = paciente.estado ?? ''
+  cidade.value.value = paciente.cidade ?? ''
+  bairro.value.value = paciente.bairro ?? ''
+  rua.value.value = paciente.rua ?? ''
+  numero.value.value = paciente.numero ?? ''
+  complemento.value.value = paciente.complemento ?? ''
+
+  phones.value = (paciente.tutorPhones ?? ['']).map(n => ({ number: n }))
+})
 </script>
+
 
 <style  lang="scss">
 .v-overlay__content {

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PacientesList from '../views/Pacientes/Listagem.vue'
 import PacienteCadastro from '../views/Pacientes/Cadastrar.vue'
+import PacienteVisualizar from '../views/Pacientes/Visualizar.vue'
 import VeterinariosList from '../views/Veterinarios/Listagem.vue'
 import VeterinarioCadastro from '../views/Veterinarios/Cadastrar.vue'
 import ConsultaList from '../views/Consultas/Listagem.vue'
@@ -13,6 +14,7 @@ import AdocaoCadastro from '../views/Adocao/Cadastrar.vue'
 const routes = [
   { path: '/pacientes', component: PacientesList },
   { path: '/pacientes/cadastrar', component: PacienteCadastro },
+  { path: '/pacientes/visualizar/:id', name: 'PacienteVisualizar', component: PacienteVisualizar, props: true },
   { path: '/veterinarios', component: VeterinariosList },
   { path: '/veterinarios/cadastrar', component: VeterinarioCadastro },
   { path: '/consultas', component: ConsultaList },
