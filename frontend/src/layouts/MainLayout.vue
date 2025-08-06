@@ -85,32 +85,32 @@ const menuItems = [
     title: 'Veterinários',
     icon: iconeVeterinarios,
     children: [
-      { title: 'Listagem', to: '/veterinarios' },
-      { title: 'Cadastrar', to: '/veterinarios/cadastrar' },
+      { title: 'Listagem', to: '/veterinarios', icon: iconListagemPaciente},
+      { title: 'Cadastrar', to: '/veterinarios/cadastrar', icon: iconCadastrarPaciente },
     ],
   },
   {
     title: 'Consultas',
     icon: iconeConsulta,
     children: [
-      { title: 'Listagem', to: '/consultas' },
-      { title: 'Agendar', to: '/consultas/agendar' },
+      { title: 'Listagem', to: '/consultas', icon: iconListagemPaciente },
+      { title: 'Agendar', to: '/consultas/agendar', icon: iconCadastrarPaciente },
     ],
   },
   {
     title: 'Adoção',
     icon: iconeAdocaoGato,
     children: [
-      { title: 'Listagem', to: '/adocao' },
-      { title: 'Cadastrar', to: '/adocao/cadastrar' },
+      { title: 'Listagem', to: '/adocao', icon: iconListagemPaciente },
+      { title: 'Cadastrar', to: '/adocao/cadastrar', icon: iconCadastrarPaciente },
     ],
   },
   {
     title: 'Relatórios',
     icon: iconeFormulario,
     children: [
-      { title: 'Listagem', to: '/relatorios' },
-      { title: 'Cadastrar', to: '/relatorios/cadastrar' },
+      { title: 'Listagem', to: '/relatorios', icon: iconListagemPaciente },
+      { title: 'Cadastrar', to: '/relatorios/cadastrar', icon: iconCadastrarPaciente },
     ],
   },
 ]
@@ -340,5 +340,41 @@ font-size: 14px;
 
 .menu-sub-icon {
   width: 20px;
+}
+
+
+.v-slide-group {
+  border-bottom: 1px solid #ABABAB;
+}
+.v-tab__slider {
+  background: #d31b2773 !important;
+  border-radius: 5px;
+  height: 3px !important;
+}
+.v-btn {
+  text-transform: initial;
+}
+.v-tab-item--selected .v-btn__content {
+  color: #d31b27;
+}
+.v-card {
+  box-shadow: none !important;
+}
+.v-row, .v-col-12 {
+  margin-left: 0!important;
+  padding-left: 0!important;
+}
+.row-info-basicas {
+  gap: 20px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.row-info-radios {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  flex-direction: row;
+  margin-bottom: 20px;
 }
 </style>
