@@ -94,6 +94,7 @@ const menuItems = [
     icon: iconeConsulta,
     children: [
       { title: 'Listagem', to: '/consultas', icon: iconListagemPaciente },
+      { title: 'Consultar', to: '/consultas/consultar', icon: iconCadastrarPaciente },
       { title: 'Agendar', to: '/consultas/agendar', icon: iconCadastrarPaciente },
     ],
   },

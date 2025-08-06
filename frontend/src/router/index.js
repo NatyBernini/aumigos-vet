@@ -5,7 +5,7 @@ import PacienteVisualizar from '../views/Pacientes/Visualizar.vue'
 import VeterinariosList from '../views/Veterinarios/Listagem.vue'
 import VeterinarioCadastro from '../views/Veterinarios/Cadastrar.vue'
 import ConsultaList from '../views/Consultas/Listagem.vue'
-import AgendarConsulta from '../views/Consultas/Agendar.vue'
+import Consultar from '../views/Consultas/Consultar.vue'
 import RelatorioCadastro from '../views/Relatorios/Cadastrar.vue'
 import RelatorioList from '../views/Relatorios/Listagem.vue'
 import AdocaoList from '../views/Adocao/Listagem.vue'
@@ -18,7 +18,7 @@ const routes = [
   { path: '/veterinarios', component: VeterinariosList },
   { path: '/veterinarios/cadastrar', component: VeterinarioCadastro },
   { path: '/consultas', component: ConsultaList },
-  { path: '/consultas/agendar', component: AgendarConsulta },
+  { path: '/consultas/consultar', component: Consultar },
   { path: '/relatorios', component: RelatorioCadastro},
   { path: '/relatorios/cadastrar', component: RelatorioList},
   { path: '/adocao', component: AdocaoList},
