@@ -1,9 +1,14 @@
 <template>
-  <MainLayout />
+
+  <MainLayout v-if="logado" />
+  <Login v-if="!logado" />
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { ref } from 'vue';
 import MainLayout from './layouts/MainLayout.vue'
+import Login from './layouts/Login.vue';
+const logado = ref(false);
 </script>
 
 <style lang="scss">
