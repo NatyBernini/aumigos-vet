@@ -24,9 +24,29 @@
 
                         <!-- Coluna principal -->
                         <v-col cols="12" md="8" class="d-flex flex-column align-center justify-center">
-                            <h1>Login</h1>
-                            <!-- Botão para ir para cadastro fica dentro aqui em telas pequenas -->
-                            <v-btn color="primary" class="mt-6 d-md-none" @click="step = 1">
+                            <h1 class="mb-6">Login</h1>
+
+                            <v-form class="w-75" @submit.prevent>
+                                <v-text-field v-model="email" label="E-mail" type="email" append-inner-icon="mdi-email"
+                                    class="mb-4" required />
+
+                                <v-text-field v-model="senha" label="Senha" type="password"
+                                    append-inner-icon="mdi-lock" class="mb-2" required />
+
+                                <div class="text-end mb-4">
+                                    <v-btn variant="text" color="primary" class="text-caption"
+                                        @click="onForgotPassword">
+                                        Esqueceu a senha?
+                                    </v-btn>
+                                </div>
+
+                                <v-btn color="primary" class="mb-4" block @click="onLogin">
+                                    Entrar
+                                </v-btn>
+                            </v-form>
+
+                            <!-- Botão para ir para cadastro em mobile -->
+                            <v-btn color="primary" variant="text" class="mt-2 d-md-none" @click="step = 1">
                                 Ir para Cadastro
                             </v-btn>
                         </v-col>
@@ -42,12 +62,30 @@
 
                         <!-- Coluna principal -->
                         <v-col cols="12" md="8" class="d-flex flex-column align-center justify-center">
-                            <h1>Cadastro</h1>
+                            <h1 class="mb-6">Cadastro</h1>
+
+                            <v-form class="w-75" @submit.prevent>
+                                <v-text-field v-model="nome" label="Nome Completo" append-inner-icon="mdi-account"
+                                    class="mb-4" required />
+
+                                <v-text-field v-model="telefone" label="Telefone" append-inner-icon="mdi-phone"
+                                    class="mb-4" required />
+
+                                <v-text-field v-model="email" label="E-mail" type="email" append-inner-icon="mdi-email"
+                                    class="mb-4" required />
+
+                                <v-text-field v-model="senha" label="Senha" type="password"
+                                    append-inner-icon="mdi-lock" class="mb-4" required />
+
+                                <v-btn color="primary" block class="mb-4" @click="onCadastrar">
+                                    Cadastrar
+                                </v-btn>
+                            </v-form>
+
                             <!-- Botão voltar para login em mobile -->
-                            <v-btn color="secondary" class="mt-6 d-md-none" @click="step = 0">
+                            <v-btn color="secondary" variant="text" class="mt-2 d-md-none" @click="step = 0">
                                 Voltar para Login
                             </v-btn>
-                            <!-- Botão voltar visível em md+ fica na lateral -->
                         </v-col>
 
                         <!-- Coluna lateral oculta em mobile -->
@@ -72,6 +110,13 @@
 <script setup>
 import { ref } from 'vue'
 const step = ref(0)
+// Login
+const email = ref('')
+const senha = ref('')
+
+// Cadastro
+const nome = ref('')
+const telefone = ref('')
 </script>
 
 <style lang="scss">
