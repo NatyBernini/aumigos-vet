@@ -8,47 +8,45 @@
 
             <!-- Tela de Login -->
             <v-window-item :value="0">
-                <v-card class="d-flex align-center justify-center" height="70vh">
+                <v-card class="d-flex align-center justify-center" height="80vh">
                     <v-row class="ma-0" style="height: 100%;">
                         <!-- Coluna lateral oculta em mobile -->
                         <v-col cols="4" class="welcome-side-login d-none d-md-flex flex-column justify-center pa-6">
-                            <div class="welcome-content text-black">
-                                <h2 class="font-weight-bold">Bem‑vindo de volta AUmigo!</h2>
-                                <p>Caso não seja cadastrado, clique no botão abaixo!</p>
-                                <!-- Botão apenas aqui para md+ -->
-                                <v-btn class="btn-auth" color="primary" @click="step = 1">
-                                    Ir para Cadastro
-                                </v-btn>
-                            </div>
                         </v-col>
 
                         <!-- Coluna principal -->
-                        <v-col cols="12" md="8" class="d-flex flex-column align-center justify-center">
-                            <h1 class="mb-6">Login</h1>
+                        <v-col cols="12" md="8" class="pa-4 coluna-scroll">
+                            <div class="conteudo-centralizado">
+                                <h1 class="font-weight-bold mb-4">Bem-vindo de volta AUmigo!</h1>
+                                <h2 class="mb-6">Login</h2>
 
-                            <v-form class="w-75" @submit.prevent>
-                                <v-text-field v-model="email" label="E-mail" type="email" append-inner-icon="mdi-email"
-                                    class="mb-4" required />
+                                <v-form class="formulario-autenticacao" @submit.prevent>
+                                    <v-text-field v-model="email" label="E-mail" type="email"
+                                        append-inner-icon="mdi-email" class="mb-4" required />
 
-                                <v-text-field v-model="senha" label="Senha" type="password"
-                                    append-inner-icon="mdi-lock" class="mb-2" required />
+                                    <v-text-field v-model="senha" :type="showPassword ? 'text' : 'password'"
+                                        label="Senha" :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                                        @click:append-inner="showPassword = !showPassword" class="mb-2" required />
 
-                                <div class="text-end mb-4">
-                                    <v-btn variant="text" color="primary" class="text-caption"
-                                        @click="onForgotPassword">
-                                        Esqueceu a senha?
+                                    <div class="text-end mb-4">
+                                        <v-btn variant="text" color="primary" class="text-caption"
+                                            @click="onForgotPassword">
+                                            Esqueceu a senha?
+                                        </v-btn>
+                                    </div>
+
+                                    <v-btn color="secondary" class="mb-4" block @click="onLogin">
+                                        Entrar
+                                    </v-btn>
+                                </v-form>
+
+                                <div class="mensagem-informativa d-flex align-center justify-center flex-wrap mt-6">
+                                    <p>Não possui cadastro?</p>
+                                    <v-btn class="pa-0 pl-2" variant="text" color="secondary" @click="step = 1">
+                                        Criar uma conta
                                     </v-btn>
                                 </div>
-
-                                <v-btn color="primary" class="mb-4" block @click="onLogin">
-                                    Entrar
-                                </v-btn>
-                            </v-form>
-
-                            <!-- Botão para ir para cadastro em mobile -->
-                            <v-btn color="primary" variant="text" class="mt-2 d-md-none" @click="step = 1">
-                                Ir para Cadastro
-                            </v-btn>
+                            </div>
                         </v-col>
                     </v-row>
                 </v-card>
@@ -57,52 +55,54 @@
 
             <!-- Tela de Cadastro -->
             <v-window-item :value="1">
-                <v-card class="d-flex align-center justify-center" height="70vh">
+                <v-card class="d-flex align-center justify-center" height="80vh">
                     <v-row class="ma-0" style="height: 100%;">
-
                         <!-- Coluna principal -->
-                        <v-col cols="12" md="8" class="d-flex flex-column align-center justify-center">
-                            <h1 class="mb-6">Cadastro</h1>
+                        <v-col cols="12" md="8" class="pa-4 coluna-scroll">
+                            <div class="conteudo-centralizado">
+                                <h1 class="font-weight-bold mb-4">Bem-vindo AUmigo!</h1>
+                                <h2 class="mb-6">Criar uma conta</h2>
 
-                            <v-form class="w-75" @submit.prevent>
-                                <v-text-field v-model="nome" label="Nome Completo" append-inner-icon="mdi-account"
-                                    class="mb-4" required />
+                                <v-form class="formulario-autenticacao" @submit.prevent>
+                                    <v-text-field v-model="nome" label="Nome Completo" append-inner-icon="mdi-account"
+                                        class="mb-4" required />
 
-                                <v-text-field v-model="telefone" label="Telefone" append-inner-icon="mdi-phone"
-                                    class="mb-4" required />
+                                    <v-text-field v-model="telefone" label="Telefone" append-inner-icon="mdi-phone"
+                                        class="mb-4" required />
 
-                                <v-text-field v-model="email" label="E-mail" type="email" append-inner-icon="mdi-email"
-                                    class="mb-4" required />
+                                    <v-text-field v-model="emailCadastro" label="E-mail" type="email"
+                                        append-inner-icon="mdi-email" class="mb-4" required />
 
-                                <v-text-field v-model="senha" label="Senha" type="password"
-                                    append-inner-icon="mdi-lock" class="mb-4" required />
+                                    <v-text-field v-model="senhaCadastro" label="Senha" :type="showPasswordCadastro ? 'text' : 'password'"
+                                         :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
+                                        @click:append-inner="showPasswordCadastro = !showPasswordCadastro" class="mb-4" required />
 
-                                <v-btn color="primary" block class="mb-4" @click="onCadastrar">
-                                    Cadastrar
-                                </v-btn>
-                            </v-form>
+                                    <v-btn color="secondary" block class="mb-4" @click="onCadastrar">
+                                        Cadastrar
+                                    </v-btn>
+                                </v-form>
 
-                            <!-- Botão voltar para login em mobile -->
-                            <v-btn color="secondary" variant="text" class="mt-2 d-md-none" @click="step = 0">
-                                Voltar para Login
-                            </v-btn>
+                                <p class="mensagem-informativa text-center mt-10">
+                                    Para criar sua conta, é necessário ler e aceitar os <br>
+                                    <span class="font-weight-bold text-primary">Termos de Uso</span> e a
+                                    <span class="font-weight-bold text-primary">Política de Privacidade</span>.
+                                </p>
+
+                                <div class="mensagem-informativa d-flex align-center justify-center flex-wrap mt-6">
+                                    <p>Possui uma conta?</p>
+                                    <v-btn class="pa-0" color="secondary" variant="text" @click="step = 0">
+                                        Login
+                                    </v-btn>
+                                </div>
+                            </div>
                         </v-col>
 
                         <!-- Coluna lateral oculta em mobile -->
                         <v-col cols="4" class="welcome-side-cadastro d-none d-md-flex flex-column justify-center pa-6">
-                            <div class="welcome-content">
-                                <h2 class="font-weight-bold">Bem‑vindo AUmigo!</h2>
-                                <p>Caso já tenha um cadastro, clique no botão abaixo!</p>
-                                <v-btn color="secondary" class="d-none d-md-block btn-auth" @click="step = 0">
-                                    Voltar para Login
-                                </v-btn>
-                            </div>
                         </v-col>
-
                     </v-row>
                 </v-card>
             </v-window-item>
-
         </v-window>
     </div>
 </template>
@@ -113,10 +113,16 @@ const step = ref(0)
 // Login
 const email = ref('')
 const senha = ref('')
+const showPassword = ref(false)
 
 // Cadastro
 const nome = ref('')
 const telefone = ref('')
+const senhaCadastro = ref('')
+const emailCadastro = ref('')
+const showPasswordCadastro = ref(false)
+
+
 </script>
 
 <style lang="scss">
@@ -192,16 +198,50 @@ const telefone = ref('')
     font-weight: bold;
 }
 
-.btn-auth {
-    padding: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    align-items: center;
+.v-btn {
+    padding: 8px;
+    border-radius: 10px;
     height: auto !important;
+    box-shadow: none;
 }
 
 .v-btn__content {
     text-wrap: auto !important;
+}
+
+.v-form.formulario-autenticacao {
+    width: 60%;
+}
+
+.mensagem-informativa {
+    font-size: 0.9rem;
+}
+
+.coluna-scroll {
+    height: 100%;
+    overflow-y: auto;
+    /* controla scroll */
+}
+
+.conteudo-centralizado {
+    min-height: 100%;
+    /* ocupa altura total */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* centraliza vertical */
+}
+
+
+
+@media (max-width: 750px) {
+    .v-form.formulario-autenticacao {
+        width: 100%;
+    }
+
+    .auth-card {
+        max-width: 80%;
+    }
 }
 </style>

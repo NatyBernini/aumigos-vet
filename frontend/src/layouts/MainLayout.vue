@@ -123,6 +123,10 @@ const menuItems = [
   font-family: 'Poppins', sans-serif !important;
 }
 
+.v-icon--size-default {
+  font-size: 20px!important;
+}
+
 .title-page {
   font-size: 26px;
   font-weight: 500;
@@ -239,9 +243,11 @@ const menuItems = [
 .v-field__overlay {
  background-color: unset!important; 
 }
+.v-field {
+  border: 1px solid #ABABAB!important;
+  border-radius: 10px!important;
+}
 .v-field__field {
-     border: 1px solid #ABABAB!important;
-     border-radius: 10px;
     --v-input-control-height: 40px!important;
     max-height: 40px;
 
