@@ -11,7 +11,7 @@
                 <v-card class="d-flex align-center justify-center" height="80vh">
                     <v-row class="ma-0" style="height: 100%;">
                         <!-- Coluna lateral oculta em mobile -->
-                        <v-col cols="4" class="welcome-side-login d-none d-md-flex flex-column justify-center pa-6">
+                        <v-col cols="4" class="welcome-side-login d-none d-md-flex flex-column justify-center pa-6"  :style="{ backgroundImage: `url(${BannerLogin})` }">
                         </v-col>
 
                         <!-- Coluna principal -->
@@ -98,7 +98,7 @@
                         </v-col>
 
                         <!-- Coluna lateral oculta em mobile -->
-                        <v-col cols="4" class="welcome-side-cadastro d-none d-md-flex flex-column justify-center pa-6">
+                        <v-col cols="4" class="welcome-side-cadastro d-none d-md-flex flex-column justify-center pa-6"  :style="{ backgroundImage: `url(${BannerCadastro})` }">
                         </v-col>
                     </v-row>
                 </v-card>
@@ -109,6 +109,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import BannerCadastro from '../assets/Banner.png'
+import BannerLogin from '../assets/BannerGato.png'
 const step = ref(0)
 // Login
 const email = ref('')
@@ -168,8 +170,7 @@ const showPasswordCadastro = ref(false)
 
 /* Fundo para o lado direito da tela de login */
 .welcome-side-login {
-    background-image: url('https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8cGV0fGVufDB8fDB8fHww');
-    background-repeat: no-repeat;
+   background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
     color: #ffffff;
@@ -179,7 +180,6 @@ const showPasswordCadastro = ref(false)
 
 /* Fundo para o lado direito da tela de cadastro */
 .welcome-side-cadastro {
-    background-image: url('https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8cGV0fGVufDB8fDB8fHww');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
