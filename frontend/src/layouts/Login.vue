@@ -8,16 +8,19 @@
 
             <!-- Tela de Login -->
             <v-window-item :value="0">
+
                 <v-card class="d-flex align-center justify-center" height="80vh">
                     <v-row class="ma-0" style="height: 100%;">
                         <!-- Coluna lateral oculta em mobile -->
-                        <v-col cols="4" class="welcome-side-login d-none d-md-flex flex-column justify-center pa-6"  :style="{ backgroundImage: `url(${BannerLogin})` }">
+                        <v-col cols="4" class="welcome-side-login d-none d-md-flex flex-column justify-center pa-6"
+                            :style="{ backgroundImage: `url(${BannerLogin})` }">
                         </v-col>
 
                         <!-- Coluna principal -->
                         <v-col cols="12" md="8" class="pa-4 coluna-scroll">
                             <div class="conteudo-centralizado">
-                                <h1 class="font-weight-bold mb-4">Bem-vindo de volta AUmigo!</h1>
+                               
+                                <h1 class="font-weight-bold mb-4">Bem-vindo de volta <img :src="Logo" alt="Logo" class="logo" /></h1>
                                 <h2 class="mb-6">Login</h2>
 
                                 <v-form class="formulario-autenticacao" @submit.prevent>
@@ -60,7 +63,8 @@
                         <!-- Coluna principal -->
                         <v-col cols="12" md="8" class="pa-4 coluna-scroll">
                             <div class="conteudo-centralizado">
-                                <h1 class="font-weight-bold mb-4">Bem-vindo AUmigo!</h1>
+                                
+                                <h1 class="font-weight-bold mb-4">Bem-vindo <img :src="Logo" alt="Logo" class="logo" /></h1>
                                 <h2 class="mb-6">Criar uma conta</h2>
 
                                 <v-form class="formulario-autenticacao" @submit.prevent>
@@ -73,9 +77,11 @@
                                     <v-text-field v-model="emailCadastro" label="E-mail" type="email"
                                         append-inner-icon="mdi-email" class="mb-4" required />
 
-                                    <v-text-field v-model="senhaCadastro" label="Senha" :type="showPasswordCadastro ? 'text' : 'password'"
-                                         :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
-                                        @click:append-inner="showPasswordCadastro = !showPasswordCadastro" class="mb-4" required />
+                                    <v-text-field v-model="senhaCadastro" label="Senha"
+                                        :type="showPasswordCadastro ? 'text' : 'password'"
+                                        :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
+                                        @click:append-inner="showPasswordCadastro = !showPasswordCadastro" class="mb-4"
+                                        required />
 
                                     <v-btn color="secondary" block class="mb-4" @click="onCadastrar">
                                         Cadastrar
@@ -94,11 +100,14 @@
                                         Login
                                     </v-btn>
                                 </div>
+                                
+                                  
                             </div>
                         </v-col>
 
                         <!-- Coluna lateral oculta em mobile -->
-                        <v-col cols="4" class="welcome-side-cadastro d-none d-md-flex flex-column justify-center pa-6"  :style="{ backgroundImage: `url(${BannerCadastro})` }">
+                        <v-col cols="4" class="welcome-side-cadastro d-none d-md-flex flex-column justify-center pa-6"
+                            :style="{ backgroundImage: `url(${BannerCadastro})` }">
                         </v-col>
                     </v-row>
                 </v-card>
@@ -109,8 +118,13 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router';
 import BannerCadastro from '../assets/Banner.png'
-import BannerLogin from '../assets/BannerGato.png'
+import BannerLogin from '../assets/BannerGatos2.png'
+import Logo from '../assets/logoAumigo.png'
+
+const router = useRouter();
+
 const step = ref(0)
 // Login
 const email = ref('')
@@ -124,10 +138,13 @@ const senhaCadastro = ref('')
 const emailCadastro = ref('')
 const showPasswordCadastro = ref(false)
 
+const onLogin = async () => {
+    router.push({ name: 'Clinica' });
+}
 
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .auth-background {
     position: relative;
     min-height: 100vh;
@@ -170,7 +187,7 @@ const showPasswordCadastro = ref(false)
 
 /* Fundo para o lado direito da tela de login */
 .welcome-side-login {
-   background-repeat: no-repeat;
+    background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
     color: #ffffff;
@@ -231,6 +248,12 @@ const showPasswordCadastro = ref(false)
     align-items: center;
     justify-content: center;
     /* centraliza vertical */
+}
+
+.logo {
+    width: 150px;
+    height: auto;
+    transform: translateY(10px);
 }
 
 

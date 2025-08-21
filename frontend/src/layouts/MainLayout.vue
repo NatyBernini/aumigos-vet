@@ -58,7 +58,7 @@
   </v-app>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue'
 
 import iconePacientes from '../assets/icons/iconePacientes.png'

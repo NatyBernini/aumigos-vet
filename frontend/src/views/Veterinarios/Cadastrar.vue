@@ -20,16 +20,11 @@
             <p>Informações Básicas</p>
             <v-col>
               <v-row class="row-info-basicas">
-                <v-text-field v-model="nameTutor" :rules="required" label="Nome completo*" max-width="400px"/>
-                  <v-text-field
-              v-model="cpf"
-              label="CPF*"
-              :rules="[required]"
-              max-width="170px"
-              @input="onInputCpf"
-              maxlength="14"
-            />
-                <v-text-field v-model="rg" :rules="required" label="RG*" max-width="150px" @input="onInputRg"  maxlength="12"/>
+                <v-text-field v-model="nameTutor" :rules="required" label="Nome completo*" max-width="400px" />
+                <v-text-field v-model="cpf" label="CPF*" :rules="[required]" max-width="170px" @input="onInputCpf"
+                  maxlength="14" />
+                <v-text-field v-model="rg" :rules="required" label="RG*" max-width="150px" @input="onInputRg"
+                  maxlength="12" />
               </v-row>
               <v-row class="row-info-basicas">
                 <v-text-field v-model="especialidade" :rules="required" label="Especialidade*" max-width="400px" />
@@ -40,46 +35,19 @@
             <p>Informações de Endereço</p>
             <v-col>
               <v-row class="row-info-basicas">
-               
-<v-select
-  v-model="estadoSelecionado"
-  :items="estados"
-  item-value="value"
-  label="Estado"
-  dense
-  outlined
-  clearable
-    filterable
-   min-width="300px"
-   max-width="300px"
-/>
 
-<v-select
-  v-model="cidadeSelecionada"
-  :items="cidades"
-  item-text="nome"
-  item-value="id"
-  label="Cidade"
-  dense
-  outlined
-  :rules="[required]"
-  :disabled="!estadoSelecionado"
-  clearable
-   min-width="300px"
-   max-width="300px"
-/>
+                <v-select v-model="estadoSelecionado" :items="estados" item-value="value" label="Estado" dense outlined
+                  clearable filterable min-width="300px" max-width="300px" />
 
-             
+                <v-select v-model="cidadeSelecionada" :items="cidades" item-text="nome" item-value="id" label="Cidade"
+                  dense outlined :rules="[required]" :disabled="!estadoSelecionado" clearable min-width="300px"
+                  max-width="300px" />
+
+
               </v-row>
               <v-row class="row-info-basicas">
-       <v-text-field
-  v-model="cep"
-  label="CEP"
-  maxlength="9"
-  placeholder="00000-000"
-  @input="onInputCep"
-  style="max-width: 150px;"
-/>
+                <v-text-field v-model="cep" label="CEP" maxlength="9" placeholder="00000-000" @input="onInputCep"
+                  style="max-width: 150px;" />
               </v-row>
               <v-row class="row-info-basicas">
                 <v-text-field v-model="bairro" :rules="required" label="Bairro*" max-width="400px" />
@@ -94,14 +62,8 @@
             <p>Informações para Contato</p>
             <v-col>
               <v-row class="row-info-basicas" v-for="(item, index) in phones" :key="index">
-                <v-text-field
-                  v-model="item.number"
-                  :rules="required"
-                  label="Telefone*"
-                  placeholder="(00) 00000-0000"
-                  maxlength="15"
-                  max-width="200px"
-                />
+                <v-text-field v-model="item.number" :rules="required" label="Telefone*" placeholder="(00) 00000-0000"
+                  maxlength="15" max-width="200px" />
                 <template v-if="!readOnly">
                   <v-btn icon @click="addPhone" v-if="index === phones.length - 1">
                     <v-icon>mdi-plus</v-icon>
@@ -112,19 +74,12 @@
                 </template>
               </v-row>
               <v-row class="row-info-basicas">
-                <v-text-field v-model="email" :rules="required" label="E-mail*"  max-width="400px"/>
+                <v-text-field v-model="email" :rules="required" label="E-mail*" max-width="400px" />
               </v-row>
             </v-col>
 
-            <v-textarea
-              v-model="textarea.ObservacoesGerais"
-              :rules="obsRules"
-              label="Observações"
-              counter
-              maxlength="300"
-              placeholder="Observação"
-              max-width="500px"
-            />
+            <v-textarea v-model="textarea.ObservacoesGerais" :rules="obsRules" label="Observações" counter
+              maxlength="300" placeholder="Observação" max-width="500px" />
 
             <div class="container-btn mt-5">
               <p class="msg-auxiliar">Campos Obrigatórios*</p>
@@ -258,9 +213,9 @@ function onInputCep(e: Event) {
 
 async function carregarEstados() {
   const resposta = await getEstados()
-// Antes de atribuir ao combo
-estados.value = resposta.map((estado: any) => (
-  `${estado.nome} (${estado.sigla})`))
+  // Antes de atribuir ao combo
+  estados.value = resposta.map((estado: any) => (
+    `${estado.nome} (${estado.sigla})`))
 
   console.log("Estados: ", estados.value)
 }
@@ -275,7 +230,7 @@ async function carregarCidades() {
     if (siglaEstado) {
       const resposta = await getCidadesPorEstado(siglaEstado);
       cidades.value = resposta.map((cidade: any) => (
-  `${cidade.nome}`))
+        `${cidade.nome}`))
     } else {
       cidades.value = [];
       cidadeSelecionada.value = null;
@@ -288,11 +243,11 @@ async function carregarCidades() {
 
 watch(estadoSelecionado, () => {
   if (estadoSelecionado.value) {
-      cidadeSelecionada.value = null; // Reseta a cidade selecionada ao mudar estado
-      carregarCidades()
+    cidadeSelecionada.value = null; // Reseta a cidade selecionada ao mudar estado
+    carregarCidades()
   }
-  if(estadoSelecionado.value === null){
-      cidadeSelecionada.value = null; // Reseta a cidade selecionada ao mudar estado
+  if (estadoSelecionado.value === null) {
+    cidadeSelecionada.value = null; // Reseta a cidade selecionada ao mudar estado
   }
 })
 
@@ -308,5 +263,4 @@ carregarEstados()
 
 
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>

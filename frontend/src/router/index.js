@@ -10,19 +10,42 @@ import RelatorioCadastro from '../views/Relatorios/Cadastrar.vue'
 import RelatorioList from '../views/Relatorios/Listagem.vue'
 import AdocaoList from '../views/Adocao/Listagem.vue'
 import AdocaoCadastro from '../views/Adocao/Cadastrar.vue'
+import Empresa from '../layouts/Empresa.vue'
+import Login from '../layouts/Login.vue'
+import MainLayout from '../layouts/MainLayout.vue'
 
 const routes = [
-  { path: '/pacientes', component: PacientesList },
-  { path: '/pacientes/cadastrar', component: PacienteCadastro },
-  { path: '/pacientes/visualizar/:id', name: 'PacienteVisualizar', component: PacienteVisualizar, props: true },
-  { path: '/veterinarios', component: VeterinariosList },
-  { path: '/veterinarios/cadastrar', component: VeterinarioCadastro },
-  { path: '/consultas', component: ConsultaList },
-  { path: '/consultas/consultar', component: Consultar },
-  { path: '/relatorios', component: RelatorioCadastro},
-  { path: '/relatorios/cadastrar', component: RelatorioList},
-  { path: '/adocao', component: AdocaoList},
-  { path: '/adocao/cadastrar', component: AdocaoCadastro}
+  {
+    path: '/',
+    name: 'Login',
+    component: Login,
+  },
+  {
+    path: '/clinica',
+    name: 'Clinica',
+    component: Empresa,
+  },
+  {
+    path: '/',
+    component: MainLayout,
+    children: [
+      { path: 'pacientes', name: 'Home', component: PacientesList },
+      { path: 'pacientes/cadastrar', component: PacienteCadastro },
+      { path: 'pacientes/visualizar/:id', name: 'PacienteVisualizar', component: PacienteVisualizar, props: true },
+
+      { path: 'veterinarios', component: VeterinariosList },
+      { path: 'veterinarios/cadastrar', component: VeterinarioCadastro },
+
+      { path: 'consultas', component: ConsultaList },
+      { path: 'consultas/consultar', component: Consultar },
+
+      { path: 'relatorios', component: RelatorioList },
+      { path: 'relatorios/cadastrar', component: RelatorioCadastro },
+
+      { path: 'adocao', component: AdocaoList },
+      { path: 'adocao/cadastrar', component: AdocaoCadastro },
+    ],
+  },
 ]
 
 const router = createRouter({
