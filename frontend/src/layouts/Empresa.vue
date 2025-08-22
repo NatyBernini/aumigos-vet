@@ -137,7 +137,7 @@ import { onMounted, ref, watch, nextTick } from 'vue'
 import BannerLogin from '../assets/BannerClinicaVet.png'
 import { getCidadesPorEstado, getEstados, getEnderecoPorCep } from '../services/ibge'
 import { formatCep, limparCep, buscarEnderecoViaCep } from '../utils/cepUtils'
-import Logo from '../assets/logoAumigo.png'
+import Logo from '../assets/logoAumigos.png'
 import { useRouter } from 'vue-router';
 
 // Regras
@@ -267,7 +267,7 @@ const submit = () => {
         },
         foto: foto.value
     })
-    router.push({ name: 'Home' });
+    router.push({ name: 'Planos' });
 }
 </script>
 

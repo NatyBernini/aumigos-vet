@@ -13,6 +13,7 @@ import AdocaoCadastro from '../views/Adocao/Cadastrar.vue'
 import Empresa from '../layouts/Empresa.vue'
 import Login from '../layouts/Login.vue'
 import MainLayout from '../layouts/MainLayout.vue'
+import Planos from '../layouts/Planos.vue'
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: '/clinica',
     name: 'Clinica',
     component: Empresa,
+  },
+  {
+    path: '/planos',
+    name: 'Planos',
+    component: Planos,
   },
   {
     path: '/',
