@@ -11,7 +11,7 @@
                         <v-col cols="12" md="12" class="pa-8 coluna-scroll">
                             <div class="conteudo-centralizado">
                                 <img :src="Logo" alt="Logo" class="logo mb-4" />
-                                <h1 class="font-weight-bold mb-6">Planos</h1>
+                                <h1 class="font-weight-bold mb-4">Planos</h1>
 
                                 <!-- 🔥 Toggle mensal / anual -->
                                 <v-btn-toggle v-model="isAnual" class="mb-6" mandatory>
@@ -21,12 +21,15 @@
 
                                 <v-row justify="center" align="stretch" class="w-100">
                                     <v-col cols="12" md="4" v-for="(plano, index) in planos" :key="index">
-                                        <v-card class="plano-card d-flex flex-column align-center pa-6"
+                                        <v-card class="plano-card d-flex flex-column align-center pa-4"
                                             :class="{ destaque: plano.nome === 'Premium' }" elevation="4">
+                                            
+                                           <img :src="iconesPlano[plano.nome]" alt="Ícone plano" class="icone-plano" />
+
                                             <h2 class="nome-plano">{{ plano.nome }}</h2>
-                                            <p class="mensagem-plano gold pl-5 pr-5 mb-3" v-if="plano.nome === 'Premium'">Mais cobertura</p>
-                                            <p class="mensagem-plano pl-5 pr-5 mb-3" v-if="plano.nome === 'Profissional'">Melhor custo benefício</p>
-                                            <p class="mensagem-plano pl-5 pr-5 mb-3" v-if="plano.nome === 'Gratuito'">Mais em conta</p>
+                                            <p class="mensagem-plano gold pl-5 pr-5 mb-2" v-if="plano.nome === 'Premium'">Mais cobertura</p>
+                                            <p class="mensagem-plano pl-5 pr-5 mb-2" v-if="plano.nome === 'Profissional'">Melhor custo benefício</p>
+                                            <p class="mensagem-plano pl-5 pr-5 mb-2" v-if="plano.nome === 'Gratuito'">Mais em conta</p>
                                           <div class="preco">{{ precoPlano(plano) }}</div>
                                             <v-divider class="my-4 w-100" :thickness="2" color="grey-darken-2" />
                                             <ul class="beneficios">
@@ -37,7 +40,7 @@
                                                     {{ beneficio }}
                                                 </li>
                                             </ul>
-                                            <v-btn class="mt-6" color="green-darken-2" variant="flat" block @click="contratarPlano()">
+                                            <v-btn class="mt-4" color="green-darken-2" variant="flat" block @click="contratarPlano()">
                                                 Contrate {{ plano.nome }}
                                             </v-btn>
                                         </v-card>
@@ -55,11 +58,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Logo from '../assets/logoAumigos.png'
+import iconeProfissional from '../assets/iconePlanoPro.png'
+import iconePremium from '../assets/iconePlanoPremium.png'
+import iconeGratuito from '../assets/iconePlanoGratuito.png'
 import { useRouter } from 'vue-router';
 
 const step = ref(0)
 const isAnual = ref(false) // false = mensal, true = anual
 const router = useRouter();
+
+const iconesPlano: Record<string, string> = {
+  Gratuito: iconeGratuito,
+  Profissional: iconeProfissional,
+  Premium: iconePremium
+}
 
 // lista global de todos os benefícios
 const todosBeneficios = [
@@ -217,6 +229,10 @@ h1 {
     overflow-y: auto;
     padding-bottom: 2rem;
 }
+.icone-plano {
+  width: 150px;
+  height: auto;
+}
 
 .plano-card {
     border-radius: 16px;
@@ -245,6 +261,7 @@ h1 {
         padding: 0;
         margin: 0;
         text-align: left;
+        line-height: 1.2;
 
         li {
             font-size: 0.95rem;
