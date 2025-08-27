@@ -4,9 +4,8 @@
       <v-list density="compact" nav>
         <v-list-item>
           <v-list-item-title class="text-h6 title-menu-lateral">
-            VetClinic
             <v-list-item-icon>
-              <img src="../assets/icons/logo.jpeg" alt="Ícone" class="menu-title-icon" />
+              <img src="../assets/logoAumigos.png" alt="Ícone" class="menu-title-icon mt-10 mb-10" />
             </v-list-item-icon>
           </v-list-item-title>
         </v-list-item>
@@ -192,8 +191,8 @@ const menuItems = [
   }
 
   .menu-title-icon {
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: auto;
     object-fit: contain;
   }
 
@@ -240,65 +239,8 @@ const menuItems = [
     }
 }
 
-.v-field__overlay {
- background-color: unset!important; 
-}
-.v-field {
-  border: 1px solid #ABABAB!important;
-  border-radius: 10px!important;
-}
-.v-field__field {
-    --v-input-control-height: 40px!important;
-    max-height: 40px;
-
-    input {
-      padding-top: 0!important;
-      color: #565656!important;
-    }
-}
-
-.v-textarea .v-field__field {
-  max-height: 100px!important;
-  padding-bottom: 5px;
-}
-.v-field__outline {
-  display: none!important;
-}
-
 .container-text-area {
   padding: 0!important;
-}
-
-.v-input--density-default {
-    --v-input-padding-top: 7px!important;
-}
-.v-input--density-default .v-field--variant-filled .v-label{
-font-size: 14px;
-&.v-field-label--floating{
-    transform: translateY(-19px)!important;
-    font-size: 14px;
-    margin-inline-start: 10px;
-    background-color: #fff;
-    z-index: 10;
-    padding-right: 5px;
-    padding-left: 5px;
-    opacity: 1;
-    color: #565656;
-}
-}
-.v-selection-control--density-default {
-  --v-selection-control-size: 18px!important;
-  gap: 5px;
-  margin-right: 15px;
-  .v-icon--size-default {
-    font-size: 18px;
-    color: #909090;
-  }
-
-  .v-label--clickable {
-    font-size: 14px;
-    color: #565656;
-  }
 }
 
 .v-btn.btn-padrao {
@@ -324,10 +266,6 @@ font-size: 14px;
 
 .v-radio-group {
   margin-top: 10px;
-}
-
-.v-input__details {
-    display: none!important;
 }
 
 .msg-auxiliar {

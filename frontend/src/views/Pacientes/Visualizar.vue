@@ -1,4 +1,3 @@
-<!-- src/views/Paciente/Visualizar.vue -->
 <template>
   <v-card>
     <!-- Cabeçalho / Breadcrumb -->
@@ -20,7 +19,7 @@
     <v-card-text>
       <v-tabs-window v-model="tab">
         <v-tabs-window-item value="one" class="pt-5">
-          <modal-cadastrar-tutor mode="view" :patient-id="pacienteId"/>
+          <modal-cadastrar-tutor mode="view" :patient-id="pacienteId" />
 
           <!-- Formulário -->
           <form class="mt-5" @submit.prevent="submit">
@@ -36,8 +35,8 @@
             <p>Espécie*</p>
             <div class="row-info-radios">
               <v-radio-group
-                v-model="especie.value.value"
-                :error-messages="especie.errorMessage.value"
+                v-model="especie"
+                :error-messages="especieError"
                 inline
                 max-width="300px"
               >
@@ -47,9 +46,9 @@
               </v-radio-group>
 
               <v-text-field
-                v-if="especie.value.value === 'especieOutra'"
-                v-model="outraEspecie.value.value"
-                :error-messages="outraEspecie.errorMessage.value"
+                v-if="especie === 'especieOutra'"
+                v-model="outraEspecie"
+                :error-messages="outraEspecieError"
                 label="Especificar Outra Espécie"
                 placeholder="Especifique a outra espécie"
                 max-width="300px"
@@ -61,16 +60,16 @@
             <v-col>
               <v-row class="row-info-basicas">
                 <v-text-field
-                  v-model="name.value.value"
-                  :error-messages="name.errorMessage.value"
+                  v-model="name"
+                  :error-messages="nameError"
                   label="Nome*"
                   placeholder="Nome"
                   max-width="300px"
                 />
 
                 <v-text-field
-                  v-model="idade.value.value"
-                  :error-messages="idade.errorMessage.value"
+                  v-model="idade"
+                  :error-messages="idadeError"
                   label="Idade*"
                   placeholder="Idade"
                   max-width="150px"
@@ -79,8 +78,8 @@
 
               <v-row class="row-info-basicas">
                 <v-text-field
-                  v-model="peso.value.value"
-                  :error-messages="peso.errorMessage.value"
+                  v-model="peso"
+                  :error-messages="pesoError"
                   label="Peso*"
                   placeholder="Peso"
                   type="number"
@@ -88,16 +87,16 @@
                 />
 
                 <v-text-field
-                  v-model="raca.value.value"
-                  :error-messages="raca.errorMessage.value"
+                  v-model="raca"
+                  :error-messages="racaError"
                   label="Raça*"
                   placeholder="Raça"
                   max-width="300px"
                 />
 
                 <v-text-field
-                  v-model="pelagem.value.value"
-                  :error-messages="pelagem.errorMessage.value"
+                  v-model="pelagem"
+                  :error-messages="pelagemError"
                   label="Pelagem*"
                   placeholder="Pelagem"
                   max-width="300px"
@@ -108,7 +107,7 @@
             <!-- Porte -->
             <p>Porte</p>
             <div class="row-info-radios">
-              <v-radio-group v-model="porte.value.value" inline>
+              <v-radio-group v-model="porte" inline>
                 <v-radio label="Pequeno" value="porteP" />
                 <v-radio label="Médio" value="porteM" />
                 <v-radio label="Grande" value="porteG" />
@@ -119,8 +118,8 @@
             <p>Sexo*</p>
             <div class="row-info-radios">
               <v-radio-group
-                v-model="sexo.value.value"
-                :error-messages="sexo.errorMessage.value"
+                v-model="sexo"
+                :error-messages="sexoError"
                 inline
               >
                 <v-radio label="Masculino" value="sexoM" />
@@ -132,8 +131,8 @@
             <p>Castrado?*</p>
             <div class="row-info-radios">
               <v-radio-group
-                v-model="castrado.value.value"
-                :error-messages="castrado.errorMessage.value"
+                v-model="castrado"
+                :error-messages="castradoError"
                 inline
                 max-width="150px"
               >
@@ -142,9 +141,9 @@
               </v-radio-group>
 
               <v-text-field
-                v-if="castrado.value.value === 'castradoS'"
-                v-model="dataCastrado.value.value"
-                :error-messages="dataCastrado.errorMessage.value"
+                v-if="castrado === 'castradoS'"
+                v-model="dataCastrado"
+                :error-messages="dataCastradoError"
                 label="Data*"
                 type="date"
                 max-width="150px"
@@ -155,8 +154,8 @@
             <p>Vermifugado?*</p>
             <div class="row-info-radios">
               <v-radio-group
-                v-model="vermifugado.value.value"
-                :error-messages="vermifugado.errorMessage.value"
+                v-model="vermifugado"
+                :error-messages="vermifugadoError"
                 inline
                 max-width="150px"
               >
@@ -165,9 +164,9 @@
               </v-radio-group>
 
               <v-text-field
-                v-if="vermifugado.value.value === 'vermifugadoS'"
-                v-model="dataVermifugado.value.value"
-                :error-messages="dataVermifugado.errorMessage.value"
+                v-if="vermifugado === 'vermifugadoS'"
+                v-model="dataVermifugado"
+                :error-messages="dataVermifugadoError"
                 label="Data*"
                 type="date"
                 max-width="150px"
@@ -178,8 +177,8 @@
             <p>Vacinado?*</p>
             <div class="row-info-radios">
               <v-radio-group
-                v-model="vacina.value.value"
-                :error-messages="vacina.errorMessage.value"
+                v-model="vacina"
+                :error-messages="vacinaError"
                 inline
                 max-width="150px"
               >
@@ -190,9 +189,9 @@
 
             <v-textarea
               class="mb-4"
-              v-if="vacina.value.value === 'vacinadoS'"
-              v-model="quaisVacinas.value.value"
-              :error-messages="quaisVacinas.errorMessage.value"
+              v-if="vacina === 'vacinadoS'"
+              v-model="quaisVacinas"
+              :error-messages="quaisVacinasError"
               :rules="rules"
               label="Quais Vacinas?*"
               counter
@@ -217,7 +216,7 @@
               <p class="msg-auxiliar">Campos Obrigatórios*</p>
             </div>
             <div class="container-btn mt-5">
-              <v-btn class="me-4 btn-padrao" type="submit"> Salvar </v-btn>
+              <v-btn class="me-4 btn-padrao" type="submit">Salvar</v-btn>
             </div>
           </form>
         </v-tabs-window-item>
@@ -227,96 +226,91 @@
 </template>
 
 <script setup lang="ts">
-/* ------------------------------------------------- */
-/* Imports                                           */
-/* ------------------------------------------------- */
+
 import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useField, useForm } from 'vee-validate'
 import modalCadastrarTutor from '../Tutor/modalCadastrarTutor.vue'
 import { pacientesMock } from '../../mock/pacientesMock'
 
-/* ------------------------------------------------- */
-/* Tabs                                              */
-/* ------------------------------------------------- */
 defineOptions({ name: 'PacienteVisualizar' })
 const tab = ref('one')
 
-/* ------------------------------------------------- */
-/* Validação (vee-validate)                          */
-/* ------------------------------------------------- */
 const { handleSubmit } = useForm({
   validationSchema: {
-    name: v => v?.length > 0 || 'Campo obrigatório.',
-    idade: v => v?.length > 0 || 'Campo obrigatório.',
-    raca: v => v?.length > 0 || 'Campo obrigatório.',
-    peso: v => v?.length > 0 || 'Campo obrigatório.',
-    pelagem: v => v?.length > 0 || 'Campo obrigatório.',
-    especie: v => !!v || 'Selecione uma espécie.',
-    outraEspecie(value) {
-      if (especie.value.value === 'especieOutra') return !!value || 'Campo Obrigatório.'
+    name: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    idade: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    raca: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    peso: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    pelagem: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    especie: (v: unknown) => !!v || 'Selecione uma espécie.',
+    outraEspecie(value: unknown) {
+      if (especie.value === 'especieOutra') {
+        return typeof value === 'string' && value.length > 0 || 'Campo Obrigatório.'
+      }
       return true
     },
-    sexo: v => !!v || 'Informe o sexo.',
-    porte: v => !!v || 'Informe o porte.',
-    castrado: v => !!v || 'Informe se é castrado.',
-    vermifugado: v => !!v || 'Informe se é vermifugado.',
-    vacina: v => !!v || 'Informe se é vacinado.',
-    dataCastrado(value) {
-      if (castrado.value.value === 'castradoS') return !!value || 'Informe a data.'
+    sexo: (v: unknown) => !!v || 'Informe o sexo.',
+    porte: (v: unknown) => !!v || 'Informe o porte.',
+    castrado: (v: unknown) => !!v || 'Informe se é castrado.',
+    vermifugado: (v: unknown) => !!v || 'Informe se é vermifugado.',
+    vacina: (v: unknown) => !!v || 'Informe se é vacinado.',
+    dataCastrado(value: unknown) {
+      if (castrado.value === 'castradoS') {
+        return typeof value === 'string' && value.length > 0 || 'Informe a data.'
+      }
       return true
     },
-    dataVermifugado(value) {
-      if (vermifugado.value.value === 'vermifugadoS') return !!value || 'Informe a data.'
+    dataVermifugado(value: unknown) {
+      if (vermifugado.value === 'vermifugadoS') {
+        return typeof value === 'string' && value.length > 0 || 'Informe a data.'
+      }
       return true
     },
-    quaisVacinas(value) {
-      if (vacina.value.value === 'vacinadoS') return !!value || 'Informe as vacinas.'
+    quaisVacinas(value: unknown) {
+      if (vacina.value === 'vacinadoS') {
+        return typeof value === 'string' && value.length > 0 || 'Informe as vacinas.'
+      }
       return true
     },
-    nameTutor: v => v?.length > 0 || 'Campo obrigatório.',
-    rg: v => v?.length > 0 || 'Campo obrigatório.',
-    cpf: v => v?.length > 0 || 'Campo obrigatório.',
-    phone(value) {
-      const digits = String(value ?? '').replace(/\D/g, '')  // ← garante string
+    nameTutor: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    rg: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    cpf: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    phone(value: unknown) {
+      const digits = String(value ?? '').replace(/\D/g, '')
       if (digits.length === 0) return 'Telefone é obrigatório.'
       return digits.length >= 7 || 'Telefone precisa ter ao menos 7 dígitos.'
     },
-    email: v => /^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(v) || 'E-mail inválido.',
+    email: (v: unknown) =>
+      typeof v === 'string' && /^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(v) || 'E-mail inválido.',
   },
 })
 
-/* ------------------------------------------------- */
-/* useField – Paciente                               */
-/* ------------------------------------------------- */
-const name = useField('name')
-const raca = useField('raca')
-const peso = useField('peso')
-const pelagem = useField('pelagem')
-const idade = useField('idade')
-const especie = useField('especie')
-const outraEspecie = useField('outraEspecie')
-const porte = useField('porte')
-const sexo = useField('sexo')
-const castrado = useField('castrado')
-const dataCastrado = useField('dataCastrado')
-const vermifugado = useField('vermifugado')
-const dataVermifugado = useField('dataVermifugado')
-const vacina = useField('vacina')
-const quaisVacinas = useField('quaisVacinas')
+// Paciente
+const { value: name, errorMessage: nameError } = useField<string>('name')
+const { value: idade, errorMessage: idadeError } = useField<string>('idade')
+const { value: raca, errorMessage: racaError } = useField<string>('raca')
+const { value: peso, errorMessage: pesoError } = useField<string>('peso')
+const { value: pelagem, errorMessage: pelagemError } = useField<string>('pelagem')
+const { value: especie, errorMessage: especieError } = useField<string>('especie')
+const { value: outraEspecie, errorMessage: outraEspecieError } = useField<string>('outraEspecie')
+const { value: porte, errorMessage: porteError } = useField<string>('porte')
+const { value: sexo, errorMessage: sexoError } = useField<string>('sexo')
+const { value: castrado, errorMessage: castradoError } = useField<string>('castrado')
+const { value: dataCastrado, errorMessage: dataCastradoError } = useField<string>('dataCastrado')
+const { value: vermifugado, errorMessage: vermifugadoError } = useField<string>('vermifugado')
+const { value: dataVermifugado, errorMessage: dataVermifugadoError } = useField<string>('dataVermifugado')
+const { value: vacina, errorMessage: vacinaError } = useField<string>('vacina')
+const { value: quaisVacinas, errorMessage: quaisVacinasError } = useField<string>('quaisVacinas')
 
-/* ------------------------------------------------- */
-/* useField – Tutor                                  */
-/* ------------------------------------------------- */
-const nameTutor = useField('nameTutor')
-const rg = useField('rg')
-const cpf = useField('cpf')
-const phone = useField('phone')
-const email = useField('email')
+// Tutor
+const { value: nameTutor, errorMessage: nameTutorError } = useField<string>('nameTutor')
+const { value: rg, errorMessage: rgError } = useField<string>('rg')
+const { value: cpf, errorMessage: cpfError } = useField<string>('cpf')
+const { value: phone, errorMessage: phoneError } = useField<string>('phone')
+const { value: email, errorMessage: emailError } = useField<string>('email')
 
-/* ------------------------------------------------- */
-/* Telefones                                         */
-/* ------------------------------------------------- */
+// Telefones                                         
 const phones = ref<{ number: string }[]>([{ number: '' }])
 
 function formatPhoneNumber(value: string): string {
@@ -337,22 +331,13 @@ watch(
   { deep: true },
 )
 
-/* ------------------------------------------------- */
-/* Regras / textarea                                 */
-/* ------------------------------------------------- */
-const rules = [v => v.length <= 300 || 'Máximo 300 caracteres']
+const rules = [(v: string) => v.length <= 300 || 'Máximo 300 caracteres']
 const textarea = ref({ ObservacoesGerais: '' })
 
-/* ------------------------------------------------- */
-/* Submit                                            */
-/* ------------------------------------------------- */
 const submit = handleSubmit(values => {
   alert(JSON.stringify({ ...values, phones: phones.value }, null, 2))
 })
 
-/* ------------------------------------------------- */
-/* Carregar dados do mock                            */
-/* ------------------------------------------------- */
 const route = useRoute()
 const pacienteId = Number(route.params.id) || 0
 
@@ -363,42 +348,35 @@ function carregarPaciente() {
     return
   }
 
-  /* --- Básico --- */
-  name.value.value = paciente.nome
-  idade.value.value = paciente.idade.toString()
-  peso.value.value = paciente.peso.toString()
-  raca.value.value = paciente.raca
-  pelagem.value.value = paciente.pelagem
-  especie.value.value = paciente.especie
-  outraEspecie.value.value = paciente.outraEspecie ?? ''
-  porte.value.value = paciente.porte
-  sexo.value.value = paciente.sexo
+  name.value = paciente.nome
+  idade.value = paciente.idade.toString()
+  peso.value = paciente.peso.toString()
+  raca.value = paciente.raca
+  pelagem.value = paciente.pelagem
+  especie.value = paciente.especie
+  outraEspecie.value = paciente.outraEspecie ?? ''
+  porte.value = paciente.porte
+  sexo.value = paciente.sexo
 
   /* --- Castração / vermifugação / vacina --- */
-  castrado.value.value = paciente.castrado
-  dataCastrado.value.value = paciente.dataCastrado ?? ''
-  vermifugado.value.value = paciente.vermifugado
-  dataVermifugado.value.value = paciente.dataVermifugado ?? ''
-  vacina.value.value = paciente.vacina
-  quaisVacinas.value.value = paciente.quaisVacinas ?? ''
+  castrado.value = paciente.castrado
+  dataCastrado.value = paciente.dataCastrado ?? ''
+  vermifugado.value = paciente.vermifugado
+  dataVermifugado.value = paciente.dataVermifugado ?? ''
+  vacina.value = paciente.vacina
+  quaisVacinas.value = paciente.quaisVacinas ?? ''
   textarea.value.ObservacoesGerais = paciente.observacoes ?? ''
 
   /* --- Tutor --- */
-  nameTutor.value.value = paciente.tutor
-  rg.value.value = paciente.tutorRg
-  cpf.value.value = paciente.tutorCpf
-  email.value.value = paciente.tutorEmail
+  nameTutor.value = paciente.tutor
+  rg.value = paciente.tutorRg
+  cpf.value = paciente.tutorCpf
+  email.value = paciente.tutorEmail
   phones.value = paciente.tutorPhones.map(number => ({ number }))
 }
 
 onMounted(carregarPaciente)
-/* Recarrega se navegar entre pacientes sem descarregar o componente */
-watch(
-  () => route.params.id,
-  () => {
-    carregarPaciente()
-  },
-)
+watch(() => route.params.id, carregarPaciente)
 </script>
 
 

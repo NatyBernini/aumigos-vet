@@ -1,254 +1,359 @@
 <template>
   <v-card>
-    <p class="title-page">Cadastro do Paciente
-      <img src="/./src/assets/icons/iconLapisCadastro.png" alt="Ícone" class="menu-title-icon" />
+    <!-- Cabeçalho / Breadcrumb -->
+    <p class="title-page">
+      Cadastro do Paciente
+      <img src="../../assets/icons/iconLapisCadastro.png" alt="Ícone" class="menu-title-icon" />
+    </p>
+    <p class="sub-page">
+      Pacientes /
+      <span class="aba-atual">Cadastrar</span>
+      <img src="../../assets/icons/iconeCadastro.png" alt="Ícone" class="menu-sub-icon" />
     </p>
 
-    <p class="sub-page">Pacientes / <span class="aba-atual">Cadastrar</span> <img src="/./src/assets/icons/iconeCadastro.png" alt="Ícone" class="menu-sub-icon" /></p>
+    <!-- Abas -->
     <v-tabs v-model="tab">
-      <v-tab value="one">Informações do Paciente</v-tab>
+      <v-tab value="paciente">Informações do Paciente</v-tab>
+      <v-tab value="tutor">Informações do Responsável</v-tab>
     </v-tabs>
 
     <v-card-text>
       <v-tabs-window v-model="tab">
-        <v-tabs-window-item value="one" class="pt-5">
-          
-          <modalCadastrarTutor/>
-          <form class="mt-5" @submit.prevent="submit">
-            <div class="row-info-radios">
-            <v-radio-group inline >
-              <v-radio label="Doméstico" value="domestico"></v-radio>
-              <v-radio label="Resgatado" value="resgatado"></v-radio>
-            </v-radio-group>
-</div>
-            <p>Espécie*</p>
-            <div class="row-info-radios">
-              <v-radio-group v-model="especie.value.value" :error-messages="especie.errorMessage.value" inline
-                max-width="300px">
-                <v-radio label="Canina" value="especieCan"></v-radio>
-                <v-radio label="Felina" value="especieFel"></v-radio>
-                <v-radio label="Outra" value="especieOutra"></v-radio>
-              </v-radio-group>
+        <v-tabs-window-item value="paciente">
+          <!-- <div>
+                <v-btn
+                      color="accent"
+                      large
+                      @click.stop="showScheduleForm = true"
+                      class="btn-novo-cadastro"
+                    >
+                      Cadastrar Tutor
+                      <v-icon class="icon-close ml-3">mdi-format-align-left</v-icon>
+                    </v-btn>
+                  </div> -->
 
-              <v-text-field v-if="especie.value.value === 'especieOutra'" v-model="outraEspecie.value.value"
-                :error-messages="outraEspecie.errorMessage.value" label="Especificar Outra Espécie"
-                placeholder="Especifique a outra espécie" max-width="300px"></v-text-field>
+          <!-- Formulário -->
+          <form @submit.prevent="submit">
+            <!-- Origem -->
+            <div class="row-info-radios">
+              <v-radio-group v-model="origem" :error-messages="origemError" inline>
+                <v-radio label="Doméstico" value="domestico" />
+                <v-radio label="Resgatado" value="resgatado" />
+              </v-radio-group>
             </div>
 
+            <!-- Espécie -->
+            <p>Espécie*</p>
+            <div class="row-info-radios">
+              <v-radio-group v-model="especie" :error-messages="especieError" inline max-width="300px">
+                <v-radio label="Canina" value="especieCan" />
+                <v-radio label="Felina" value="especieFel" />
+                <v-radio label="Outra" value="especieOutra" />
+              </v-radio-group>
+
+              <inputText v-if="especie === 'especieOutra'" label="Especificar Outra Espécie*" type="text" required
+                v-model:valueInput="textInputs['input-especificar-outra-especie']"
+                id="input-especificar-outra-especie" />
+            </div>
+
+            <!-- Informações básicas -->
             <p>Informações Básicas</p>
             <v-col>
               <v-row class="row-info-basicas">
-                <v-text-field v-model="name.value.value" placeholder='Nome' :error-messages="name.errorMessage.value"
-                  label="Nome*" max-width="300px"></v-text-field>
+                <inputText label="Nome*" type="text" required v-model:valueInput="textInputs['input-nome']"
+                  id="input-nome" @update:valueInput="(value: any) => updateInput('input-nome', value)" />
+                <inputText label="Idade*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-idade`]" id="input-idade" />
 
-                <v-text-field v-model="idade.value.value" :error-messages="idade.errorMessage.value" placeholder='Idade'
-                  label="Idade*" max-width="150px"></v-text-field>
+
               </v-row>
+
               <v-row class="row-info-basicas">
-                <v-text-field v-model="peso.value.value" :error-messages="peso.errorMessage.value" placeholder='Peso'
-                  type="number" label="Peso*" max-width="150px"></v-text-field>
+                <inputText label="Peso*" classe="input-locador" type="text" required suffix="gramas"
+                  v-model:valueInput="textInputs[`input-peso`]" :id="`input-peso`" @input="validateDecimalInput($event)"
+                  :maxLength="0" />
 
-                <v-text-field v-model="raca.value.value" :error-messages="raca.errorMessage.value" placeholder='Raça'
-                  label="Raça*" max-width="300px"></v-text-field>
+                <inputText label="Raça*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-raca`]" id="input-raca" />
 
-
-                <v-text-field v-model="pelagem.value.value" :error-messages="pelagem.errorMessage.value"
-                  placeholder='Pelagem' label="Pelagem*" max-width="300px"></v-text-field>
-
+                <inputText label="Pelagem*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-pelagem`]" id="input-pelagem" />
 
               </v-row>
-
             </v-col>
 
+            <!-- Porte -->
             <p>Porte</p>
             <div class="row-info-radios">
-            <v-radio-group  inline>
-              <v-radio label="Pequeno" value="porteP"></v-radio>
-              <v-radio label="Médio" value="porteM"></v-radio>
-              <v-radio label="Grande" value="porteG"></v-radio>
-            </v-radio-group>
-            </div>
-            <p>Sexo*</p>
-            
-            <div class="row-info-radios">
-            <v-radio-group v-model="sexo.value.value" :error-messages="sexo.errorMessage.value" inline>
-              <v-radio label="Masculino" value="sexoM"></v-radio>
-              <v-radio label="Feminino" value="sexoF"></v-radio>
-            </v-radio-group>
+              <v-radio-group v-model="porte" inline>
+                <v-radio label="Pequeno" value="porteP" />
+                <v-radio label="Médio" value="porteM" />
+                <v-radio label="Grande" value="porteG" />
+              </v-radio-group>
             </div>
 
+            <!-- Sexo -->
+            <p>Sexo*</p>
+            <div class="row-info-radios">
+              <v-radio-group v-model="sexo" :error-messages="sexoError" inline>
+                <v-radio label="Masculino" value="sexoM" />
+                <v-radio label="Feminino" value="sexoF" />
+              </v-radio-group>
+            </div>
+
+            <!-- Castração -->
             <p>Castrado?*</p>
             <div class="row-info-radios">
-              <v-radio-group v-model="castrado.value.value" :error-messages="castrado.errorMessage.value" inline
-                max-width="150px">
-                <v-radio label="Sim" value="castradoS"></v-radio>
-                <v-radio label="Não" value="CastradoN"></v-radio>
+              <v-radio-group v-model="castrado" :error-messages="castradoError" inline max-width="150px">
+                <v-radio label="Sim" value="castradoS" />
+                <v-radio label="Não" value="castradoN" />
               </v-radio-group>
 
-              <!-- <v-text-field
-                      v-if="radio.Castrado == 'castradoS'"
-                        label="Horário"
-                        model-value="12:30:00"
-                        type="time"
-                        max-width="150px"
-                      ></v-text-field> -->
-              <v-text-field v-if="castrado.value.value == 'castradoS'" v-model="dataCastrado.value.value"
-                :error-messages="dataCastrado.errorMessage.value" label="Data*" type="date" max-width="150px" />
+              <v-text-field v-if="castrado === 'castradoS'" v-model="dataCastrado" :error-messages="dataCastradoError"
+                label="Data*" type="date" max-width="150px" />
             </div>
+
+            <!-- Vermifugação -->
             <p>Vermifugado?*</p>
             <div class="row-info-radios">
-              <v-radio-group v-model="vermifugado.value.value" :error-messages="vermifugado.errorMessage.value" inline
-                max-width="150px">
-                <v-radio label="Sim" value="vermifugadoS"></v-radio>
-                <v-radio label="Não" value="vermifugadoN"></v-radio>
+              <v-radio-group v-model="vermifugado" :error-messages="vermifugadoError" inline max-width="150px">
+                <v-radio label="Sim" value="vermifugadoS" />
+                <v-radio label="Não" value="vermifugadoN" />
               </v-radio-group>
-              <v-text-field v-if="vermifugado.value.value == 'vermifugadoS'" v-model="dataVermifugado.value.value"
-                :error-messages="dataVermifugado.errorMessage.value" label="Data*" type="date" max-width="150px" />
+
+              <v-text-field v-if="vermifugado === 'vermifugadoS'" v-model="dataVermifugado"
+                :error-messages="dataVermifugadoError" label="Data*" type="date" max-width="150px" />
             </div>
+
+            <!-- Vacinas -->
             <p>Vacinado?*</p>
             <div class="row-info-radios">
-            <v-radio-group v-model="vacina.value.value" :error-messages="vacina.errorMessage.value" inline
-              max-width="150px">
-              <v-radio label="Sim" value="vacinadoS"></v-radio>
-              <v-radio label="Não" value="vacinadoN"></v-radio>
-            </v-radio-group>
+              <v-radio-group v-model="vacina" :error-messages="vacinaError" inline max-width="150px">
+                <v-radio label="Sim" value="vacinadoS" />
+                <v-radio label="Não" value="vacinadoN" />
+              </v-radio-group>
+
+              <TextArea v-if="vacina === 'vacinadoS'" :modelValue="textarea.vacinas"
+                @update:modelValue="(value: any) => (textarea.vacinas = value)" :label="'Quais Vacinas?*'"
+                class="wrap-textarea" :maxLength="300" placeholder="Detalhe quais vacinas foram tomadas...">
+              </TextArea>
             </div>
 
-            <v-textarea class="mb-4" v-if="vacina.value.value === 'vacinadoS'" v-model="quaisVacinas.value.value"
-              :error-messages="quaisVacinas.errorMessage.value" :rules="rules" label="Quais Vacinas?*" counter
-              maxlength="300" max-width="500px" placeholder="Detalhe quais vacinas foram tomadas..."></v-textarea>
+            <!-- Observações -->
 
-            <v-textarea :model-value="textarea.ObservacoesGerais" :rules="rules" label="Observações" counter
-              maxlength="300" max-width="500px"
-              placeholder="Detalhe algum ponto extra sobre o paciente..."></v-textarea>
-
+            <TextArea :modelValue="textarea.ObservacoesGerais"
+              @update:modelValue="(value: any) => (textarea.ObservacoesGerais = value)" label="Observações/Detalhamento"
+              class="wrap-textarea" :maxLength="300" placeholder="Detalhe algum ponto extra sobre o paciente...">
+            </TextArea>
+            <!-- Botões -->
             <div class="container-btn mt-5">
-                <p class="msg-auxiliar">Campos Obrigatório*</p>
+              <p class="msg-auxiliar">Campos Obrigatórios*</p>
             </div>
-            <div class="container-btn mt-5">
 
-              <v-btn class="btn-padrao" @click="handleReset">
+            <div class="container-btn mt-5">
+              <v-btn class="btn-padrao" @click="resetFormCustom">
                 Limpar Tudo
               </v-btn>
-
-              <v-btn class="me-4 btn-padrao" type="submit">
-                Salvar
-              </v-btn>
+              <v-btn class="me-4 btn-padrao" type="submit">Salvar</v-btn>
             </div>
-
           </form>
         </v-tabs-window-item>
+        <v-tabs-window-item value="tutor" class="pt-5">
 
+          <v-form ref="form">
+
+            <!-- Informações básicas -->
+            <p>Informações Básicas</p>
+            <v-col>
+              <v-row class="row-info-basicas">
+
+                <inputText label="Nome do Responsável*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-nome-tutor`]" id="input-nome-tutor" />
+
+              </v-row>
+
+              <v-row class="row-info-basicas">
+                <inputText label="CPF*" type="text" v-model:valueInput="textInputs['input-cpf']" id="input-cpf"
+                  @update:valueInput="(value: any) => {
+                    const formatado = formatCpf(value);
+                    updateInput('input-cpf', formatado);
+                  }" :maxLength="14" required />
+                <inputText label="RG*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-rg`]" id="input-rg" />
+
+              </v-row>
+            </v-col>
+
+            <!-- Contatos -->
+            <p>Informações para Contato</p>
+            <v-col>
+              <v-row class="row-info-basicas" v-for="(item, index) in phones" :key="index">
+                <inputText label="Telefone*" classe="input-locador" type="text" required @input="onPhoneInput(index, $event)"
+                  v-model:valueInput="item.number" :id="'input-telefone-' + index" :maxLength="0"/>
+
+                <!-- Botões de adicionar / remover só no modo edição -->
+             
+                <v-btn icon class="btn-padrao btn-plus-phone" @click="removePhone(index)" v-if="phones.length > 1">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+                   <v-btn icon class="btn-padrao btn-plus-phone" @click="addPhone" v-if="index === phones.length - 1">
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </v-row>
+
+              <v-row class="row-info-basicas">
+                <inputText label="E-mail*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-email`]" id="input-email" />
+              </v-row>
+            </v-col>
+
+
+            <!-- Endereço -->
+            <p>Informações de Endereço</p>
+            <v-col>
+              <v-row class="row-info-basicas">
+                <inputText label="Estado*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-estado`]" id="input-estado" />
+
+                <inputText label="Cidade*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-cidade`]" id="input-cidade" />
+
+              </v-row>
+
+              <v-row class="row-info-basicas">
+                <inputText label="Bairro*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-bairro`]" id="input-bairro" />
+
+                <inputText label="Rua*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-rua`]" id="input-rua" />
+
+              </v-row>
+
+              <v-row class="row-info-basicas">
+                <inputText label="Número" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-numero-endereco`]" id="input-numero-endereco" />
+
+                <inputText label="Complemento" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-complemento`]" id="input-complemento" />
+
+              </v-row>
+            </v-col>
+
+            <!-- <v-row>
+                <v-col cols="12" sm="12">
+                  <multipleCombobox
+                  class="container-combobox-padrao combo-box-tipo-concessionaria"
+                  :v-model="combos.tipoConcessionarias"
+                  :items="tiposConcessionariasItems"
+                  label="Tipo de concessionária* "
+                  placeholder="Tipo de concessionaria"
+                  variant="outlined"
+                  integer
+                  id="tipo-estrutura"
+                  :isRequired="true"
+                  :extraItems="tiposConcessionariasItemsResponse"
+                  :isMultipleSelect="false"
+                  required
+                >
+                </multipleCombobox>
+                </v-col>
+              </v-row> -->
+            <v-col cols="12" sm="12">
+              <v-btn text="Cadastrar" id="btn-salvar-concessionaria"></v-btn>
+            </v-col>
+          </v-form>
+        </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
   </v-card>
+
+  <!-- <ModalCadastrarTutor :visible="showScheduleForm" @close="showScheduleForm = false" /> -->
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+
+import { ref, nextTick   } from 'vue'
 import { useField, useForm } from 'vee-validate'
-import modalCadastrarTutor from '../Tutor/modalCadastrarTutor.vue'
+import { formatCpf } from '@/utils/formaUtils'
 
-defineOptions({
-  name: 'PacienteCadastro',
-})
+// COMPONENTES
+import inputText from '@/components/inputText.vue'
+import TextArea from '@/components/textArea.vue'
+// import ModalCadastrarTutor from '../Tutor/modalCadastrarTutor.vue'
 
-const tab = ref(null)
+defineOptions({ name: 'PacienteCadastro' })
+const tab = ref('paciente')
+
+const showScheduleForm = ref(false);
 
 const { handleSubmit, handleReset } = useForm({
   validationSchema: {
-    name: value => value?.length > 0 || 'Campo obrigatório.',
-    idade: value => value?.length > 0 || 'Campo obrigatório.',
-    raca: value => value?.length > 0 || 'Campo obrigatório.',
-    peso: value => value?.length > 0 || 'Campo obrigatório.',
-    pelagem: value => value?.length > 0 || 'Campo obrigatório.',
-    especie: value => !!value || 'Selecione uma espécie.',
-    outraEspecie(value) {
-      if (castrado.value.value === 'especieOutra') {
-        return !!value || 'Campo Obrigatório.';
+    name: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    idade: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    raca: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    peso: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    pelagem: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    especie: (v: unknown) => !!v || 'Selecione uma espécie.',
+    outraEspecie(value: unknown) {
+      if (especie.value === 'especieOutra') {
+        return typeof value === 'string' && value.length > 0 || 'Campo Obrigatório.'
       }
-      return true;
+      return true
     },
-    sexo: value => !!value || 'Informe o sexo.',
-    castrado: value => !!value || 'Informe se é castrado.',
-    vermifugado: value => !!value || 'Informe se é vermifugado.',
-    vacina: value => !!value || 'Informe se é vacinado.',
-    dataCastrado(value) {
-      if (castrado.value.value === 'castradoS') {
-        return !!value || 'Informe a data.';
+    sexo: (v: unknown) => !!v || 'Informe o sexo.',
+    porte: (v: unknown) => !!v || 'Informe o porte.',
+    castrado: (v: unknown) => !!v || 'Informe se é castrado.',
+    vermifugado: (v: unknown) => !!v || 'Informe se é vermifugado.',
+    vacina: (v: unknown) => !!v || 'Informe se é vacinado.',
+    dataCastrado(value: unknown) {
+      if (castrado.value === 'castradoS') {
+        return typeof value === 'string' && value.length > 0 || 'Informe a data.'
       }
-      return true;
+      return true
     },
-    dataVermifugado(value) {
-      if (vermifugado.value.value === 'vermifugadoS') {
-        return !!value || 'Informe a data.';
+    dataVermifugado(value: unknown) {
+      if (vermifugado.value === 'vermifugadoS') {
+        return typeof value === 'string' && value.length > 0 || 'Informe a data.'
       }
-      return true;
+      return true
     },
-    quaisVacinas(value) {
-      if (vacina.value.value === 'vacinadoS') {
-        return !!value || 'Informe as vacinas.';
+    quaisVacinas(value: unknown) {
+      if (vacina.value === 'vacinadoS') {
+        return typeof value === 'string' && value.length > 0 || 'Informe as vacinas.'
       }
-      return true;
+      return true
     },
-
-
-    nameTutor: value => value?.length > 0 || 'Campo obrigatório.',
-    rg: value => value?.length > 0 || 'Campo obrigatório.',
-    cpf: value => value?.length > 0 || 'Campo obrigatório.',
-    phone(value) {
-      if (/^[0-9-]{7,}$/.test(value)) return true
-
-      return 'Phone number needs to be at least 7 digits.'
+    nameTutor: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    rg: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    cpf: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
+    phone(value: unknown) {
+      const digits = String(value ?? '').replace(/\D/g, '')
+      if (digits.length === 0) return 'Telefone é obrigatório.'
+      return digits.length >= 7 || 'Telefone precisa ter ao menos 7 dígitos.'
     },
-    email(value) {
-      if (/^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(value)) return true
-
-      return 'Must be a valid e-mail.'
-    },
-  }
+    email: (v: unknown) =>
+      typeof v === 'string' && /^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(v) || 'E-mail inválido.',
+  },
 })
 
-// CAMPOS PACIENTE
-const name = useField('name', undefined, { validateOnValueUpdate: false });
-const raca = useField('raca', undefined, { validateOnValueUpdate: false });
-const peso = useField('peso', undefined, { validateOnValueUpdate: false });
-const pelagem = useField('pelagem', undefined, { validateOnValueUpdate: false });
-const idade = useField('idade', undefined, { validateOnValueUpdate: false });
-const outraEspecie = useField('outraEspecie', undefined, { validateOnValueUpdate: false });
-const especie = useField('especie', undefined, { validateOnValueUpdate: false })
-const castrado = useField('castrado', undefined, { validateOnValueUpdate: false })
-const sexo = useField('sexo', undefined, { validateOnValueUpdate: false })
-const vermifugado = useField('vermifugado', undefined, { validateOnValueUpdate: false })
-const vacina = useField('vacina', undefined, { validateOnValueUpdate: false })
-const quaisVacinas = useField('quaisVacinas', undefined, { validateOnValueUpdate: false })
-const dataCastrado = useField('dataCastrado', undefined, { validateOnValueUpdate: false });
-const dataVermifugado = useField('dataVermifugado', undefined, { validateOnValueUpdate: false });
-
-// CAMPOS TUTOR
-const nameTutor = useField('nameTutor', undefined, { validateOnValueUpdate: false });
-const rg = useField('rg', undefined, { validateOnValueUpdate: false });
-const cpf = useField('cpg', undefined, { validateOnValueUpdate: false });
-const phone = useField('phone', undefined, { validateOnValueUpdate: false });
-const email = useField('email', undefined, { validateOnValueUpdate: false });
-
-const phones = ref([{ number: '' }])
-
-function formatPhoneNumber(value: string): string {
-  value = value.replace(/\D/g, ''); // remove não-dígitos
-
-  if (value.length > 11) {
-    value = value.slice(0, 11); // limita a 11 dígitos
-  }
-
-  if (value.length <= 10) {
-    // Formato fixo ou celular antigo: (00) 0000-0000
-    return value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim();
-  } else {
-    // Formato celular atual: (00) 00000-0000
-    return value.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim();
-  }
+function resetFormCustom() {
+  handleReset();
+  textarea.value.ObservacoesGerais = '';
 }
+
+// Paciente
+const { value: especie, errorMessage: especieError } = useField<string>('especie')
+const { value: origem, errorMessage: origemError } = useField<string>('origem')
+const { value: porte, errorMessage: porteError } = useField<string>('porte')
+const { value: sexo, errorMessage: sexoError } = useField<string>('sexo')
+const { value: castrado, errorMessage: castradoError } = useField<string>('castrado')
+const { value: dataCastrado, errorMessage: dataCastradoError } = useField<string>('dataCastrado')
+const { value: vermifugado, errorMessage: vermifugadoError } = useField<string>('vermifugado')
+const { value: dataVermifugado, errorMessage: dataVermifugadoError } = useField<string>('dataVermifugado')
+const { value: vacina, errorMessage: vacinaError } = useField<string>('vacina')
+
+// Telefones
+const phones = ref<{ number: string }[]>([{ number: '' }])
 
 function addPhone() {
   phones.value.push({ number: '' })
@@ -258,38 +363,95 @@ function removePhone(index: number) {
   phones.value.splice(index, 1)
 }
 
+// Formata e limita o número em tempo real
+function formatPhoneNumberRaw(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 10) {
+    return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim()
+  } else {
+    return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim()
+  }
+}
 
-const rules = [v => v.length <= 300 || 'Máximo 300 caracteres']
+function onPhoneInput(index: number, event: Event) {
+  const input = event.target as HTMLInputElement
+  const oldValue = input.value
+  const onlyNumbers = oldValue.replace(/\D/g, '').slice(0, 11)
+  const newValue = formatPhoneNumberRaw(onlyNumbers)
 
-const textarea = ref({
-  ObservacoesGerais: ''
-})
+  const cursorPos = input.selectionStart || 0
 
-const items = ref([
-  'Item 1',
-  'Item 2',
-  'Item 3',
-  'Item 4',
-])
+  // Atualiza o v-model sem travar o backspace
+  phones.value[index].number = newValue
+
+  // Ajusta cursor de forma inteligente
+  nextTick(() => {
+    let newCursor = cursorPos
+
+    // Se usuário está apagando e o cursor está antes do final, mantém cursor
+    if (newValue.length < oldValue.length) {
+      newCursor = cursorPos
+    } else {
+      // Se adicionando, ajusta para a máscara
+      const diff = newValue.length - oldValue.length
+      newCursor = cursorPos + diff
+    }
+
+    if (newCursor < 0) newCursor = 0
+    if (newCursor > newValue.length) newCursor = newValue.length
+
+    input.setSelectionRange(newCursor, newCursor)
+  })
+}
+
+// Validação para números com até 2 casas decimais
+const validateDecimalInput = (event: Event) => {
+  const inputElement = event.target as HTMLInputElement;
+
+  // 1. Só dígitos
+  let digits = inputElement.value.replace(/\D/g, '');
+
+  // 2. Remove zeros à esquerda,
+  //    mas garante pelo menos “0” para não ficar string vazia
+  digits = digits.replace(/^0+/, '');
+  if (digits === '') digits = '0';
+
+  // 3. Limita a 8 dígitos (6 + 2)
+  if (digits.length > 8) digits = digits.slice(0, 8);
+
+  // 4. Monta o valor com vírgula
+  let formatted: string;
+  if (digits.length <= 2) {
+    // até 2 dígitos → centavos
+    formatted = '0,' + digits.padStart(2, '0');
+  } else {
+    const before = digits.slice(0, -2).slice(-6); // máximo 6
+    const after = digits.slice(-2);
+    formatted = `${before},${after}`;
+  }
+
+  // 5. Atualiza input / v‑model só se mudou
+  if (inputElement.value !== formatted) {
+    inputElement.value = formatted;
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+
+    const id = inputElement.id;
+    if (textInputs.value && id) textInputs.value[id] = formatted;
+  }
+};
+const textInputs = ref<Record<string, string>>({});
+const updateInput = (id: string, newValue: string) => {
+  textInputs.value[id] = newValue;
+};
+
+const textarea = ref({ ObservacoesGerais: '', vacinas: '' })
 
 const submit = handleSubmit(values => {
-  alert(JSON.stringify(values, null, 2))
+  alert(JSON.stringify({ ...values, phones: phones.value }, null, 2))
 })
 
-watch(
-  phones,
-  (newPhones) => {
-    newPhones.forEach((item, index) => {
-      const formatted = formatPhoneNumber(item.number);
-      if (formatted !== item.number) {
-        phones.value[index].number = formatted;
-      }
-    });
-  },
-  { deep: true }
-)
-
 </script>
+
 
 <style lang="scss">
 .v-slide-group {
