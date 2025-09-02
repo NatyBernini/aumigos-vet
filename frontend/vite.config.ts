@@ -13,7 +13,7 @@ dns.setDefaultResultOrder('verbatim');
 export default defineConfig({
   base:'/aumigos-vet/',
   build: {
-    outDir: '../dist',
+    outDir: '../docs',
   },
   plugins: [
     vue({
