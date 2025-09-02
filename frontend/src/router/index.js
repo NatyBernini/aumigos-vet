@@ -55,7 +55,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory('/aumigos-vet/'),
+  history: createWebHistory('/aumigos-vet/'),
    routes,
 })
 
