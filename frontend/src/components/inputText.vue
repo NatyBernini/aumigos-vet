@@ -1,28 +1,16 @@
 <template>
-  <div class="input-text-container">
-    <v-text-field
-      :label="label"
-      type="input"
-      :model-value="valueInput"
-      class="inputLocator"
-      @update:model-value="handleInput"
-      :class="{
+  <div class="input-text-container mb-4">
+    <v-text-field :label="label" :type="type" :model-value="valueInput" class="inputLocator"
+      @update:model-value="handleInput" :class="{
         'filled-class': valueInput,
         'error-field': showError
-      }"
-      :id="id"
-      :suffix="suffix"
-      validate-on="submit"
-      variant="outlined"
-      autocomplete="off"
-      :maxlength="maxLength !== 0 ? maxLength : undefined"
-      :rules="validationRules"
-      :disabled="disabled"
-      :error="showError"
-      :error-messages="errorMessage"
-      @blur="validateField"
-    />
-    <div v-if="maxLength && maxLength!== 0" class="char-counter">Caracteres {{ valueInput?.length || 0 }}/{{ maxLength }}</div>
+      }" :id="id" :suffix="suffix" :append-inner-icon="appendInnerIcon"
+      @click:append-inner="$emit('click:append-inner')" validate-on="submit" variant="outlined" autocomplete="off"
+      :maxlength="maxLength !== 0 ? maxLength : undefined" :rules="validationRules" :disabled="disabled"
+      :error="showError" :error-messages="errorMessage" @blur="validateField" />
+    <div v-if="maxLength && maxLength !== 0" class="char-counter">
+      Caracteres {{ valueInput?.length || 0 }}/{{ maxLength }}
+    </div>
   </div>
 </template>
 
@@ -57,6 +45,15 @@ export default {
       type: Boolean,
       default: false
     },
+    type: {
+      type: String,
+      default: 'text'
+    },
+    appendInnerIcon: {
+      type: String,
+      default: ''
+    },
+
     required: {
       type: Boolean,
       default: false
@@ -97,11 +94,17 @@ export default {
       if (this.isFieldRequired) {
         rules.push((v: any) => (v !== null && v !== undefined && String(v).trim().length > 0) || 'Campo obrigatório');
       }
+      if (this.type === 'email') {
+        rules.push((v: any) =>
+          !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'E-mail inválido'
+        );
+      }
       if (this.maxLength) {
         rules.push((v: any) => !v || v.length <= this.maxLength || `Máximo de ${this.maxLength} caracteres`);
       }
       return rules;
     }
+
   },
   watch: {
     valueInput() {
@@ -150,6 +153,7 @@ export default {
   max-width: 540px;
   border: none !important;
   border-radius: 10px !important;
+
   .v-input__details {
     position: absolute;
     transform: translateY(35px);
@@ -159,11 +163,13 @@ export default {
     color: #797979 !important;
     --v-field-border-opacity: 1;
   }
+
   .v-input__control {
     height: 40px !important;
     border-radius: 10px !important;
     border-color: rgb(207, 207, 207) !important;
     transition: border-color 0.3s ease;
+
     .v-label {
       color: rgb(var(--v-theme-placeholderCampo));
       font-family: Inter;
@@ -173,6 +179,7 @@ export default {
       line-height: 16px;
       opacity: 1;
     }
+
     .v-field--variant-outlined {
       border-radius: 10px !important;
       color: rgb(var(--v-theme-placeholderCampo));
@@ -183,6 +190,7 @@ export default {
         flex: 0 0 8px;
       }
     }
+
     .v-input.v-field .v-field--active {
       opacity: 1;
     }
@@ -193,6 +201,7 @@ export default {
       border: none !important;
     }
   }
+
   .v-field__input {
     padding: 8px 12px;
     min-height: auto;
@@ -206,10 +215,12 @@ export default {
     line-height: 16px;
     opacity: 1;
   }
+
   .v-field--variant-outlined.v-field--focused .v-field__outline {
     --v-field-border-width: 1px;
     color: var(--cinza-escuro, #797979);
   }
+
   .v-field--variant-outlined .v-label.v-field-label--floating {
     color: var(--cinza-texto, #797979) !important;
     --v-field-border-opacity: 1;

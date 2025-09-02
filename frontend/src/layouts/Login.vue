@@ -19,21 +19,24 @@
                         <!-- Coluna principal -->
                         <v-col cols="12" md="8" class="pa-4 coluna-scroll">
                             <div class="conteudo-centralizado">
-                               
-                                <h1 class="font-weight-bold mb-4">Bem-vindo de volta <img :src="Logo" alt="Logo" class="logo" /></h1>
+
+                                <h1 class="font-weight-bold mb-4">Bem-vindo de volta <img :src="Logo" alt="Logo"
+                                        class="logo" /></h1>
                                 <h2 class="mb-6">Login</h2>
 
                                 <v-form class="formulario-autenticacao" @submit.prevent>
-                                    <v-text-field v-model="email" label="E-mail" type="email"
-                                        append-inner-icon="mdi-email" class="mb-4" required />
+                                    <inputText label="E-mail*" classe="input-locador" type="text" required
+                                        v-model:valueInput="textInputs[`input-email-login`]" id="input-email"
+                                        :maxLength="0" />
 
-                                    <v-text-field v-model="senha" :type="showPassword ? 'text' : 'password'"
-                                        label="Senha" :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                                        @click:append-inner="showPassword = !showPassword" class="mb-2" required />
-
+                                        <inputText label="Senha*" classe="input-locador"
+                                            v-model:valueInput="textInputs[`input-senha-login`]" id="input-senha"
+                                            :type="showPasswordCadastro ? 'text' : 'password'"
+                                            :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
+                                            @click:append-inner="showPasswordCadastro = !showPasswordCadastro" required
+                                            :maxLength="0" />
                                     <div class="text-end mb-4">
-                                        <v-btn variant="text" color="primary" class="text-caption"
-                                            @click="onForgotPassword">
+                                        <v-btn variant="text" color="primary" class="text-caption">
                                             Esqueceu a senha?
                                         </v-btn>
                                     </div>
@@ -63,27 +66,31 @@
                         <!-- Coluna principal -->
                         <v-col cols="12" md="8" class="pa-4 coluna-scroll">
                             <div class="conteudo-centralizado">
-                                
-                                <h1 class="font-weight-bold mb-4">Bem-vindo <img :src="Logo" alt="Logo" class="logo" /></h1>
+
+                                <h1 class="font-weight-bold mb-4">Bem-vindo <img :src="Logo" alt="Logo" class="logo" />
+                                </h1>
                                 <h2 class="mb-6">Criar uma conta</h2>
 
                                 <v-form class="formulario-autenticacao" @submit.prevent>
-                                    <v-text-field v-model="nome" label="Nome Completo" append-inner-icon="mdi-account"
-                                        class="mb-4" required />
 
-                                    <v-text-field v-model="telefone" label="Telefone" append-inner-icon="mdi-phone"
-                                        class="mb-4" required />
+                                    <inputText label="Nome Completo*" type="text" required
+                                        v-model:valueInput="textInputs['input-nome']" id="input-nome"
+                                        @update:valueInput="(value: any) => updateInput('input-nome', value)"
+                                        :maxLength="0" />
+                                        <inputText label="Telefone*" classe="input-locador" type="text" required
+                                            @input="onPhoneInput($event)"
+                                            v-model:valueInput="textInputs['input-telefone']" :maxLength="0" />
+                                        <inputText label="E-mail*" classe="input-locador" type="email" required
+                                            v-model:valueInput="textInputs[`input-email`]" id="input-email"
+                                            :maxLength="0" />
 
-                                    <v-text-field v-model="emailCadastro" label="E-mail" type="email"
-                                        append-inner-icon="mdi-email" class="mb-4" required />
-
-                                    <v-text-field v-model="senhaCadastro" label="Senha"
-                                        :type="showPasswordCadastro ? 'text' : 'password'"
-                                        :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
-                                        @click:append-inner="showPasswordCadastro = !showPasswordCadastro" class="mb-4"
-                                        required />
-
-                                    <v-btn color="secondary" block class="mb-4" @click="onCadastrar">
+                                        <inputText label="Senha*" classe="input-locador"
+                                            v-model:valueInput="textInputs[`input-senha`]" id="input-senha"
+                                            :type="showPasswordCadastro ? 'text' : 'password'"
+                                            :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
+                                            @click:append-inner="showPasswordCadastro = !showPasswordCadastro" required
+                                            :maxLength="0" />
+                                    <v-btn color="secondary" block class="mb-4 mt-6">
                                         Cadastrar
                                     </v-btn>
                                 </v-form>
@@ -100,8 +107,8 @@
                                         Login
                                     </v-btn>
                                 </div>
-                                
-                                  
+
+
                             </div>
                         </v-col>
 
@@ -116,30 +123,63 @@
     </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script lang="ts" setup>
+import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router';
 import BannerCadastro from '../assets/Banner.png'
 import BannerLogin from '../assets/BannerGatos2.png'
 import Logo from '../assets/logoAumigo.png'
 
+// COMPONENTES
+import inputText from '@/components/inputText.vue'
+
+// SERVICES
+import { formatPhoneNumberRaw } from '@/utils/formaUtils';
+
 const router = useRouter();
 
 const step = ref(0)
-// Login
-const email = ref('')
-const senha = ref('')
-const showPassword = ref(false)
 
-// Cadastro
-const nome = ref('')
-const telefone = ref('')
-const senhaCadastro = ref('')
-const emailCadastro = ref('')
+const textInputs = ref<Record<string, string>>({});
+const updateInput = (id: string, newValue: string) => {
+    textInputs.value[id] = newValue;
+};
+
 const showPasswordCadastro = ref(false)
 
 const onLogin = async () => {
     router.push({ name: 'Clinica' });
+}
+
+function onPhoneInput(event: Event) {
+    const input = event.target as HTMLInputElement
+    const oldValue = input.value
+    const onlyNumbers = oldValue.replace(/\D/g, '').slice(0, 11)
+    const newValue = formatPhoneNumberRaw(onlyNumbers)
+
+    const cursorPos = input.selectionStart || 0
+
+    // Atualiza o v-model sem travar o backspace
+    textInputs.value['input-telefone'] = newValue
+
+    // Ajusta cursor de forma inteligente
+    nextTick(() => {
+        let newCursor = cursorPos
+
+        // Se usuário está apagando e o cursor está antes do final, mantém cursor
+        if (newValue.length < oldValue.length) {
+            newCursor = cursorPos
+        } else {
+            // Se adicionando, ajusta para a máscara
+            const diff = newValue.length - oldValue.length
+            newCursor = cursorPos + diff
+        }
+
+        if (newCursor < 0) newCursor = 0
+        if (newCursor > newValue.length) newCursor = newValue.length
+
+        input.setSelectionRange(newCursor, newCursor)
+    })
 }
 
 </script>

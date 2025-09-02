@@ -35,46 +35,67 @@
                                             <!-- Informações Básicas -->
                                             <v-tabs-window-item value="infoBasica" class="pt-5">
                                                 <p class="mb-4">Informações Básicas</p>
-                                                <v-text-field v-model="nome" label="Nome"
-                                                    append-inner-icon="mdi-account" class="mb-4" required />
-                                                <v-text-field v-model="telefone" label="Telefone"
-                                                    append-inner-icon="mdi-phone" class="mb-4" required />
-                                                <v-text-field v-model="cnpj" label="CNPJ"
-                                                    append-inner-icon="mdi-file-document" class="mb-4" required />
-                                                <v-text-field v-model="email" label="E-mail" type="email"
-                                                    append-inner-icon="mdi-email" class="mb-4" required />
+
+                                                <inputText label="Nome*" classe="mb-4"
+                                                    v-model:valueInput="textInputs['input-nome']" id="input-nome"
+                                                    append-inner-icon="mdi-account" required :maxLength="0" />
+
+                                                <inputText label="Telefone*" classe="input-locador" type="text" required
+                                                    @input="onPhoneInput($event)"
+                                                    v-model:valueInput="textInputs['input-telefone']" :maxLength="0" />
+                                                <inputText label="CNPJ*" classe="mb-4"
+                                                    v-model:valueInput="textInputs['input-cnpj']" id="input-cnpj"
+                                                    append-inner-icon="mdi-file-document" required :maxLength="0" />
+                                                <inputText label="E-mail*" classe="mb-4"
+                                                    v-model:valueInput="textInputs['input-email']" id="input-email"
+                                                    type="email" append-inner-icon="mdi-email" required
+                                                    :maxLength="0" />
                                             </v-tabs-window-item>
 
                                             <!-- Endereço -->
                                             <v-tabs-window-item value="endereco" class="pt-5">
                                                 <p class="mb-4">Informações de Endereço</p>
                                                 <v-col>
-                                                        <v-select v-model="estadoSelecionado" :items="estados"
-                                                            item-value="value" label="Estado" dense outlined clearable class="mb-4"
-                                                             />
+                                                    <!-- ESTADO -->
+                                                    <multipleCombobox v-model="estadoSelecionado" :items="listEstados"
+                                                        :extra-items="estados" label="Estado*" id="select-estado"
+                                                        :isMultipleSelect="false" :isRequired="true" clearable
+                                                        class="select-estado" />
 
-                                                        <v-select v-model="cidadeSelecionada" :items="cidades"
-                                                            item-text="nome" item-value="id" label="Cidade" dense
-                                                            outlined :rules="[required]" :disabled="!estadoSelecionado"
-                                                            clearable  class="mb-4" />
-                                                    
+                                                    <!-- CIDADE -->
+                                                    <multipleCombobox v-model="cidadeSelecionada" :items="listCidade"
+                                                        :extra-items="cidades" item-text="nome" item-value="id"
+                                                        label="Cidade*" id="select-cidade" :isMultipleSelect="false"
+                                                        :isRequired="true" :disabled="!estadoSelecionado" clearable />
 
-                                                        <v-text-field v-model="cep" label="CEP" maxlength="9"
-                                                            placeholder="00000-000" @input="onInputCep" class="mb-4"
-                                                             />
-                                                  
 
-                                                        <v-text-field v-model="bairro" :rules="required" label="Bairro*" class="mb-4"
-                                                           />
-                                                        <v-text-field v-model="rua" :rules="required" label="Rua*" class="mb-4"
-                                                           />
-                                                
+                                                    <inputText label="CEP*" classe="mb-4" placeholder="00000-000"
+                                                        v-model:valueInput="textInputs['input-cep']" id="input-nome"
+                                                        append-inner-icon="mdi-account" required :maxLength="0"
+                                                        @input="onInputCep" />
 
-                                                        <v-text-field v-model="numero" :rules="required" label="N*" class="mb-4"
-                                                            type="number"  />
-                                                        <v-text-field v-model="complemento" :rules="required"
-                                                            label="Complemento*"  />
-                                                 
+                                                    <inputText label="Bairro*" classe="mb-4"
+                                                        v-model:valueInput="textInputs['input-bairro']"
+                                                        id="input-bairro" append-inner-icon="mdi-account" required
+                                                        :maxLength="0" />
+
+                                                    <inputText label="Rua*" classe="mb-4"
+                                                        v-model:valueInput="textInputs['input-rua']" id="input-rua"
+                                                        append-inner-icon="mdi-account" required :maxLength="0" />
+
+
+
+                                                    <inputText label="Número*" :type="'number'"
+                                                        v-model:valueInput="textInputs['input-numero']"
+                                                        id="input-numero" append-inner-icon="mdi-account" required
+                                                        :maxLength="0" />
+
+                                                    <inputText label="Complemento*"
+                                                        v-model:valueInput="textInputs['input-complemento']"
+                                                        id="input-complemento" append-inner-icon="mdi-account" required
+                                                        :maxLength="0" />
+
+
                                                 </v-col>
                                             </v-tabs-window-item>
 
@@ -135,10 +156,15 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, nextTick } from 'vue'
 import BannerLogin from '../assets/BannerClinicaVet.png'
-import { getCidadesPorEstado, getEstados, getEnderecoPorCep } from '../services/ibge'
+import { getCidadesPorEstado, getEstados } from '../services/ibge'
 import { formatCep, limparCep, buscarEnderecoViaCep } from '../utils/cepUtils'
 import Logo from '../assets/logoAumigos.png'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
+import { formatPhoneNumberRaw } from '@/utils/formaUtils'
+
+// COMPONENTES
+import inputText from '@/components/inputText.vue'
+import multipleCombobox from '@/components/multipleCombobox.vue'
 
 // Regras
 const required = [(v: string) => !!v || 'Campo obrigatório']
@@ -147,28 +173,26 @@ const step = ref(0)
 const tab = ref('infoBasica')
 const dialogImagem = ref(false)
 
-
 // Dados do form
-const nome = ref('')
-const telefone = ref('')
-const email = ref('')
-const cnpj = ref('')
-const estados = ref<Array<any>>([])
-const cidades = ref<Array<any>>([])
-const bairro = ref('')
-const rua = ref('')
+const textInputs = ref<Record<string, string>>({})
+const estados = ref<Array<{ id: string; descricao: string }>>([])
+const listEstados = ref<string[]>([])
+const cidades = ref<Array<{ id: string; descricao: string }>>([])
+const listCidade = ref<string[]>([])
+
 const numero = ref('')
 const complemento = ref('')
 const cep = ref('')
 
-const estadoSelecionado = ref<string | null>(null)
-const cidadeSelecionada = ref<string | null>(null)
+// Agora selecionados guardam o objeto, não string
+const estadoSelecionado = ref<string | undefined>(undefined)
+const cidadeSelecionada = ref<string | undefined>(undefined)
 
 // Foto
-const foto = ref<File | null>(null)
-const fotoPreview = ref<string | null>(null)
+const foto = ref<File | undefined>(undefined)
+const fotoPreview = ref<string | undefined>(undefined)
 
-const router = useRouter();
+const router = useRouter()
 
 watch(foto, (novoArquivo) => {
     if (novoArquivo) {
@@ -178,73 +202,132 @@ watch(foto, (novoArquivo) => {
         }
         reader.readAsDataURL(novoArquivo as File)
     } else {
-        fotoPreview.value = null
+        fotoPreview.value = undefined
     }
 })
 
-function onInputCep(e: Event) {
+function onPhoneInput(event: Event) {
+    const input = event.target as HTMLInputElement
+    const oldValue = input.value
+    const onlyNumbers = oldValue.replace(/\D/g, '').slice(0, 11)
+    const newValue = formatPhoneNumberRaw(onlyNumbers)
+
+    const cursorPos = input.selectionStart || 0
+    textInputs.value['input-telefone'] = newValue
+
+    nextTick(() => {
+        let newCursor = cursorPos
+        if (newValue.length < oldValue.length) {
+            newCursor = cursorPos
+        } else {
+            const diff = newValue.length - oldValue.length
+            newCursor = cursorPos + diff
+        }
+        if (newCursor < 0) newCursor = 0
+        if (newCursor > newValue.length) newCursor = newValue.length
+        input.setSelectionRange(newCursor, newCursor)
+    })
+}
+
+async function onInputCep(e: Event) {
     const input = e.target as HTMLInputElement
     const valorFormatado = formatCep(input.value)
     cep.value = valorFormatado
 
     const cepLimpo = limparCep(valorFormatado)
     if (cepLimpo.length === 8) {
-        buscarEnderecoViaCep(cepLimpo)
-            .then(async data => {
-                rua.value = data.logradouro || ''
-                bairro.value = data.bairro || ''
-                estadoSelecionado.value = `${data.estado} (${data.uf})`
+        try {
+            const data = await buscarEnderecoViaCep(cepLimpo)
 
-                // Espera o estado atualizar e o select habilitar
+            textInputs.value['input-rua'] = data.logradouro || ''
+            textInputs.value['input-bairro'] = data.bairro || ''
+
+            // Procura o estado na lista de estados
+            const estadoEncontrado = estados.value.find(
+                (estado: { id: string; descricao: string }) =>
+                    estado.descricao === `${data.estado} (${data.uf})`
+            )
+
+            if (estadoEncontrado) {
+                estadoSelecionado.value = estadoEncontrado.descricao
+
+                // Espera o nextTick para garantir que o v-model do combobox atualize
                 await nextTick()
 
-                cidades.value = [data.localidade]
-                cidadeSelecionada.value = data.localidade
-            })
-            .catch(() => {
-                rua.value = ''
-                bairro.value = ''
-            })
+                // Carrega as cidades do estado encontrado
+                const resposta = await getCidadesPorEstado(estadoEncontrado.id)
+                listCidade.value = resposta.map((cidade: any) => `${cidade.nome}`)
+                cidades.value = resposta.map((cidade: any) => ({
+                    id: cidade.nome,
+                    descricao: cidade.nome,
+                }))
+
+                // Seleciona a cidade retornada pelo CEP
+                const cidadeEncontrada = cidades.value.find(
+                    (c: { id: string; descricao: string }) => c.descricao === data.localidade
+                )
+                cidadeSelecionada.value = cidadeEncontrada ? cidadeEncontrada.descricao : undefined
+            }
+        } catch {
+            textInputs.value['input-rua'] = ''
+            textInputs.value['input-bairro'] = ''
+            estadoSelecionado.value = undefined
+            cidadeSelecionada.value = undefined
+        }
     } else {
-        rua.value = ''
-        bairro.value = ''
+        textInputs.value['input-rua'] = ''
+        textInputs.value['input-bairro'] = ''
+        estadoSelecionado.value = undefined
+        cidadeSelecionada.value = undefined
     }
 }
 
+
 async function carregarEstados() {
     const resposta = await getEstados()
-    estados.value = resposta.map((estado: any) => (
-        `${estado.nome} (${estado.sigla})`
-    ))
+    listEstados.value = resposta.map((estado: any) => (`${estado.nome} (${estado.sigla})`))
+    estados.value = resposta.map((estado: any) => ({
+        id: estado.sigla,
+        descricao: `${estado.nome} (${estado.sigla})`,
+    }))
 }
 
 async function carregarCidades() {
     if (estadoSelecionado.value) {
-        const match = estadoSelecionado.value.match(/\(([^)]+)\)/)
-        const siglaEstado = match ? match[1] : null
+        // Procura o estado na lista de estados pelo campo descricao
+        const estadoEncontrado = estados.value.find(
+            (estado: { id: string; descricao: string }) => estado.descricao === estadoSelecionado.value
+        )
 
-        if (siglaEstado) {
-            const resposta = await getCidadesPorEstado(siglaEstado)
-            cidades.value = resposta.map((cidade: any) => `${cidade.nome}`)
+        const estadoId = estadoEncontrado ? estadoEncontrado.id : null
+        console.log("Estado selecionado ID:", estadoId)
+
+        if (estadoId) {
+            const resposta = await getCidadesPorEstado(estadoId)
+            listCidade.value = resposta.map((cidade: any) => (`${cidade.nome}`))
+            cidades.value = resposta.map((cidade: any) => ({
+                id: cidade.id,
+                descricao: cidade.nome,
+            }))
         } else {
             cidades.value = []
-            cidadeSelecionada.value = null
+            cidadeSelecionada.value = undefined
         }
     } else {
         cidades.value = []
-        cidadeSelecionada.value = null
+        cidadeSelecionada.value = undefined
     }
 }
 
 watch(estadoSelecionado, () => {
     if (estadoSelecionado.value) {
-        cidadeSelecionada.value = null
+        cidadeSelecionada.value = undefined
         carregarCidades()
-    }
-    if (estadoSelecionado.value === null) {
-        cidadeSelecionada.value = null
+    } else {
+        cidadeSelecionada.value = undefined
     }
 })
+
 
 onMounted(async () => {
     carregarEstados()
@@ -252,22 +335,17 @@ onMounted(async () => {
 
 const submit = () => {
     console.log('Form enviado', {
-        nome: nome.value,
-        telefone: telefone.value,
-        email: email.value,
-        cnpj: cnpj.value,
-        endereco: {
-            estado: estadoSelecionado.value,
-            cidade: cidadeSelecionada.value,
-            cep: cep.value,
-            bairro: bairro.value,
-            rua: rua.value,
-            numero: numero.value,
-            complemento: complemento.value
-        },
-        foto: foto.value
+        estado: estadoSelecionado.value,
+        cidade: cidadeSelecionada.value,
+        cep: cep.value,
+        rua: textInputs.value['input-rua'],
+        bairro: textInputs.value['input-bairro'],
+        numero: numero.value,
+        complemento: complemento.value,
+        telefone: textInputs.value['input-telefone'],
+        foto: foto.value,
     })
-    router.push({ name: 'Planos' });
+    router.push({ name: 'Planos' })
 }
 </script>
 
@@ -310,21 +388,25 @@ const submit = () => {
 }
 
 .auth-card {
-  max-width: 60%;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  border-radius: 20px;
-  background-color: white;
+    max-width: 60%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    background-color: white;
 
-  @media (max-width: 960px) {
-    max-width: 90%;   /* ocupar mais em tablets */
-    height: auto;     /* evita corte */
-  }
+    @media (max-width: 960px) {
+        max-width: 90%;
+        /* ocupar mais em tablets */
+        height: auto;
+        /* evita corte */
+    }
 
-  @media (max-width: 600px) {
-    max-width: 100%;  /* ocupar tela toda no celular */
-    border-radius: 0; /* fica full screen, estilo app */
-    height: auto;
-  }
+    @media (max-width: 600px) {
+        max-width: 100%;
+        /* ocupar tela toda no celular */
+        border-radius: 0;
+        /* fica full screen, estilo app */
+        height: auto;
+    }
 }
 
 .welcome-side-login {
@@ -366,7 +448,7 @@ const submit = () => {
 }
 
 .cursor-pointer {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .logo {
@@ -404,41 +486,43 @@ const submit = () => {
 
 /* título responsivo */
 h1 {
-  font-size: clamp(1.2rem, 4vw, 1.8rem);
-  text-align: center;
-  word-break: break-word; /* quebra se for muito longo */
-  white-space: normal;    /* permite quebra */
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    text-align: center;
+    word-break: break-word;
+    /* quebra se for muito longo */
+    white-space: normal;
+    /* permite quebra */
 }
 
 /* Tabs com rolagem horizontal em telas pequenas */
 .v-tabs {
-  overflow-x: auto;
-  flex-wrap: nowrap;
-  scrollbar-width: thin;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
 }
 
 .v-tab {
-  flex: 0 0 auto; /* não encolhe, permite scroll */
+    flex: 0 0 auto;
+    /* não encolhe, permite scroll */
 }
 
 /* Formulário ocupando largura total no celular */
 .v-form.formulario-autenticacao {
-  width: 60%;
+    width: 60%;
 
-  @media (max-width: 960px) {
-    width: 80%;
-  }
+    @media (max-width: 960px) {
+        width: 80%;
+    }
 
-  @media (max-width: 600px) {
-    width: 90%;
-  }
+    @media (max-width: 600px) {
+        width: 90%;
+    }
 }
 
 /* Coluna principal com rolagem interna */
 .coluna-scroll {
-  height: 100%;
-  overflow-y: auto;
-  padding-bottom: 2rem;
+    height: 100%;
+    overflow-y: auto;
+    padding-bottom: 2rem;
 }
-
 </style>
