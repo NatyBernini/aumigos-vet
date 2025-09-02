@@ -12,6 +12,9 @@ dns.setDefaultResultOrder('verbatim');
 // https://vitejs.dev/config/
 export default defineConfig({
   base:'/aumigos-vet/',
+  build: {
+    outDir: '../dist',
+  },
   plugins: [
     vue({
       template: {
