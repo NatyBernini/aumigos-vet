@@ -8,12 +8,7 @@
           Pacientes / <span class="page-active">Lista de Pacientes</span>
         </span>
 
-    <v-data-table
-  :headers="headers"
-  :items="paginatedPacientes"
-  :items-per-page="-1"
-  class="pt-15"
->
+        <v-data-table :headers="headers" :items="paginatedPacientes" :items-per-page="-1" class="pt-15">
 
           <!-- Colunas personalizadas -->
           <template #item.nome="{ item }">
@@ -29,7 +24,8 @@
             {{ item.status }}
           </template>
           <template #item.actions="{ item }">
-            <v-btn icon @click="visualizar(item)" color="#434343" variant="text" :to="{ name: 'PacienteVisualizar', params: { id: item.id } }">
+            <v-btn icon @click="visualizar(item)" color="#434343" variant="text"
+              :to="{ name: 'PacienteVisualizar', params: { id: item.id } }">
               <v-icon>mdi-eye</v-icon>
             </v-btn>
             <v-btn icon @click="editar(item)" color="#434343" variant="text">
@@ -46,7 +42,7 @@
               </span>
 
               <!-- Navegação manual -->
-             <div class="container-pagination">
+              <div class="container-pagination">
                 <v-btn class="btn-pagination" icon @click="prevPage" :disabled="page <= 1">
                   <v-icon>mdi-chevron-left</v-icon>
                 </v-btn>
@@ -57,15 +53,8 @@
 
 
               <!-- Itens por página -->
-              <v-select
-                v-model="itemsPerPage"
-                :items="[5, 10, 20]"
-                label="Itens por página"
-                density="compact"
-                hide-details
-                variant="outlined"
-                style="max-width: 90px"
-              />
+              <v-select v-model="itemsPerPage" :items="[5, 10, 20]" label="Itens por página" density="compact"
+                hide-details variant="outlined" style="max-width: 90px" />
             </div>
           </template>
         </v-data-table>
@@ -169,13 +158,13 @@ thead {
     }
   }
 
-  tr > th:first-child {
+  tr>th:first-child {
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
     overflow: hidden;
   }
 
-  tr > th:last-child {
+  tr>th:last-child {
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
     overflow: hidden;
@@ -185,7 +174,7 @@ thead {
 .v-btn {
   transition: none !important;
 
-  &:hover > .v-btn__overlay {
+  &:hover>.v-btn__overlay {
     opacity: transparent !important;
     background: transparent !important;
   }
@@ -200,8 +189,8 @@ thead {
 }
 
 .btn-pagination.v-btn--icon.v-btn--density-default {
-  width: 30px!important;
-  height: 30px!important;
+  width: 30px !important;
+  height: 30px !important;
   --v-btn-size: 15px;
 }
 
@@ -219,9 +208,8 @@ thead {
   flex-wrap: wrap;
   gap: 1rem;
 
-  > span {
+  >span {
     font-weight: 500;
   }
 }
 </style>
-

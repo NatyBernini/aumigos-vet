@@ -1,8 +1,8 @@
 <template>
   <v-tooltip
-    :disabled="isTooltipDisabled"
-    :text="formattedTooltipText"
-    open-delay="200"
+    :disabled="isTooltip"
+    :text="formatarTooltip"
+    open-delay="300"
     close-delay="0"
     max-width="300"
     location="bottom"
@@ -10,258 +10,263 @@
   >
     <template v-slot:activator="{ props }">
       <v-combobox
-        v-model="internalValue"
-        :items="localItems"
+        v-model="valorCombo"
+        :items="listItens"
         :label="label"
         :placeholder="placeholder"
-        :editable="isMultipleSelect"
+        :editable="isMultiple"
         @keydown="handleKeydown"
         v-bind="{ ...$attrs, ...props }"
         @update:modelValue="onInput"
-        @focus="(isFocused = true), (isTooltipDisabled = true)"
+        @focus="(estaPreenchido = true), (isTooltip = true)"
         @blur="handlerBlur"
         density="compact"
         :id="id"
         dense
         rounded="lg"
         :menu-icon="
-          isCustomCombobox
-            ? isFocused
+          isCustom
+            ? estaPreenchido
               ? 'mdi-magnify'
-              : internalValue.length
+              : valorCombo.length
               ? ''
               : 'mdi-chevron-down'
             : 'mdi-chevron-down'
         "
         :class="{
-          'filled-combobox': isFilled,
-          'custom-combobox': isCustomCombobox,
-          'disabled-combobox': !isMultipleSelect
+          'combo-preenchido': comboPreenchido,
+          'combo-customizavel': isCustom,
+          'disabled-combobox': !isMultiple
         }"
         :menu-props="{ id: 'list-combo-box-' + id }"
         autocomplete="off"
-        :isRequired="isRequired"
-        :rules="isRequired ? [requiredRule] : []"
-        :error-messages="errorMessages"
+        :obrigatorio="obrigatorio"
+        :rules="obrigatorio ? [requiredRule] : []"
+        :error-messages="msgErro"
         :data-complemento="idEncontrado"
       ></v-combobox>
     </template>
   </v-tooltip>
 </template>
-<script lang="ts">
-import type { PropType } from 'vue';
-export default {
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import type { PropType } from 'vue'
+
+defineOptions({
   name: 'MultipleCombobox',
-  props: {
-    modelValue: {
-      type: [Array, String],
-      default: () => []
-    },
-    extraItems: {
-      type: Array as any,
-      default: () => [] // Lista extra como prop
-    },
-    items: {
-      type: Array as any,
-      required: true
-    },
-    label: {
-      type: String,
-      required: false
-    },
-    placeholder: {
-      type: String,
-      required: false
-    },
-    customClass: {
-      type: String,
-      default: ''
-    },
-    tooltip: {
-      type: String
-    },
-    // TRUE: estilo de multiselect / FALSE: estilo padrão de select
-    isCustomCombobox: {
-      type: Boolean,
-      default: false
-    },
-    id: {
-      type: String,
-      required: true
-    },
-    // Multipla seleção TRUE: permite / FALSE: não permite
-    isMultipleSelect: {
-      type: Boolean,
-      default: true
-    },
-    // OBRIGATORIEDADE DE SELEÇÃO TRUE: obrigatório / FALSE: não obrigatório
-    isRequired: {
-      type: Boolean,
-      default: false
-    },
-    dataComplemento: {
-      type: Array as PropType<number[] | null>,
-      default: null
-    }
+})
+
+const props = defineProps({
+  modelValue: {
+    type: [Array, String] as PropType<string[] | string>,
+    default: () => [],
   },
-  data() {
-    return {
-      idEncontrado: null as number[] | null,
-      internalValue: this.modelValue,
-      localItems: [...this.items],
-      isFocused: false, // Estado para controlar o foco
-      isTooltipDisabled: false, // Estado para controlar a exibição do tooltip
-
-      errorMessages: [] as string[],
-      requiredRule: (value: string | unknown[]) => {
-        if (Array.isArray(value) && value.length === 0) {
-          return 'Atenção, campo obrigatório!';
-        } else if (typeof value === 'string' && !value) {
-          return 'Atenção, campo obrigatório!';
-        }
-        return true;
-      }
-    };
+  extraItems: {
+    type: Array as PropType<any[]>,
+    default: () => [],
   },
-  mounted() {
-    if (this.dataComplemento) {
-      if (Array.isArray(this.dataComplemento) && this.dataComplemento.every((el) => typeof el === 'number')) {
-        this.idEncontrado = this.dataComplemento;
-      } else {
-        console.warn('dataComplemento não é um array de números válido');
-        this.idEncontrado = null;
-      }
-    }
+  items: {
+    type: Array as PropType<any[]>,
+    required: true,
   },
-
-  methods: {
-    onInput(val: any) {
-      const newValue = Array.isArray(val) ? val[val.length - 1] : val;
-      // const newValue = val[val.length - 1];
-      this.$emit('update:modelValue', val);
-
-      this.$nextTick(() => {
-        if (this.isRequired) {
-          const isValid = this.requiredRule(this.internalValue);
-          if (isValid === true) {
-            this.errorMessages = []; // Limpa as mensagens de erro
-          } else {
-            this.errorMessages = [isValid as string]; // Adiciona a mensagem de erro
-          }
-        }
-      });
-
-      if (this.isMultipleSelect) {
-        const idsEncontrados: number[] = [];
-        if (Array.isArray(this.internalValue)) {
-          this.internalValue.forEach((descricao: any) => {
-            // Encontra o item cujo 'descricao' corresponde ao valor da opção
-            const item = this.extraItems.find((item: { descricao: any }) => item.descricao === descricao);
-
-            // Se o item for encontrado, adiciona seu id ao array de IDs
-            if (item) {
-              idsEncontrados.push(item.id);
-            }
-          });
-        }
-
-        this.idEncontrado = idsEncontrados.length > 0 ? idsEncontrados : null;
-      } else {
-        // CASOS ONDE NÃO É MULTIPLESELECT
-        const item = this.extraItems.find(
-          (item: { descricao: string | any[] }) => item.descricao === this.internalValue
-        );
-
-        this.idEncontrado = item ? item.id : null;
-      }
-    },
-    handlerBlur() {
-      this.isFocused = false;
-      if (this.internalValue && this.internalValue.length > 0) {
-        this.isTooltipDisabled = false;
-      }
-    },
-    handleKeydown(event: KeyboardEvent) {
-      // Bloqueia a digitação
-      if (!this.isMultipleSelect) {
-        event.preventDefault();
-      }
-    }
+  label: {
+    type: String,
+    required: false,
   },
-
-  watch: {
-    modelValue: {
-      immediate: true, // executa também na montagem inicial
-      handler(val) {
-        this.internalValue = val;
-
-        if (Array.isArray(val)) {
-          this.isTooltipDisabled = val.length === 0;
-        } else {
-          this.isTooltipDisabled = !val;
-        }
-
-        const idsEncontrados: any = [];
-
-        if (this.isMultipleSelect && Array.isArray(val)) {
-          val.forEach((descricao) => {
-            const item = this.extraItems.find((item: any) => item.descricao === descricao);
-            if (item) {
-              idsEncontrados.push(item.id);
-            }
-          });
-
-          this.idEncontrado = idsEncontrados.length > 0 ? idsEncontrados : null;
-        } else {
-          const item = this.extraItems.find((item: any) => item.descricao === val);
-          this.idEncontrado = item ? item.id : null;
-        }
-      }
-    },
-
-    items(newItems) {
-      this.localItems = [...newItems];
-    },
-
-    internalValue(newValue) {
-      if (Array.isArray(newValue)) {
-        this.isTooltipDisabled = newValue.length === 0;
-      } else {
-        this.isTooltipDisabled = !newValue;
-      }
-    }
+  placeholder: {
+    type: String,
+    required: false,
   },
+  tooltip: {
+    type: String,
+  },
+  isCustom: {
+    type: Boolean,
+    default: false,
+  },
+  id: {
+    type: String,
+    required: true,
+  },
+  isMultiple: {
+    type: Boolean,
+    default: true,
+  },
+  obrigatorio: {
+    type: Boolean,
+    default: false,
+  },
+  dataComplemento: {
+    type: Array as PropType<number[] | null>,
+    default: null,
+  },
+})
 
-  computed: {
-    isFilled() {
-      return this.internalValue && this.internalValue.length > 0;
-    },
-    formattedTooltipText(): string {
-      if (Array.isArray(this.internalValue)) {
-        // Concatena os valores do array em uma string
+const emit = defineEmits(['update:modelValue'])
 
-        return this.internalValue.join(', ');
-      }
+/**
+ * VARIÁVEIS
+ */
+const idEncontrado = ref<number[] | number | null>(null)
+const valorCombo = ref<any>(props.modelValue)
+const listItens = ref([...props.items])
+const estaPreenchido = ref(false)
+const isTooltip = ref(false)
+const msgErro = ref<string[]>([])
 
-      return this.internalValue as string;
+/**
+ * REGRAS
+ */
+const requiredRule = (value: string | unknown[]) => {
+  if (Array.isArray(value) && value.length === 0) {
+    return 'Campo obrigatório!'
+  } else if (typeof value === 'string' && !value) {
+    return 'Campo obrigatório!'
+  }
+  return true
+}
 
-      // if (Array.isArray(this.internalValue)) {
-      //   // Concatena os valores do array em uma string
-      //   return this.internalValue.join(', ');
-      // }
+// ----------------------
+// Lifecycle
+// ----------------------
+onMounted(() => {
+  if (props.dataComplemento) {
+    if (
+      Array.isArray(props.dataComplemento) &&
+      props.dataComplemento.every((el) => typeof el === 'number')
+    ) {
+      idEncontrado.value = props.dataComplemento
+    } else {
+      console.warn('dataComplemento não é um array de números válido')
+      idEncontrado.value = null
     }
   }
-};
+})
+
+/**
+ * METHODS
+ */
+function onInput(val: any) {
+  const newValue = Array.isArray(val) ? val[val.length - 1] : val
+  emit('update:modelValue', val)
+
+  nextTick(() => {
+    if (props.obrigatorio) {
+      const isValid = requiredRule(valorCombo.value)
+      if (isValid === true) {
+        msgErro.value = []
+      } else {
+        msgErro.value = [isValid as string]
+      }
+    }
+  })
+
+  if (props.isMultiple) {
+    const idsEncontrados: number[] = []
+    if (Array.isArray(valorCombo.value)) {
+      valorCombo.value.forEach((descricao: any) => {
+        const item = props.extraItems.find(
+          (item: { descricao: any }) => item.descricao === descricao,
+        )
+        if (item) {
+          idsEncontrados.push(item.id)
+        }
+      })
+    }
+    idEncontrado.value = idsEncontrados.length > 0 ? idsEncontrados : null
+  } else {
+    const item = props.extraItems.find(
+      (item: { descricao: string | any[] }) =>
+        item.descricao === valorCombo.value,
+    )
+    idEncontrado.value = item ? item.id : null
+  }
+}
+
+function handlerBlur() {
+  estaPreenchido.value = false
+  if (valorCombo.value && valorCombo.value.length > 0) {
+    isTooltip.value = false
+  }
+}
+
+function handleKeydown(event: KeyboardEvent) {
+  if (!props.isMultiple) {
+    event.preventDefault()
+  }
+}
+
+/**
+ * WATCH
+ */
+watch(
+  () => props.modelValue,
+  (val) => {
+    valorCombo.value = val
+    if (Array.isArray(val)) {
+      isTooltip.value = val.length === 0
+    } else {
+      isTooltip.value = !val
+    }
+
+    const idsEncontrados: any[] = []
+    if (props.isMultiple && Array.isArray(val)) {
+      val.forEach((descricao) => {
+        const item = props.extraItems.find(
+          (item: any) => item.descricao === descricao,
+        )
+        if (item) {
+          idsEncontrados.push(item.id)
+        }
+      })
+      idEncontrado.value = idsEncontrados.length > 0 ? idsEncontrados : null
+    } else {
+      const item = props.extraItems.find((item: any) => item.descricao === val)
+      idEncontrado.value = item ? item.id : null
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  () => props.items,
+  (newItems) => {
+    listItens.value = [...newItems]
+  },
+)
+
+watch(valorCombo, (newValue) => {
+  if (Array.isArray(newValue)) {
+    isTooltip.value = newValue.length === 0
+  } else {
+    isTooltip.value = !newValue
+  }
+})
+
+/**
+ * COMPUTED
+ */
+const comboPreenchido = computed(() => {
+  return valorCombo.value && valorCombo.value.length > 0
+})
+
+const formatarTooltip = computed((): string => {
+  if (Array.isArray(valorCombo.value)) {
+    return valorCombo.value.join(', ')
+  }
+  return valorCombo.value as string
+})
 </script>
+
 
 <style lang="scss">
 
 /* Tooltip */
 .v-tooltip > .v-overlay__content {
-  background-color: rgb(var(--v-theme-grayBgTooltip)) !important;
-  color: rgb(var(--v-theme-grayTextTooltip)) !important;
+  background-color: #f1f1f1 !important;
+  color: #6f6f6f !important;
   border-radius: 8px !important;
-  font-family: Inter;
+  font-family:  'Poppins';
   font-size: 12px;
   font-style: normal;
   font-weight: 500;
@@ -283,35 +288,34 @@ textarea {
 }
 
 /* Ícones em comboboxes */
-.custom-combobox i.mdi-close,
-.custom-combobox i.mdi-magnify {
-  color: rgb(var(--v-theme-primary)) !important;
+.combo-customizavel i.mdi-close,
+.combo-customizavel i.mdi-magnify {
+  color: #ffc38b !important;
   transition: none;
   font-size: 16px;
 }
 
 /* Combobox genérico */
-.custom-combobox .v-field,
+.combo-customizavel .v-field,
 .container-combobox-filtros .v-field,
 .container-combobox-padrao .v-field {
-  color: rgb(var(--v-theme-ftText)) !important;
-  font-family: Inter;
+  color: #6f6f6f !important;
+  font-family: 'Poppins';
   font-size: 14px;
-  font-style: normal;
   font-weight: 500;
-  line-height: 14px;
+  line-height: 16px;
   opacity: 1 !important;
-  height: 32px !important;
+  height: 40px !important;
   align-items: center;
   transition: none;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   border: 1px solid rgb(var(--v-theme-bgComponent));
-  padding-left: 9px !important;
+  padding-left: 15px !important;
 
   .v-label.v-field-label {
-    margin-left: 0px;
+    margin-left: 5px;
     color: #6f6f6f;
-    font-family: Inter;
+    font-family:  'Poppins';
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
@@ -319,18 +323,15 @@ textarea {
     opacity: 1;
   }
 
+
   ::placeholder {
     opacity: 1 !important;
     color: #ababab !important;
-    font-family: Inter;
+    font-family:  'Poppins';
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
     line-height: 14px;
-  }
-
-  &:hover {
-    background: rgb(var(--v-theme-gray600)) !important;
   }
 
   &:focus-within {
@@ -364,11 +365,17 @@ textarea {
   }
 }
 
+// .v-field--variant-outlined.v-field--focused .v-label.v-field-label--floating {
+//     transform: translate(-8px,-17px)!important;
+//   }
+// .v-field--variant-outlined.v-field--focused .v-field__outline__notch{
+//   border-top: 1px solid #ffc38b!important;
+// }
 /* Clearable icons */
 .v-field__clearable {
   margin: 0 !important;
   transition: none !important;
-  color: rgb(var(--v-theme-primary));
+  color: #ffc38b;
 
   i {
     font-size: 16px !important;
@@ -400,28 +407,28 @@ textarea {
     position: absolute;
   }
 
-  font-family: Inter !important;
+  font-family:  'Poppins' !important;
   font-size: 14px;
   font-style: normal !important;
   font-weight: 500;
   line-height: 32px;
 
-  &.filled-combobox .v-field {
+  &.combo-preenchido .v-field {
     background: rgb(var(--v-theme-white)) !important;
   }
 
-  &.filled-combobox .v-field__outline {
-    color: rgb(var(--v-theme-primary)) !important;
+  &.combo-preenchido .v-field__outline {
+    color: #ffc38b !important;
     --v-field-border-opacity: 1 !important;
     --v-field-border-width: 1px !important;
   }
 
   .v-field--variant-outlined:focus-within .v-field__outline {
-    color: rgb(var(--v-theme-primary));
+    color: #ffc38b;
   }
 
   .v-field--variant-outlined .v-field__outline {
-    color: rgb(var(--v-theme-bgComponent));
+    color: #6f6f6f;
     border-color: transparent;
   }
 
@@ -429,12 +436,12 @@ textarea {
     --v-field-border-width: 1px !important;
   }
 
-  .v-field--variant-outlined .v-label.v-field-label--floating {
-    margin: 0 4px;
-    margin-left: 4px !important;
-    color: var(--vermelho-cereja, #8f2c3d) !important;
-    font-size: 12px !important;
-  }
+  // .v-field--variant-outlined .v-label.v-field-label--floating {
+  //   margin: 0 4px;
+  //   margin-left: 4px !important;
+  //   color: var(--vermelho-cereja, #8f2c3d) !important;
+  //   font-size: 12px !important;
+  // }
 
   .v-field--rounded.v-field--variant-outlined .v-field__outline__start,
   [class^='rounded-'].v-field--variant-outlined .v-field__outline__start,
@@ -467,7 +474,7 @@ textarea {
     border-radius: 10px;
   }
   .v-list::-webkit-scrollbar-track {
-    background-color: rgb(var(--v-theme-gray400));
+    background-color: #6f6f6f;
     border-radius: 4px;
   }
 
@@ -485,7 +492,7 @@ textarea {
   .v-selection-control__input > .v-icon {
     font-size: 14px !important;
     color: rgb(var(--v-theme-ftText));
-    height: 22px !important;
+    height: 2px !important;
     width: 22px !important;
     border-radius: 50%;
     opacity: 1 !important;
@@ -502,7 +509,7 @@ textarea {
 
   .v-list-item__content .v-list-item-title {
     color: #6f6f6f;
-    font-family: Inter;
+    font-family:  'Poppins';
     font-size: 14px;
     font-weight: 500;
     line-height: 32px;
@@ -527,7 +534,7 @@ textarea {
   }
 
   .v-selection-control__wrapper .v-selection-control__input > .v-icon.mdi-checkbox-marked {
-    color: rgb(var(--v-theme-primary)) !important;
+    color: #ffc38b !important;
   }
 }
 
@@ -566,7 +573,7 @@ textarea {
 
 .v-messages__message {
   color: var(--error, #d14a4a);
-  font-family: Inter;
+  font-family:  'Poppins';
   font-size: 12px;
   font-weight: 400;
   line-height: 14px;
