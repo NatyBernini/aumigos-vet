@@ -259,7 +259,7 @@
                 </v-col>
               </v-row> -->
             <v-col cols="12" sm="12">
-              <v-btn text="Cadastrar" id="btn-salvar-concessionaria"></v-btn>
+              <v-btn text="Cadastrar" class="btn-padrao" id="btn-salvar-concessionaria"></v-btn>
             </v-col>
           </v-form>
         </v-tabs-window-item>

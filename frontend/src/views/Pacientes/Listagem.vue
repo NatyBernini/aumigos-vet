@@ -1,5 +1,4 @@
 <template>
-  <v-container>
     <v-row>
       <v-col>
         <span class="title-page">Pacientes</span>
@@ -60,7 +59,6 @@
         </v-data-table>
       </v-col>
     </v-row>
-  </v-container>
 </template>
 
 <script setup lang="ts">
@@ -145,31 +143,6 @@ function editar(item: any) {
 </script>
 
 <style lang="scss">
-thead {
-  background: #FFE9E9;
-
-  th {
-    height: 50px !important;
-    border-bottom: none !important;
-
-    span {
-      color: #434343;
-      font-weight: 600;
-    }
-  }
-
-  tr>th:first-child {
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    overflow: hidden;
-  }
-
-  tr>th:last-child {
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    overflow: hidden;
-  }
-}
 
 .v-btn {
   transition: none !important;
@@ -180,36 +153,13 @@ thead {
   }
 
   .v-icon:hover {
-    color: #d31b27ca !important;
+    color: #FF8A33 !important;
   }
 }
 
 .v-icon {
-  color: #434343;
+  color: #676767;
 }
 
-.btn-pagination.v-btn--icon.v-btn--density-default {
-  width: 30px !important;
-  height: 30px !important;
-  --v-btn-size: 15px;
-}
 
-.container-pagination {
-  gap: 12px;
-  display: flex;
-}
-
-.custom-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border-top: 1px solid #e0e0e0;
-  flex-wrap: wrap;
-  gap: 1rem;
-
-  >span {
-    font-weight: 500;
-  }
-}
 </style>

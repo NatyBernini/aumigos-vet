@@ -1,5 +1,4 @@
 <template>
-  <v-container>
     <v-col>
       <span class="title-page">Relatórios e Documentos</span>
       <br>
@@ -23,7 +22,7 @@
             <p v-if="showMsgValidation"> {{ msgValidation }}</p>
           </v-card-text>
           <v-card-actions>
-            <v-btn @click="gerarRelatorio">Gerar relatório</v-btn>
+            <v-btn class="btn-padrao" @click="gerarRelatorio">Gerar relatório</v-btn>
           </v-card-actions>
         </v-card>
         <v-card class="pa-2">
@@ -38,11 +37,11 @@
           </v-card-text>
 
           <v-card-actions>
-            <v-btn @click="gerarRelatorioAtendimento">Gerar relatório</v-btn>
+            <v-btn class="btn-padrao" @click="gerarRelatorioAtendimento">Gerar relatório</v-btn>
           </v-card-actions>
         </v-card>
       </v-row>
-      <p class="title-page mt-8">Documentos</p>
+      <div class="d-flex flex-row flex-wrap mt-8"><p class="title-page mr-5">Documentos</p><ModalCadastroDocumento /></div>
       <v-row class="row-cards mt-4 mb-4">
         <v-card class="pa-2">
           <v-card-title>Receituário</v-card-title>
@@ -50,7 +49,7 @@
             medicamentos,
             dosagens, duração do tratamento e instruções adicionais para o tutor.</v-card-text>
           <v-card-actions>
-            <v-btn>Baixar documento</v-btn>
+            <v-btn class="btn-padrao">Baixar documento</v-btn>
           </v-card-actions>
         </v-card>
         <v-card class="pa-2">
@@ -59,20 +58,19 @@
             esclarecimento
             sobre riscos, benefícios e alternativas.</v-card-text>
           <v-card-actions>
-            <v-btn>Baixar documento</v-btn>
+            <v-btn class="btn-padrao">Baixar documento</v-btn>
           </v-card-actions>
         </v-card>
         <v-card class="pa-2">
           <v-card-title>Termo de Adoção</v-card-title>
           <v-card-text>Contrato de responsabilidade e compromisso na adoção do animal.</v-card-text>
           <v-card-actions>
-            <v-btn>Baixar documento</v-btn>
+            <v-btn class="btn-padrao">Baixar documento</v-btn>
           </v-card-actions>
         </v-card>
 
       </v-row>
     </v-col>
-  </v-container>
 </template>
 
 <script setup lang="ts">
@@ -80,6 +78,7 @@ import { ref } from 'vue'
 
 // COMPONENTES
 import multipleCombobox from '@/components/multipleCombobox.vue'
+import ModalCadastroDocumento from './ModalCadastroDocumento.vue'
 
 
 defineOptions({
@@ -167,14 +166,6 @@ const gerarRelatorioAtendimento = () => {
 
   .v-card-actions {
     justify-content: flex-end;
-
-    .v-btn {
-      background: #EFEFEF;
-      border-radius: 10px;
-      padding-left: 15px;
-      padding-right: 15px;
-      font-size: 12px;
-    }
   }
 }
 </style>

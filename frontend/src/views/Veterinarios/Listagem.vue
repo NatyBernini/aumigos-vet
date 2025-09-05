@@ -1,5 +1,4 @@
 <template>
-  <v-container>
     <v-row>
       <v-col>
         <span class="title-page">Veterinários</span>
@@ -70,7 +69,6 @@
         </v-data-table>
       </v-col>
     </v-row>
-  </v-container>
 </template>
 
 <script setup lang="ts">

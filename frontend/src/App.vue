@@ -20,6 +20,6 @@
 }
 
 .page-active {
-  color: #d31b27d7;
+  color: #FF6B35;
 }
 </style>
