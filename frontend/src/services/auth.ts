@@ -1,0 +1,64 @@
+// src/modules/commons/services/auth.ts
+import { API } from "@/modules/commons/services";
+import { httpClient } from "@/modules/commons/services";
+
+export interface Pessoa {
+  nome_completo: string;
+  cpf: string;
+  data_nascimento: string;
+}
+
+export interface Telefone {
+  numero: string;
+}
+
+export interface Contato {
+  email: string;
+  telefones: Telefone[];
+}
+
+export interface RegistroUsuarioPayload {
+  email: string;
+  senha: string;
+  tipo_usuario: string;
+  pessoa: Pessoa;
+  contato: Contato;
+  clinicas: number[];
+  first_name: string;
+  last_name: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export async function registerUser(payload: RegistroUsuarioPayload) {
+  try {
+    const response = await API.post("/usuarios/registro/", payload);
+    return response;
+  } catch (error: any) {
+    console.error("Erro ao registrar usuário:", error);
+    throw error;
+  }
+}
+
+export async function loginUser(payload: LoginPayload) {
+  try {
+    const response = await API.post("/usuarios/login/", payload);
+    return response;
+  } catch (error: any) {
+    console.error("Erro ao fazer login:", error);
+    throw error;
+  }
+}
+
+export async function getMe() {
+  try {
+    const response = await API.get("/usuarios/me/");
+    return response;
+  } catch (error: any) {
+    console.error('Erro ao buscar dados do usuário logado:', error);
+    throw error;
+  }
+}

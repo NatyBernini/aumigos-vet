@@ -1,0 +1,15 @@
+export { cpf } from './cpf';
+export { cnpj } from './cnpj';
+export { email } from './email';
+export { required } from './required';
+export { minLength } from './min-length';
+export { minValue } from './min-value';
+export { maxLength } from './max-length';
+export { maxValue } from './max-value';
+export { phone } from './phone';
+export { url } from './url';
+export { between } from './between';
+export { decimal } from './decimal';
+export { integer } from './integer';
+export { numeric } from './numeric';
+export { regex } from './regex';

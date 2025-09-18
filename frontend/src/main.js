@@ -10,13 +10,24 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
+import { createPinia } from 'pinia'
+import piniaPersist from 'pinia-plugin-persistedstate'
+
 const vuetify = createVuetify({
   components,
   directives,
 })
 
-createApp(App)
-  .use(router)
-  .use(vuetify)
-  .use(VueTheMask)
-  .mount('#app')
+const app = createApp(App)
+
+const pinia = createPinia()
+// registra o plugin
+pinia.use(piniaPersist)
+
+app.use(pinia)
+
+app.use(router)
+app.use(vuetify)
+app.use(VueTheMask)
+
+app.mount('#app')

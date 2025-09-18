@@ -29,12 +29,12 @@
                                         v-model:valueInput="textInputs[`input-email-login`]" id="input-email"
                                         :maxLength="0" />
 
-                                        <inputText label="Senha*" classe="input-locador"
-                                            v-model:valueInput="textInputs[`input-senha-login`]" id="input-senha"
-                                            :type="showPasswordCadastro ? 'text' : 'password'"
-                                            :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
-                                            @click:append-inner="showPasswordCadastro = !showPasswordCadastro" required
-                                            :maxLength="0" />
+                                    <inputText label="Senha*" classe="input-locador"
+                                        v-model:valueInput="textInputs[`input-senha-login`]" id="input-senha"
+                                        :type="showPasswordCadastro ? 'text' : 'password'"
+                                        :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
+                                        @click:append-inner="showPasswordCadastro = !showPasswordCadastro" required
+                                        :maxLength="0" />
                                     <div class="text-end mb-4">
                                         <v-btn variant="text" color="primary" class="text-caption">
                                             Esqueceu a senha?
@@ -77,20 +77,27 @@
                                         v-model:valueInput="textInputs['input-nome']" id="input-nome"
                                         @update:valueInput="(value: any) => updateInput('input-nome', value)"
                                         :maxLength="0" />
-                                        <inputText label="Telefone*" classe="input-locador" type="text" required
-                                            @input="onPhoneInput($event)"
-                                            v-model:valueInput="textInputs['input-telefone']" :maxLength="0" />
-                                        <inputText label="E-mail*" classe="input-locador" type="email" required
-                                            v-model:valueInput="textInputs[`input-email`]" id="input-email"
-                                            :maxLength="0" />
+                                    <inputText label="Telefone*" classe="input-locador" type="text" required
+                                        @input="onPhoneInput($event)" v-model:valueInput="textInputs['input-telefone']"
+                                        :maxLength="0" />
+                                    <inputText label="E-mail*" classe="input-locador" type="email" required
+                                        v-model:valueInput="textInputs[`input-email`]" id="input-email"
+                                        :maxLength="0" />
 
-                                        <inputText label="Senha*" classe="input-locador"
-                                            v-model:valueInput="textInputs[`input-senha`]" id="input-senha"
-                                            :type="showPasswordCadastro ? 'text' : 'password'"
-                                            :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
-                                            @click:append-inner="showPasswordCadastro = !showPasswordCadastro" required
-                                            :maxLength="0" />
-                                    <v-btn color="secondary" block class="mb-4 mt-6">
+                                    <!-- Adicione os novos campos de CPF e data de nascimento no formulário -->
+                                    <inputText label="CPF*" classe="input-locador" type="text" required
+                                        v-model:valueInput="textInputs['input-cpf']" id="input-cpf" />
+
+                                    <inputText label="Data de Nascimento*" classe="input-locador" type="date" required
+                                        v-model:valueInput="textInputs['input-nascimento']" id="input-nascimento" />
+
+                                    <inputText label="Senha*" classe="input-locador"
+                                        v-model:valueInput="textInputs[`input-senha`]" id="input-senha"
+                                        :type="showPasswordCadastro ? 'text' : 'password'"
+                                        :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
+                                        @click:append-inner="showPasswordCadastro = !showPasswordCadastro" required
+                                        :maxLength="0" />
+                                    <v-btn color="secondary" block class="mb-4 mt-6" @click="onRegister">
                                         Cadastrar
                                     </v-btn>
                                 </v-form>
@@ -124,65 +131,132 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import BannerCadastro from '../assets/Banner.png'
-import BannerLogin from '../assets/BannerGatos2.png'
-import Logo from '../assets/logoAumigo.png'
+import BannerCadastro from '../assets/Banner.png';
+import BannerLogin from '../assets/BannerGatos2.png';
+import Logo from '../assets/logoAumigo.png';
 
 // COMPONENTES
-import inputText from '@/components/inputText.vue'
+import inputText from '@/components/inputText.vue';
 
 // SERVICES
 import { formatPhoneNumberRaw } from '@/utils/formaUtils';
+import { registerUser, loginUser, getMe } from '@/services/auth';
+import { usePersistentStore } from '@/modules/commons/store';
+import { useAppStore } from '@/modules/commons/store';
+import { httpClient } from '@/modules/commons/services';
 
 const router = useRouter();
-
-const step = ref(0)
-
+const step = ref(0);
 const textInputs = ref<Record<string, string>>({});
+const showPasswordCadastro = ref(false);
+const persistentStore = usePersistentStore();
+const appStore = useAppStore();
+
 const updateInput = (id: string, newValue: string) => {
-    textInputs.value[id] = newValue;
+  textInputs.value[id] = newValue;
 };
 
-const showPasswordCadastro = ref(false)
-
-const onLogin = async () => {
-    router.push({ name: 'Clinica' });
-}
-
 function onPhoneInput(event: Event) {
-    const input = event.target as HTMLInputElement
-    const oldValue = input.value
-    const onlyNumbers = oldValue.replace(/\D/g, '').slice(0, 11)
-    const newValue = formatPhoneNumberRaw(onlyNumbers)
+  const input = event.target as HTMLInputElement;
+  const oldValue = input.value;
+  const onlyNumbers = oldValue.replace(/\D/g, '').slice(0, 11);
+  const newValue = formatPhoneNumberRaw(onlyNumbers);
+  const cursorPos = input.selectionStart || 0;
 
-    const cursorPos = input.selectionStart || 0
+  textInputs.value['input-telefone'] = newValue;
 
-    // Atualiza o v-model sem travar o backspace
-    textInputs.value['input-telefone'] = newValue
-
-    // Ajusta cursor de forma inteligente
-    nextTick(() => {
-        let newCursor = cursorPos
-
-        // Se usuário está apagando e o cursor está antes do final, mantém cursor
-        if (newValue.length < oldValue.length) {
-            newCursor = cursorPos
-        } else {
-            // Se adicionando, ajusta para a máscara
-            const diff = newValue.length - oldValue.length
-            newCursor = cursorPos + diff
-        }
-
-        if (newCursor < 0) newCursor = 0
-        if (newCursor > newValue.length) newCursor = newValue.length
-
-        input.setSelectionRange(newCursor, newCursor)
-    })
+  nextTick(() => {
+    let newCursor = cursorPos;
+    if (newValue.length < oldValue.length) {
+      newCursor = cursorPos;
+    } else {
+      const diff = newValue.length - oldValue.length;
+      newCursor = cursorPos + diff;
+    }
+    if (newCursor < 0) newCursor = 0;
+    if (newCursor > newValue.length) newCursor = newValue.length;
+    input.setSelectionRange(newCursor, newCursor);
+  });
 }
 
+// ---------------- LOGIN ----------------
+const onLogin = async () => {
+  try {
+    const payload = {
+      email: textInputs.value['input-email-login'],
+      password: textInputs.value['input-senha-login']
+    };
+
+    const response = await loginUser(payload);
+
+    // Atualiza o token no PersistentStore (automaticamente persistido)
+    persistentStore.jwtToken = response.access;
+
+    // Opcional: atualizar dados no AppStore se precisar
+    appStore.isAuthorized = true;
+    appStore.userData = response.user || null;
+    
+    const me = await getMe();
+    console.log('Usuário logado:', me);
+
+    router.push({ name: 'Clinica' });
+  } catch (error: any) {
+    console.error('Erro ao fazer login:', error);
+    alert(error?.response?.data?.detail || 'Falha ao realizar login');
+  }
+};
+
+// ---------------- CADASTRO ----------------
+const onRegister = async () => {
+  try {
+    const senha = textInputs.value['input-senha'];
+    const cpf = textInputs.value['input-cpf'];
+    const dataNascimento = textInputs.value['input-nascimento'];
+
+    if (!senha || senha.length < 8) {
+      alert("A senha precisa ter pelo menos 8 caracteres.");
+      return;
+    }
+    if (!cpf) {
+      alert("CPF é obrigatório.");
+      return;
+    }
+    if (!dataNascimento) {
+      alert("Data de nascimento é obrigatória.");
+      return;
+    }
+
+    const payload = {
+      email: textInputs.value['input-email'],
+      senha: senha,
+      tipo_usuario: "CLIENTE",
+      pessoa: {
+        nome_completo: textInputs.value['input-nome'],
+        cpf: cpf,
+        data_nascimento: dataNascimento
+      },
+      contato: {
+        email: textInputs.value['input-email'],
+        telefones: [{ numero: textInputs.value['input-telefone'] }]
+      },
+      clinicas: [],
+      first_name: textInputs.value['input-nome'].split(' ')[0] || '',
+      last_name: textInputs.value['input-nome'].split(' ').slice(1).join(' ') || ''
+    };
+
+    const response = await registerUser(payload);
+    console.log("Usuário cadastrado com sucesso:", response);
+
+    router.push({ name: 'Login' });
+  } catch (error: any) {
+    console.error("Erro ao cadastrar usuário:", error);
+    alert(error?.response?.data ? JSON.stringify(error.response.data) : "Erro ao cadastrar usuário");
+  }
+};
 </script>
+
 
 <style lang="scss" scoped>
 .auth-background {

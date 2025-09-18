@@ -24,10 +24,7 @@ export default defineConfig({
         }
       }
     }),
-    // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
-    vuetify({
-      autoImport: true
-    })
+    vuetify({ autoImport: true })
   ],
   define: { 'process.env': {} },
   resolve: {
@@ -41,21 +38,23 @@ export default defineConfig({
     extensions: ['.js', '.json', '.jsx', '.mjs', '.ts', '.tsx', '.vue']
   },
   css: {
-    preprocessorOptions: {
-      scss: {
-        // additionalData: './src/plugins/vuetify/styles.scss' // Importar variáveis globais
-      }
-    }
+    preprocessorOptions: { scss: {} }
   },
   server: {
-    port: 9081
+    port: 9081,
+    proxy: {
+      '/api': {
+        target: 'https://controlepet.onrender.com', // URL do backend
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api') // mantém o mesmo path
+      }
+    }
   },
   test: {
     environment: 'jsdom',
     setupFiles: 'vuetify.config.js',
-    deps: {
-      inline: ['vuetify']
-    },
+    deps: { inline: ['vuetify'] },
     globals: true
   }
-});
+})
