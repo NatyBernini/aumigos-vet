@@ -16,18 +16,34 @@ API.defineRequestInterceptor({
     }
     return conf;
   },
-  onError: () => Promise.reject({ msg: 'Erro no serviço', tipo: 'ERROR' })
+  onError: () =>
+    Promise.reject({ msg: 'Erro no serviço', tipo: 'ERROR' })
 });
 
 API.defineResponseInterceptor({
   onSuccess: (response) => {
     return response;
   },
-  onError: async (data) => {
-    if (data?.response?.status === 401) {
-      const appStore = useAppStore();
+  onError: async (error) => {
+    const appStore = useAppStore();
+
+    // se for 401 → desloga
+    if (error?.response?.status === 401) {
       await appStore.logout();
     }
-    return Promise.reject({ msg: 'A solicitação não foi completada, por favor verifique a conexão.', tipo: 'ERROR' });
+
+    // se backend retornou validação do DRF
+    if (error?.response?.data && typeof error.response.data === 'object') {
+      return Promise.reject({
+        tipo: 'VALIDATION',
+        errors: error.response.data // { email: [...], cnpj: [...] }
+      });
+    }
+
+    // erro genérico
+    return Promise.reject({
+      tipo: 'ERROR',
+      msg: 'A solicitação não foi completada, por favor verifique a conexão.'
+    });
   }
 });

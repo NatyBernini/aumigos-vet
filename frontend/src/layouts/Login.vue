@@ -133,9 +133,6 @@
 <script lang="ts" setup>
 import { ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import BannerCadastro from '../assets/Banner.png';
-import BannerLogin from '../assets/BannerGatos2.png';
-import Logo from '../assets/logoAumigo.png';
 
 // COMPONENTES
 import inputText from '@/components/inputText.vue';
@@ -145,7 +142,11 @@ import { formatPhoneNumberRaw } from '@/utils/formaUtils';
 import { registerUser, loginUser, getMe } from '@/services/auth';
 import { usePersistentStore } from '@/modules/commons/store';
 import { useAppStore } from '@/modules/commons/store';
-import { httpClient } from '@/modules/commons/services';
+
+// IMAGENS/ICONS
+import BannerCadastro from '../assets/Banner.png';
+import BannerLogin from '../assets/BannerGatos2.png';
+import Logo from '../assets/logoAumigo.png';
 
 const router = useRouter();
 const step = ref(0);
@@ -181,7 +182,7 @@ function onPhoneInput(event: Event) {
   });
 }
 
-// ---------------- LOGIN ----------------
+// LOGIN 
 const onLogin = async () => {
   try {
     const payload = {
@@ -191,15 +192,12 @@ const onLogin = async () => {
 
     const response = await loginUser(payload);
 
-    // Atualiza o token no PersistentStore (automaticamente persistido)
+    // Atualiza o token no PersistentStore
     persistentStore.jwtToken = response.access;
 
-    // Opcional: atualizar dados no AppStore se precisar
     appStore.isAuthorized = true;
     appStore.userData = response.user || null;
     
-    const me = await getMe();
-    console.log('Usuário logado:', me);
 
     router.push({ name: 'Clinica' });
   } catch (error: any) {
@@ -208,7 +206,7 @@ const onLogin = async () => {
   }
 };
 
-// ---------------- CADASTRO ----------------
+// CADASTRO
 const onRegister = async () => {
   try {
     const senha = textInputs.value['input-senha'];
@@ -231,7 +229,7 @@ const onRegister = async () => {
     const payload = {
       email: textInputs.value['input-email'],
       senha: senha,
-      tipo_usuario: "CLIENTE",
+      tipo_usuario: "admin_clinica",
       pessoa: {
         nome_completo: textInputs.value['input-nome'],
         cpf: cpf,
@@ -241,15 +239,18 @@ const onRegister = async () => {
         email: textInputs.value['input-email'],
         telefones: [{ numero: textInputs.value['input-telefone'] }]
       },
-      clinicas: [],
       first_name: textInputs.value['input-nome'].split(' ')[0] || '',
       last_name: textInputs.value['input-nome'].split(' ').slice(1).join(' ') || ''
     };
 
     const response = await registerUser(payload);
-    console.log("Usuário cadastrado com sucesso:", response);
+    // Atualiza o token no PersistentStore
+    persistentStore.jwtToken = response.access;
 
-    router.push({ name: 'Login' });
+    appStore.isAuthorized = true;
+    appStore.userData = response.usuario || null;
+    
+    router.push({ name: 'Clinica' });
   } catch (error: any) {
     console.error("Erro ao cadastrar usuário:", error);
     alert(error?.response?.data ? JSON.stringify(error.response.data) : "Erro ao cadastrar usuário");

@@ -1,6 +1,5 @@
 // src/modules/commons/services/auth.ts
 import { API } from "@/modules/commons/services";
-import { httpClient } from "@/modules/commons/services";
 
 export interface Pessoa {
   nome_completo: string;
@@ -23,7 +22,6 @@ export interface RegistroUsuarioPayload {
   tipo_usuario: string;
   pessoa: Pessoa;
   contato: Contato;
-  clinicas: number[];
   first_name: string;
   last_name: string;
 }
@@ -33,7 +31,7 @@ export interface LoginPayload {
   password: string;
 }
 
-export async function registerUser(payload: RegistroUsuarioPayload) {
+async function registerUser(payload: RegistroUsuarioPayload) {
   try {
     const response = await API.post("/usuarios/registro/", payload);
     return response;
@@ -43,7 +41,7 @@ export async function registerUser(payload: RegistroUsuarioPayload) {
   }
 }
 
-export async function loginUser(payload: LoginPayload) {
+async function loginUser(payload: LoginPayload) {
   try {
     const response = await API.post("/usuarios/login/", payload);
     return response;
@@ -53,7 +51,7 @@ export async function loginUser(payload: LoginPayload) {
   }
 }
 
-export async function getMe() {
+async function getMe() {
   try {
     const response = await API.get("/usuarios/me/");
     return response;
@@ -61,4 +59,10 @@ export async function getMe() {
     console.error('Erro ao buscar dados do usuário logado:', error);
     throw error;
   }
+}
+
+export {
+  loginUser,
+  getMe,
+  registerUser
 }

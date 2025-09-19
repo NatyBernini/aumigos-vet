@@ -14,6 +14,8 @@ import Login from '../layouts/Login.vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import Planos from '../layouts/Planos.vue'
 
+import { usePersistentStore } from '@/modules/commons/store';
+
 const routes = [
   {
     path: '/',
@@ -24,15 +26,18 @@ const routes = [
     path: '/clinica',
     name: 'Clinica',
     component: Empresa,
+    meta: { requiresAuth: true }
   },
   {
     path: '/planos',
     name: 'Planos',
     component: Planos,
+    meta: { requiresAuth: true }
   },
   {
     path: '/',
     component: MainLayout,
+    meta: { requiresAuth: true },
     children: [
       { path: 'pacientes', name: 'Home', component: PacientesList },
       { path: 'pacientes/cadastrar', component: PacienteCadastro },
@@ -52,9 +57,22 @@ const routes = [
   },
 ]
 
+
 const router = createRouter({
   history: createWebHistory('/aumigos-vet/'),
-   routes,
+  routes,
+})
+
+// proteção global das rotas
+router.beforeEach((to, from, next) => {
+  const persistentStore = usePersistentStore()
+
+  if (to.meta.requiresAuth && !persistentStore.jwtToken) {
+    // se a rota exige auth e não há token → volta pro Login
+    next({ name: 'Login' })
+  } else {
+    next()
+  }
 })
 
 export default router

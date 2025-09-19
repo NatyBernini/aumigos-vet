@@ -166,6 +166,9 @@ import { formatPhoneNumberRaw } from '@/utils/formaUtils'
 import inputText from '@/components/inputText.vue'
 import multipleCombobox from '@/components/multipleCombobox.vue'
 
+// SERVICES
+import { salvarClinica } from '@/services/clinica'
+
 // Regras
 const required = [(v: string) => !!v || 'Campo obrigatório']
 
@@ -333,19 +336,34 @@ onMounted(async () => {
     carregarEstados()
 })
 
-const submit = () => {
-    console.log('Form enviado', {
+const submit = async () => {
+    const dados = {
         estado: estadoSelecionado.value,
         cidade: cidadeSelecionada.value,
         cep: cep.value,
         rua: textInputs.value['input-rua'],
         bairro: textInputs.value['input-bairro'],
-        numero: numero.value,
-        complemento: complemento.value,
+        numero: textInputs.value['input-numero'],
+        complemento: textInputs.value['input-complemento'],
         telefone: textInputs.value['input-telefone'],
-        foto: foto.value,
-    })
-    router.push({ name: 'Planos' })
+        nome: textInputs.value['input-nome'],
+        whatsapp: textInputs.value['input-telefone'],
+        email: textInputs.value['input-email'],
+        cnpj: textInputs.value['input-cnpj'],
+        tipo_assinatura: 'mensal'
+    }
+
+    try {
+        await salvarClinica(dados);
+        router.push({ name: 'Planos' })
+    } catch (err: any) {
+        if (err.tipo === 'VALIDATION') {
+            console.log(err.errors);
+        } else {
+            console.error(err.msg);
+        }
+    }
+
 }
 </script>
 
