@@ -85,7 +85,6 @@ defineOptions({
   name: 'RelatorioList',
 })
 
-// Agora selecionados guardam o objeto, não string
 const pacienteSelecionado = ref<string | undefined>(undefined)
 const listPacientes = ref<string[]>(['Juju', 'Lua', 'Zoe', 'Teddy Junior', 'Mingau', 'Mel', 'Remmi'])
 const pacientes = ref<Array<{ id: string; descricao: string }>>([{ id: '1', descricao: 'Juju' }, { id: '2', descricao: 'Lua' }, { id: '3', descricao: 'Zoe' }, { id: '4', descricao: 'Teddy Junior' }, { id: '5', descricao: 'Mingau' }, { id: '6', descricao: 'Mel' }, { id: '7', descricao: 'Remmi' }])

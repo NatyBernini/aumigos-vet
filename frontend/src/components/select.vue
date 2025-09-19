@@ -1,263 +1,201 @@
 <template>
   <v-tooltip
-    :disabled="isTooltip"
-    :text="formatarTooltip"
-    open-delay="300"
+    :disabled="isTooltipDisabled"
+    :text="formattedTooltipText"
+    open-delay="200"
     close-delay="0"
     max-width="300"
     location="bottom"
     class="custom-tooltip"
   >
     <template v-slot:activator="{ props }">
-      <v-combobox
-        v-model="valorCombo"
-        :items="listItens"
+      <v-select
+        v-model="internalValue"
+        :items="localItems"
         :label="label"
         :placeholder="placeholder"
-        :editable="isMultiple"
-        @keydown="handleKeydown"
+        :multiple="isMultipleSelect"
         v-bind="{ ...$attrs, ...props }"
         @update:modelValue="onInput"
-        @focus="(estaPreenchido = true), (isTooltip = true)"
-        @blur="handlerBlur"
         density="compact"
-        :id="id"
         dense
         rounded="lg"
         :menu-icon="
-          isCustom
-            ? estaPreenchido
+          isCustomCombobox
+            ? isFocused
               ? 'mdi-magnify'
-              : valorCombo.length
+              : internalValue?.length
               ? ''
               : 'mdi-chevron-down'
             : 'mdi-chevron-down'
         "
         :class="{
-          'combo-preenchido': comboPreenchido,
-          'combo-customizavel': isCustom,
-          'disabled-combobox': !isMultiple
+          'filled-combobox': isFilled,
+          'custom-combobox': isCustomCombobox,
+          'disabled-combobox': !isMultipleSelect
         }"
-        :menu-props="{ id: 'list-combo-box-' + id }"
+        :menu-props="{ id: 'list-combo-box-' + id, closeOnContentClick: false }"
         autocomplete="off"
-        :obrigatorio="obrigatorio"
-        :rules="obrigatorio ? [requiredRule] : []"
-        :error-messages="msgErro"
+        :isRequired="isRequired"
+        :rules="isRequired ? [requiredRule] : []"
+        :error-messages="errorMessages"
         :data-complemento="idEncontrado"
-      ></v-combobox>
+        @focus="handleFocus"
+        @blur="handleBlur"
+      ></v-select>
     </template>
   </v-tooltip>
 </template>
-<script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
-import type { PropType } from 'vue'
 
-defineOptions({
-  name: 'MultipleCombobox',
-})
+<script lang="ts">
+import type { PropType } from 'vue';
 
-const props = defineProps({
-  modelValue: {
-    type: [Array, String] as PropType<string[] | string>,
-    default: () => [],
-  },
-  extraItems: {
-    type: Array as PropType<any[]>,
-    default: () => [],
-  },
-  items: {
-    type: Array as PropType<any[]>,
-    required: true,
-  },
-  label: {
-    type: String,
-    required: false,
-  },
-  placeholder: {
-    type: String,
-    required: false,
-  },
-  tooltip: {
-    type: String,
-  },
-  isCustom: {
-    type: Boolean,
-    default: false,
-  },
-  id: {
-    type: String,
-    required: true,
-  },
-  isMultiple: {
-    type: Boolean,
-    default: true,
-  },
-  obrigatorio: {
-    type: Boolean,
-    default: false,
-  },
-  dataComplemento: {
-    type: Array as PropType<number[] | null>,
-    default: null,
-  },
-})
-
-const emit = defineEmits(['update:modelValue'])
-
-/**
- * VARIÁVEIS
- */
-const idEncontrado = ref<number[] | number | null>(null)
-const valorCombo = ref<any>(props.modelValue)
-const listItens = ref([...props.items])
-const estaPreenchido = ref(false)
-const isTooltip = ref(false)
-const msgErro = ref<string[]>([])
-
-/**
- * REGRAS
- */
-const requiredRule = (value: string | unknown[]) => {
-  if (Array.isArray(value) && value.length === 0) {
-    return 'Campo obrigatório!'
-  } else if (typeof value === 'string' && !value) {
-    return 'Campo obrigatório!'
-  }
-  return true
-}
-
-// ----------------------
-// Lifecycle
-// ----------------------
-onMounted(() => {
-  if (props.dataComplemento) {
-    if (
-      Array.isArray(props.dataComplemento) &&
-      props.dataComplemento.every((el) => typeof el === 'number')
-    ) {
-      idEncontrado.value = props.dataComplemento
-    } else {
-      console.warn('dataComplemento não é um array de números válido')
-      idEncontrado.value = null
+export default {
+  name: 'SelectNoEditable',
+  props: {
+    modelValue: {
+      type: [Array, String],
+      default: () => []
+    },
+    extraItems: {
+      type: Array as any,
+      default: () => []
+    },
+    items: {
+      type: Array as any,
+      required: true
+    },
+    label: String,
+    placeholder: String,
+    customClass: {
+      type: String,
+      default: ''
+    },
+    tooltip: String,
+    isCustomCombobox: {
+      type: Boolean,
+      default: false
+    },
+    id: {
+      type: String,
+      required: true
+    },
+    isMultipleSelect: {
+      type: Boolean,
+      default: true
+    },
+    isRequired: {
+      type: Boolean,
+      default: false
+    },
+    dataComplemento: {
+      type: Array as PropType<number[] | null>,
+      default: null
     }
-  }
-})
-
-/**
- * METHODS
- */
-function onInput(val: any) {
-  const newValue = Array.isArray(val) ? val[val.length - 1] : val
-  emit('update:modelValue', val)
-
-  nextTick(() => {
-    if (props.obrigatorio) {
-      const isValid = requiredRule(valorCombo.value)
-      if (isValid === true) {
-        msgErro.value = []
+  },
+  data() {
+    return {
+      idEncontrado: null as number[] | null,
+      internalValue: this.modelValue,
+      localItems: [...this.items],
+      isFocused: false,
+      isTooltipDisabled: false,
+      errorMessages: [] as string[],
+      requiredRule: (value: string | unknown[]) => {
+        if (Array.isArray(value) && value.length === 0) return 'Atenção, campo obrigatório!';
+        if (typeof value === 'string' && !value) return 'Atenção, campo obrigatório!';
+        return true;
+      }
+    };
+  },
+  mounted() {
+    if (this.dataComplemento) {
+      if (Array.isArray(this.dataComplemento) && this.dataComplemento.every((el) => typeof el === 'number')) {
+        this.idEncontrado = this.dataComplemento;
       } else {
-        msgErro.value = [isValid as string]
+        console.warn('dataComplemento não é um array de números válido');
+        this.idEncontrado = null;
       }
     }
-  })
+  },
+  methods: {
+    onInput(val: any) {
+      this.$emit('update:modelValue', val);
 
-  if (props.isMultiple) {
-    const idsEncontrados: number[] = []
-    if (Array.isArray(valorCombo.value)) {
-      valorCombo.value.forEach((descricao: any) => {
-        const item = props.extraItems.find(
-          (item: { descricao: any }) => item.descricao === descricao,
-        )
-        if (item) {
-          idsEncontrados.push(item.id)
+      if (this.isRequired) {
+        const isValid = this.requiredRule(this.internalValue);
+        this.errorMessages = isValid === true ? [] : [isValid as string];
+      }
+
+      if (this.isMultipleSelect) {
+        const ids: number[] = [];
+        if (Array.isArray(this.internalValue)) {
+          this.internalValue.forEach((descricao: any) => {
+            const item = this.extraItems.find((i: { descricao: any }) => i.descricao === descricao);
+            if (item) ids.push(item.id);
+          });
         }
-      })
-    }
-    idEncontrado.value = idsEncontrados.length > 0 ? idsEncontrados : null
-  } else {
-    const item = props.extraItems.find(
-      (item: { descricao: string | any[] }) =>
-        item.descricao === valorCombo.value,
-    )
-    idEncontrado.value = item ? item.id : null
-  }
-}
+        this.idEncontrado = ids.length > 0 ? ids : null;
+      } else {
+        const item = this.extraItems.find((i: { descricao: any }) => i.descricao === this.internalValue);
+        this.idEncontrado = item ? item.id : null;
+      }
+    },
+    handleFocus() {
+      this.isFocused = true;
+      this.isTooltipDisabled = true;
 
-function handlerBlur() {
-  estaPreenchido.value = false
-  if (valorCombo.value && valorCombo.value.length > 0) {
-    isTooltip.value = false
-  }
-}
-
-function handleKeydown(event: KeyboardEvent) {
-  if (!props.isMultiple) {
-    event.preventDefault()
-  }
-}
-
-/**
- * WATCH
- */
-watch(
-  () => props.modelValue,
-  (val) => {
-    valorCombo.value = val
-    if (Array.isArray(val)) {
-      isTooltip.value = val.length === 0
-    } else {
-      isTooltip.value = !val
-    }
-
-    const idsEncontrados: any[] = []
-    if (props.isMultiple && Array.isArray(val)) {
-      val.forEach((descricao) => {
-        const item = props.extraItems.find(
-          (item: any) => item.descricao === descricao,
-        )
-        if (item) {
-          idsEncontrados.push(item.id)
-        }
-      })
-      idEncontrado.value = idsEncontrados.length > 0 ? idsEncontrados : null
-    } else {
-      const item = props.extraItems.find((item: any) => item.descricao === val)
-      idEncontrado.value = item ? item.id : null
+      if (!this.isMultipleSelect) {
+        this.localItems = [...this.items]; // força lista completa
+      }
+    },
+    handleBlur() {
+      this.isFocused = false;
+      if (this.internalValue && this.internalValue.length > 0) {
+        this.isTooltipDisabled = false;
+      }
+    },
+    handleKeydown(event: KeyboardEvent) {
+      if (!this.isMultipleSelect) event.preventDefault();
     }
   },
-  { immediate: true },
-)
+  watch: {
+    modelValue: {
+      immediate: true,
+      handler(val) {
+        this.internalValue = val;
+        this.isTooltipDisabled = Array.isArray(val) ? val.length === 0 : !val;
 
-watch(
-  () => props.items,
-  (newItems) => {
-    listItens.value = [...newItems]
+        if (this.isMultipleSelect && Array.isArray(val)) {
+          const ids: number[] = [];
+          val.forEach((descricao: any) => {
+            const item = this.extraItems.find((i: any) => i.descricao === descricao);
+            if (item) ids.push(item.id);
+          });
+          this.idEncontrado = ids.length ? ids : null;
+        } else {
+          const item = this.extraItems.find((i: any) => i.descricao === val);
+          this.idEncontrado = item ? item.id : null;
+        }
+      }
+    },
+    items(newItems) {
+      this.localItems = [...newItems];
+    },
+    internalValue(newVal) {
+      this.isTooltipDisabled = Array.isArray(newVal) ? newVal.length === 0 : !newVal;
+    }
   },
-)
-
-watch(valorCombo, (newValue) => {
-  if (Array.isArray(newValue)) {
-    isTooltip.value = newValue.length === 0
-  } else {
-    isTooltip.value = !newValue
+  computed: {
+    isFilled() {
+      return this.internalValue && this.internalValue.length > 0;
+    },
+    formattedTooltipText(): string {
+      return Array.isArray(this.internalValue) ? this.internalValue.join(', ') : (this.internalValue as string);
+    }
   }
-})
-
-/**
- * COMPUTED
- */
-const comboPreenchido = computed(() => {
-  return valorCombo.value && valorCombo.value.length > 0
-})
-
-const formatarTooltip = computed((): string => {
-  if (Array.isArray(valorCombo.value)) {
-    return valorCombo.value.join(', ')
-  }
-  return valorCombo.value as string
-})
+};
 </script>
-
 
 <style lang="scss">
 
@@ -299,6 +237,7 @@ textarea {
 .combo-customizavel .v-field,
 .container-combobox-filtros .v-field,
 .container-combobox-padrao .v-field {
+  min-width: 150px!important;
   color: #6f6f6f !important;
   font-family: 'Poppins';
   font-size: 14px;
@@ -313,7 +252,7 @@ textarea {
   padding-left: 15px !important;
 
   .v-label.v-field-label {
-    margin-left: 5px;
+    margin-left: 0px;
     color: #6f6f6f;
     font-family:  'Poppins';
     font-size: 14px;
@@ -322,7 +261,9 @@ textarea {
     line-height: 14px;
     opacity: 1;
   }
-
+  .v-label.v-field-label.v-field-label--floating{
+    margin-left: 5px;
+  }
 
   ::placeholder {
     opacity: 1 !important;
@@ -502,7 +443,7 @@ textarea {
     background: rgb(var(--v-theme-cherryCircle));
   }
 
-  .v-list-item__content .v-list-item-title .v-combobox__mask {
+  .v-list-item__content .v-list-item-title .v-select__mask {
     background: rgb(var(--v-theme-cherryCircle)) !important;
     border-radius: 8px;
   }

@@ -1,13 +1,25 @@
 <template>
   <div class="input-text-container mb-4">
     <v-text-field :label="label" :type="type" :model-value="valueInput" class="inputLocator"
-      @update:model-value="handleInput" :class="{
+      @update:model-value="handleInput" 
+      :class="{
         'filled-class': valueInput,
         'error-field': showError
-      }" :id="id" :suffix="suffix" :append-inner-icon="appendInnerIcon"
-      @click:append-inner="$emit('click:append-inner')" validate-on="submit" variant="outlined" autocomplete="off"
-      :maxlength="maxLength !== 0 ? maxLength : undefined" :rules="validationRules" :disabled="disabled"
-      :error="showError" :error-messages="errorMessage" @blur="validateField" />
+      }" 
+      :id="id" 
+      :suffix="suffix" 
+      :prefix="prefix" 
+      :append-inner-icon="appendInnerIcon"
+      @click:append-inner="$emit('click:append-inner')" 
+      validate-on="submit" 
+      variant="outlined" 
+      autocomplete="off"
+      :maxlength="maxLength !== 0 ? maxLength : undefined" 
+      :rules="validationRules" 
+      :disabled="disabled"
+      :error="showError" 
+      :error-messages="errorMessage" 
+      @blur="validateField" />
     <div v-if="maxLength && maxLength !== 0" class="char-counter">
       Caracteres {{ valueInput?.length || 0 }}/{{ maxLength }}
     </div>
@@ -34,6 +46,9 @@ export default {
       required: false
     },
     suffix: {
+      type: String
+    },
+    prefix: {
       type: String
     },
     maxLength: {
@@ -149,7 +164,7 @@ export default {
 <style lang="scss">
 .inputLocator {
   width: 100%;
-  min-width: 250px;
+  min-width: 100px;
   max-width: 540px;
   border: none !important;
   border-radius: 10px !important;
@@ -226,7 +241,7 @@ export default {
     --v-field-border-opacity: 1;
     background-color: rgb(var(--v-theme-white)) !important;
     font-family: Inter;
-    font-size: 12px !important;
+    font-size: 14px !important;
     font-style: normal;
     font-weight: 500 !important;
     line-height: 16px;
@@ -277,5 +292,22 @@ export default {
 
 .error-field :deep(.v-input--error .v-field__outline) {
   color: #8f2c3d !important;
+}
+
+.v-text-field__prefix {
+  min-height: auto;
+  padding-top: 13px;
+  padding-bottom: 0;
+  padding-left: 0;
+  margin: 0!important;
+  color: rgb(var(--v-theme-placeholderCampo));
+  font-family: Inter;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+.input-valor .v-field__input {
+    text-align: end!important;
 }
 </style>

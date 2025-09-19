@@ -7,12 +7,14 @@ import VeterinarioCadastro from '../views/Veterinarios/Cadastrar.vue'
 import ConsultaList from '../views/Consultas/Listagem.vue'
 import Consultar from '../views/Consultas/Consultar.vue'
 import RelatorioList from '../views/Relatorios/Listagem.vue'
-import AdocaoList from '../views/Adocao/Listagem.vue'
-import AdocaoCadastro from '../views/Adocao/Cadastrar.vue'
+// import AdocaoList from '../views/Adocao/Listagem.vue'
+// import AdocaoCadastro from '../views/Adocao/Cadastrar.vue'
 import Empresa from '../layouts/Empresa.vue'
 import Login from '../layouts/Login.vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import Planos from '../layouts/Planos.vue'
+import ProdutoCadastrar from '../views/Financeiro/Produtos/Cadastrar.vue'
+import ProdutoListagem from '../views/Financeiro/Produtos/Listagem.vue'
 
 import { usePersistentStore } from '@/modules/commons/store';
 
@@ -51,8 +53,10 @@ const routes = [
 
       { path: 'relatorios', component: RelatorioList },
 
-      { path: 'adocao', component: AdocaoList },
-      { path: 'adocao/cadastrar', component: AdocaoCadastro },
+      { path: 'servicos', component: ProdutoListagem },
+      { path: 'servicos/cadastrar', component: ProdutoCadastrar },
+      // { path: 'adocao', component: AdocaoList },
+      // { path: 'adocao/cadastrar', component: AdocaoCadastro },
     ],
   },
 ]

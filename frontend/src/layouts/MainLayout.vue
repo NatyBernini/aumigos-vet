@@ -69,8 +69,9 @@ import iconCadastrarPaciente from '../assets/icons/iconeCadastro.png'
 
 import iconeVeterinarios from '../assets/icons/iconeVeterinarios.png'
 import iconeConsulta from '../assets/icons/iconeConsulta.png'
-import iconeAdocaoGato from '../assets/icons/iconeAdocaoGato.png'
+// import iconeAdocaoGato from '../assets/icons/iconeAdocaoGato.png'
 import iconeFormulario from '../assets/icons/iconeFormulario.png'
+import iconeServices from '../assets/icons/iconServicesProducts.png'
 
 const drawer = ref(true)
 
@@ -100,18 +101,26 @@ const menuItems = [
       { title: 'Agendar', to: '/consultas/agendar', icon: iconCadastrarPaciente },
     ],
   },
-  {
-    title: 'Adoção',
-    icon: iconeAdocaoGato,
-    children: [
-      { title: 'Listagem', to: '/adocao', icon: iconListagemPaciente },
-      { title: 'Cadastrar', to: '/adocao/cadastrar', icon: iconCadastrarPaciente },
-    ],
-  },
+  // {
+  //   title: 'Adoção',
+  //   icon: iconeAdocaoGato,
+  //   children: [
+  //     { title: 'Listagem', to: '/adocao', icon: iconListagemPaciente },
+  //     { title: 'Cadastrar', to: '/adocao/cadastrar', icon: iconCadastrarPaciente },
+  //   ],
+  // },
   {
     title: 'Relatórios',
     icon: iconeFormulario,
     to: '/relatorios'
+  },
+    {
+    title: 'Serviços',
+    icon: iconeServices,
+    children: [
+      { title: 'Listagem', to: '/servicos', icon: iconListagemPaciente },
+      { title: 'Cadastrar', to: '/servicos/cadastrar', icon: iconCadastrarPaciente },
+    ],
   },
 ]
 
@@ -385,5 +394,10 @@ thead {
   >span {
     font-weight: 500;
   }
+}
+
+.row-padrao {
+  gap: 20px;
+  margin: 0;
 }
 </style>
