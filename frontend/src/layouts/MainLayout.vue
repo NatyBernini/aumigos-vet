@@ -74,6 +74,7 @@ import { ref, onMounted } from 'vue'
 
 import iconePacientes from '../assets/icons/iconePacientes.png'
 import iconListagemPaciente from '../assets/icons/iconeLista.png'
+import iconAgenda from '../assets/icons/agendamento.png'
 import iconCadastrarPaciente from '../assets/icons/iconeCadastro.png'
 
 import iconeVeterinarios from '../assets/icons/iconeVeterinarios.png'
@@ -116,9 +117,9 @@ const menuItems = [
     title: 'Consultas',
     icon: iconeConsulta,
     children: [
-      { title: 'Listagem', to: '/consultas', icon: iconListagemPaciente },
+      { title: 'Agenda', to: '/consultas', icon: iconListagemPaciente },
       { title: 'Consultar', to: '/consultas/consultar', icon: iconCadastrarPaciente },
-      { title: 'Agendar', to: '/consultas/agendar', icon: iconCadastrarPaciente },
+      { title: 'Agendar', to: '/consultas/agendar', icon: iconAgenda },
     ],
   },
   // {
@@ -324,7 +325,7 @@ onMounted(() => {
 
 .sub-page {
   margin-top: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   color: #565656;
   display: flex;
   align-items: center;

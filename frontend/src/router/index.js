@@ -51,7 +51,7 @@ const routes = [
       { path: 'veterinarios/cadastrar', component: VeterinarioCadastro },
 
       { path: 'consultas', component: ConsultaList },
-      { path: 'consultas/consultar', component: Consultar },
+      { path: 'consultas/consultar', component: Consultar,  name: 'Consultar', },
 
       { path: 'relatorios', component: RelatorioList },
 
