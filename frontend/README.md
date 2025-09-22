@@ -11,3 +11,6 @@ npm install @fontsource/poppins
 
 - Para importar um peso específico: 
 import "@fontsource/poppins/700.css";
+
+# Atribuições e direitos autorais
+<a href="https://www.flaticon.com/br/icones-gratis/bloco-de-anotacoes" title="bloco de anotações ícones">Bloco de anotações ícones criados por MEDZ - Flaticon</a>
