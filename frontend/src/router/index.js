@@ -15,6 +15,8 @@ import MainLayout from '../layouts/MainLayout.vue'
 import Planos from '../layouts/Planos.vue'
 import ProdutoCadastrar from '../views/Financeiro/Produtos/Cadastrar.vue'
 import ProdutoListagem from '../views/Financeiro/Produtos/Listagem.vue'
+import CaixaListagem from '../views/Financeiro/Caixa/Listagem.vue'
+import CaixaPagamento from '../views/Financeiro/Caixa/Pagamento.vue'
 
 import { usePersistentStore } from '@/modules/commons/store';
 
@@ -55,6 +57,8 @@ const routes = [
 
       { path: 'servicos', component: ProdutoListagem },
       { path: 'servicos/cadastrar', component: ProdutoCadastrar },
+      { path: 'caixa', component: CaixaListagem },
+      { path: 'caixa/pagamento/:id',  name: 'Pagamento', component: CaixaPagamento, props: true  },
       // { path: 'adocao', component: AdocaoList },
       // { path: 'adocao/cadastrar', component: AdocaoCadastro },
     ],

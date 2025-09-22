@@ -1,17 +1,19 @@
 <template>
   <v-app>
-    <v-navigation-drawer v-model="drawer" app permanent width="250">
-      <v-list density="compact" nav>
-        <v-list-item>
-          <v-list-item-title class="text-h6 title-menu-lateral">
-            <v-list-item-icon>
-              <img src="../assets/logoAumigos.png" alt="Ícone" class="menu-title-icon mt-10 mb-10" />
-            </v-list-item-icon>
-          </v-list-item-title>
-        </v-list-item>
+    <!-- Drawer -->
+    <v-navigation-drawer v-model="drawer" app :permanent="!isMobile" temporary width="250">
+      <!-- Header do Drawer -->
+      <div class="d-flex align-center justify-center pa-10">
+        <img src="../assets/logoAumigos.png" alt="Ícone" class="menu-title-icon mt-2 mb-2" />
+      </div>
 
+        <!-- Botão de fechar só no mobile -->
+        <v-btn v-if="isMobile" icon="mdi-close" variant="text" @click="drawer = false" />
+      <v-divider></v-divider>
+
+      <!-- Lista de menus -->
+      <v-list density="compact" nav>
         <template v-for="(item, index) in menuItems" :key="index">
-          <!-- Se tiver filhos, usa v-list-group -->
           <v-list-group v-if="item.children">
             <template #activator="{ props }">
               <v-list-item v-bind="props">
@@ -30,7 +32,6 @@
             </v-list-item>
           </v-list-group>
 
-          <!-- Se não tiver filhos, vai direto para a rota -->
           <v-list-item v-else :to="item.to" link nav>
             <v-list-item-icon>
               <img :src="item.icon" alt="Ícone" class="menu-icon" />
@@ -40,28 +41,36 @@
         </template>
       </v-list>
 
-
       <!-- Rodapé -->
       <div class="menu-footer">
         <v-divider class="divider-Menu-Lateral"></v-divider>
-
         <span>by NatiBernini</span>
       </div>
     </v-navigation-drawer>
 
+
+    <!-- AppBar -->
     <v-app-bar app dark>
-      <v-toolbar-title>Natália Bernini
-        <img src="../assets/icons/fotoPerfil.jpg" alt="Ícone" class="menu-user-icon" /></v-toolbar-title>
+      <!-- Hamburguer só aparece no mobile -->
+      <v-app-bar-nav-icon v-if="isMobile" @click="drawer = !drawer" />
+
+      <v-toolbar-title>
+        Natália Bernini
+        <img src="../assets/icons/fotoPerfil.jpg" alt="Ícone" class="menu-user-icon" />
+      </v-toolbar-title>
     </v-app-bar>
 
     <v-main>
-      <div class="container-conteudo pa-15"><router-view /></div>
+      <div :class="['container-conteudo', isMobile ? 'pa-3' : 'pa-15']">
+        <router-view />
+      </div>
     </v-main>
+
   </v-app>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 import iconePacientes from '../assets/icons/iconePacientes.png'
 import iconListagemPaciente from '../assets/icons/iconeLista.png'
@@ -72,8 +81,19 @@ import iconeConsulta from '../assets/icons/iconeConsulta.png'
 // import iconeAdocaoGato from '../assets/icons/iconeAdocaoGato.png'
 import iconeFormulario from '../assets/icons/iconeFormulario.png'
 import iconeServices from '../assets/icons/iconServicesProducts.png'
+import iconCaixa from '../assets/icons/iconCaixa.png'
 
 const drawer = ref(true)
+const isMobile = ref(false)
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 960 // breakpoint padrão (md)
+  if (isMobile.value) {
+    drawer.value = false
+  } else {
+    drawer.value = true
+  }
+}
 
 const menuItems = [
   {
@@ -114,7 +134,7 @@ const menuItems = [
     icon: iconeFormulario,
     to: '/relatorios'
   },
-    {
+  {
     title: 'Serviços',
     icon: iconeServices,
     children: [
@@ -122,8 +142,17 @@ const menuItems = [
       { title: 'Cadastrar', to: '/servicos/cadastrar', icon: iconCadastrarPaciente },
     ],
   },
+    {
+    title: 'Caixa',
+    icon: iconCaixa,
+    to: '/caixa'
+  },
 ]
 
+onMounted(() => {
+  checkMobile()
+  window.addEventListener("resize", checkMobile)
+})
 </script>
 
 <style lang="scss">
@@ -137,6 +166,12 @@ const menuItems = [
 
 .title-page {
   font-size: 26px;
+  font-weight: 500;
+  color: #434343;
+}
+
+.subtitle-padrao {
+  font-size: 20px;
   font-weight: 500;
   color: #434343;
 }

@@ -155,6 +155,13 @@ export function formatPhoneNumberRaw(value: string): string {
     return digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim()
   }
 }
+// Função para formatar valores em Real (BRL)
+export const formatCurrency = (valor: number): string => {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(valor)
+}
 // const validateIntegerInput = (event: Event) => {
 //   const inputElement = event.target as HTMLInputElement;
 //   let value = inputElement.value;
