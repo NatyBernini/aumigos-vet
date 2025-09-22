@@ -21,7 +21,7 @@
     <span v-if="showMaxText && !isLimitExceeded" :class="maxTextClass"> Limite de {{ maxLength }} caracteres </span>
 
     <span v-if="isLimitExceeded" :class="maxTextClass">
-      Limite de caracteres excedido! {{ maxLength }}
+      Limite de caracteres atingido! {{ maxLength }}
       <span class="total-caracteres-text-area-{{ maxLength }}">/{{ maxLength }}</span>
     </span>
 
@@ -72,7 +72,6 @@ export default {
   computed: {
     textClass() {
       this.isLimitExceeded = this.charCount >= this.maxLength;
-      return this.isLimitExceeded || this.isInvalid ? 'error-border' : '';
     },
     counterClass() {
       return this.isLimitExceeded ? 'text-red' : 'textInfo';
@@ -122,15 +121,17 @@ export default {
 </script>
 <style lang="scss">
 .wrap-textarea {
+  max-width: 400px!important;
+  margin: 0;
   padding: 0;
   .v-field__input {
     height: 80px !important;
     color: var(--cinza-escuro, #797979);
-    font-family: Inter;
+    font-family: 'Poppins';
     font-size: 14px;
     font-style: normal;
     font-weight: 400;
-    line-height: 20px; /* 142.857% */
+    line-height: 20px;
   }
 
   .textInfo {
@@ -172,7 +173,7 @@ export default {
     opacity: 1;
 
     color: var(--error, #d14a4a);
-    font-family: Inter;
+    font-family: 'Poppins';
     font-size: 11px;
     font-style: normal;
     font-weight: 400;
@@ -181,7 +182,7 @@ export default {
 
   .total-caracteres-text-area-200 {
     color: var(--placeholder-campo, #b0b0b0);
-    font-family: Inter;
+    font-family: 'Poppins';
     font-size: 11px;
     font-style: normal;
     font-weight: 400;
@@ -193,7 +194,7 @@ export default {
     .v-label {
       top: 10px;
       color: var(--placeholder-campo, #b0b0b0);
-      font-family: Inter;
+      font-family: 'Poppins';
       font-size: 14px;
       font-style: normal;
       font-weight: 400;
@@ -208,7 +209,7 @@ export default {
     }
     .v-field.v-field--active .v-label.v-field-label--floating {
       color: var(--cinza-escuro, #797979);
-      font-family: Inter;
+      font-family: 'Poppins';
       font-size: 12px;
       font-style: normal;
       font-weight: 500;

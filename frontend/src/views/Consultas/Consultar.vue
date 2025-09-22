@@ -4,16 +4,14 @@
       Cadastro de Consulta
       <img src="/src/assets/icons/iconLapisCadastro.png" alt="Ícone" class="menu-title-icon" />
     </p>
-
-    <p class="sub-page">
-      Consultas / <span class="aba-atual">Cadastrar</span>
-      <img src="/src/assets/icons/iconeCadastro.png" alt="Ícone" class="menu-sub-icon" />
+    <p class="sub-page">Consultas / <span class="aba-atual">Cadastrar</span>
+      <img src="/./src/assets/icons/iconeCadastro.png" alt="Ícone" class="menu-sub-icon" />
     </p>
-
     <v-tabs v-model="tab">
       <v-tab value="dados">Dados Básicos</v-tab>
       <v-tab value="anamnese">Anamnese Sistemas</v-tab>
       <v-tab value="historico">Histórico Clínico e Exame Físico</v-tab>
+      <v-tab value="servicos">Serviços e Produtos</v-tab>
     </v-tabs>
 
     <v-card-text>
@@ -21,10 +19,14 @@
         <v-tabs-window-item value="dados" class="pt-5">
           <v-form ref="formRef" @submit.prevent="submit">
             <v-row class="row-info-basicas">
-              <v-select v-model="pacienteSelecionado" :items="pacientes" label="Paciente*"
-                placeholder="Selecione um paciente" :rules="required" dense outlined max-width="300px" />
-              <v-select v-model="responsavelAtendimento" :items="veterinarios" label="Responsável Atendimento*"
-                placeholder="Selecione um veterinário" :rules="required" dense outlined max-width="300px" />
+
+              <combo v-model="pacienteSelecionado" :items="pacientes" :extra-items="pacientes" label="Paciente*"
+                variant="outlined" id="animal" :isRequired="false" :isMultipleSelect="false"
+                class="container-combobox-padrao" placeholder="Selecione o Paciente" max-width="300px" />
+
+              <combo v-model="responsavelAtendimento" :items="veterinarios" :extra-items="veterinarios"
+                label="Veterinário*" variant="outlined" id="animal" :isRequired="false" :isMultipleSelect="false"
+                class="container-combobox-padrao" placeholder="Selecione um veterinário" max-width="300px" />
               <div>
                 <v-text-field v-model="dataAtendimento" label="Data da Consulta" type="date" :max="hoje"
                   :rules="[validarDataMax]" max-width="350px" @input="validarCampo" />
@@ -38,17 +40,42 @@
             </v-row>
 
 
-            <v-row class="row-info-basicas"> <v-textarea v-model="queixa" label="Queixa Principal / Histórico recente"
-                :rules="required" max-width="500px" />
-              <v-textarea v-model="suspeitaClinica" label="Suspeita Clínica" max-width="500px" /></v-row>
+            <v-row class="row-info-basicas">
+              <textArea :modelValue="textarea.queixa" @update:modelValue="(value: any) => (textarea.queixa = value)"
+                :label="'Queixa Principal / Histórico recente'" class="wrap-textarea" :maxLength="300"
+                placeholder="Detalhe mais sobre as queixas principais..">
+                        </textArea>
 
-            <v-row class="row-info-basicas"> <v-textarea v-model="exames" label="Exames Realizados" max-width="500px" />
-              <v-textarea v-model="tratamento" label="Tratamento Estabelecido" max-width="500px" /></v-row>
+              <textArea :modelValue="textarea.suspeitaClinica"
+                @update:modelValue="(value: any) => (textarea.suspeitaClinica = value)" :label="'Suspeita Clínica'"
+                class="wrap-textarea" :maxLength="300" placeholder="Detalhe mais sobre a suspeita clínica..">
+                        </textArea>
+            </v-row>
+
+            <v-row class="row-info-basicas">
+
+              <textArea :modelValue="textarea.exames" @update:modelValue="(value: any) => (textarea.exames = value)"
+                :label="'Exames Realizados'" class="wrap-textarea" :maxLength="300"
+                placeholder="Detalhe mais sobre os exames realizados..">
+                        </textArea>
+              <textArea :modelValue="textarea.tratamento"
+                @update:modelValue="(value: any) => (textarea.tratamento = value)" :label="'Tratamento Estabelecido'"
+                class="wrap-textarea" :maxLength="300" placeholder="Detalhe mais sobre o tratamento estabelecido..">
+                        </textArea>
+            </v-row>
 
 
 
-            <v-row class="row-info-basicas"> <v-textarea v-model="prognostico" label="Prognóstico" max-width="500px" />
-              <v-textarea v-model="destinacao" label="Destinação do Paciente" max-width="500px" /></v-row>
+            <v-row class="row-info-basicas">
+              <textArea :modelValue="textarea.prognostico"
+                @update:modelValue="(value: any) => (textarea.prognostico = value)" :label="'Prognóstico'"
+                class="wrap-textarea" :maxLength="300" placeholder="Detalhe mais sobre o prognóstico..">
+                        </textArea>
+              <textArea :modelValue="textarea.destinacao"
+                @update:modelValue="(value: any) => (textarea.destinacao = value)" :label="'Destinação do Paciente'"
+                class="wrap-textarea" :maxLength="300" placeholder="Detalhe mais sobre a destinação do paciente..">
+                        </textArea>
+            </v-row>
 
             <v-row class="mt-4 row-info-basicas">
               <label class="me-4">Retorno?</label>
@@ -98,12 +125,12 @@
                 <v-col class="align-center">
                   <span class="font-weight-medium">{{ campo.label }}</span>
                   <v-row class="mt-2">
-                    <v-radio-group v-model="campo.resposta"  inline density="compact">
+                    <v-radio-group v-model="campo.resposta" inline density="compact">
                       <v-radio label="Sim" value="sim" class="mr-4" />
                       <v-radio label="Não" value="nao" />
                     </v-radio-group>
-                    <v-text-field :disabled="campo.resposta !== 'sim'" v-model="campo.especificar" width="300px" label="Especificar" dense
-                      outlined class="mt-2 ml-8" />
+                    <v-text-field :disabled="campo.resposta !== 'sim'" v-model="campo.especificar" width="300px"
+                      label="Especificar" dense outlined class="mt-2 ml-8" />
                   </v-row>
 
                 </v-col>
@@ -150,22 +177,146 @@
             </v-row>
 
             <h4 class="mt-8 mb-2">Alimentação</h4>
-              <v-row>
-                  <v-checkbox  v-model="alimentacaoSelecionada" v-for="(opcao, index) in opcoesAlimentacao" :key="index" :label="opcao" :value="opcao" hide-details />
-              </v-row>
+            <v-row>
+              <v-checkbox v-model="alimentacaoSelecionada" v-for="(opcao, index) in opcoesAlimentacao" :key="index"
+                :label="opcao" :value="opcao" hide-details />
+            </v-row>
 
-            <v-textarea  v-if="alimentacaoSelecionada.includes('Outros')" v-model="alimentacaoOutros" width="400px"
+            <v-textarea v-if="alimentacaoSelecionada.includes('Outros')" v-model="alimentacaoOutros" width="400px"
               label="Especificar outros" dense outlined class="mt-2" />
           </v-form>
         </v-tabs-window-item>
 
+        <v-tabs-window-item value="servicos" class="pt-5">
+          <p class="subtitle-padrao">Produtos</p>
+          <v-card class="card-informativo mt-2" v-if="!produtosExtras.length"><v-icon
+              class="mr-2">mdi-alert-circle</v-icon>Para adicionar um ou mais produtos, clique no botão abaixo.</v-card>
+          <v-row class="ma-0 mt-5 mb-5 row-btn-produtos">
+            <v-btn class="btn-padrao" @click="dialog = true">
+              Adicionar Produto
+            </v-btn>
+            <v-btn v-if="produtosExtras.length" class="btn-padrao" type="submit" @click=" produtosExtras = []">
+              Remover Todos os Produtos
+            </v-btn>
+          </v-row>
+
+          <v-card class="card-resumo-consulta" v-if="produtosExtras.length">
+            <v-card-text>
+              <v-table>
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th class="text-center">Qtd</th>
+                    <th class="text-right">Total</th>
+                    <th class="text-center">Remover</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in produtosExtras" :key="index">
+                    <td>{{ item.nome }}</td>
+                    <td class="text-center">{{ item.qtd }}</td>
+                    <td class="text-right">{{ formatCurrency(item.total) }}</td>
+                    <td class="text-center">
+                      <v-btn icon="mdi-close" size="small" variant="tonal" @click="removeProduto(item)" />
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
+              <p class="title-page mt-10">
+                TOTAL: {{ formatCurrency(totalGeral) }}
+              </p>
+            </v-card-text>
+          </v-card>
+        </v-tabs-window-item>
+
       </v-tabs-window>
     </v-card-text>
+
+    <v-dialog v-model="dialog" max-width="900px">
+      <v-card class="pa-5">
+        <v-card-title>
+          <span class="text-h6">Adicionar Produto</span>
+          <v-btn text @click="dialog = false">X</v-btn>
+        </v-card-title>
+        <v-card-text>
+          <!-- Campo de pesquisa -->
+          <v-text-field v-model="search" label="Pesquisar por nome ou categoria" prepend-inner-icon="mdi-magnify"
+            clearable />
+
+          <!-- Lista de produtos -->
+          <v-data-table :items-per-page="-1">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Categoria</th>
+                <th class="text-center">Preço</th>
+                <th class="text-center">Qtd</th>
+                <th class="text-center">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(produto, i) in paginatedProducts" :key="i">
+                <td>{{ produto.nome }}</td>
+                <td>{{ produto.categoria }}</td>
+                <td class="text-center">{{ formatCurrency(produto.preco) }}</td>
+                <td class="text-center">
+                  <v-text-field v-model.number="quantidades[produto.nome]" type="number" min="1" density="compact"
+                    style="max-width: 70px" />
+                </td>
+                <td class="text-center">
+                  <v-btn icon="mdi-plus" size="small" variant="tonal" color="primary" @click="addProduto(produto)" />
+                </td>
+              </tr>
+            </tbody>
+
+            <!-- Rodapé com paginação -->
+            <template #bottom>
+              <div class="custom-footer">
+                <span>{{ startIndex }} - {{ endIndex }} de {{ filteredProducts.length }}</span>
+
+
+                <!-- Navegação manual -->
+                <div class="container-pagination">
+                  <v-btn class="btn-pagination" icon @click="prevPage" :disabled="page <= 1">
+                    <v-icon>mdi-chevron-left</v-icon>
+                  </v-btn>
+                  <v-btn class="btn-pagination" icon @click="nextPage" :disabled="page >= pageCount">
+                    <v-icon>mdi-chevron-right</v-icon>
+                  </v-btn>
+                </div>
+
+                <v-select v-model="itemsPerPage" :items="[5, 10, 20]" label="Itens por página" density="compact"
+                  hide-details variant="outlined" style="max-width: 90px; margin-left: 8px" />
+
+              </div>
+            </template>
+          </v-data-table>
+
+
+          <!-- Mensagem de feedback -->
+          <v-snackbar v-model="snackbar" timeout="2000" color="success">
+            Produto adicionado!
+          </v-snackbar>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text @click="dialog = false">Fechar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
+
+// COMPONENTES
+import combo from '@/components/select.vue'
+import textArea from '@/components/textArea.vue'
+import inputText from '@/components/inputText.vue'
+
+// SERVICES
+import { formatCurrency } from '@/utils/formaUtils'
 
 const tab = ref('dados')
 const formRef = ref()
@@ -175,6 +326,9 @@ const required = [(v: string) => !!v || 'Campo obrigatório']
 // Dados simulados
 const pacientes = ['Tigrinho', 'Frajola', 'Mingau']
 const veterinarios = ['Dr. Ana', 'Dr. João', 'Dr. Carla']
+const dialog = ref(false)
+const search = ref("")
+const snackbar = ref(false)
 
 // Campos do formulário
 const pacienteSelecionado = ref()
@@ -182,15 +336,128 @@ const responsavelAtendimento = ref()
 const dataAtendimento = ref('')
 const hoje = new Date().toISOString().split('T')[0]
 const horaConsulta = ref('')
-const queixa = ref('')
-const suspeitaClinica = ref('')
-const exames = ref('')
-const tratamento = ref('')
-const prognostico = ref('')
-const destinacao = ref('')
+const textarea = ref({ queixa: '', suspeitaClinica: '', exames: '', tratamento: '', prognostico: '', destinacao: '' })
 const temRetorno = ref('nao')
 const dataRetorno = ref('')
 const motivoRetorno = ref('')
+
+const page = ref(1)
+const itemsPerPage = ref(5)
+
+watch(itemsPerPage, () => {
+  page.value = 1
+})
+
+const pageCount = computed(() =>
+  Math.ceil(filteredProducts.value.length / itemsPerPage.value)
+)
+
+const startIndex = computed(() =>
+  filteredProducts.value.length === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1
+)
+
+const endIndex = computed(() =>
+  Math.min(page.value * itemsPerPage.value, filteredProducts.value.length)
+)
+
+const paginatedProducts = computed(() => {
+  const start = (page.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredProducts.value.slice(start, end)
+})
+
+function nextPage() {
+  if (page.value < pageCount.value) page.value++
+}
+
+function prevPage() {
+  if (page.value > 1) page.value--
+}
+
+
+// interface
+interface ItemConsulta {
+  nome: string
+  qtd: number
+  total: number
+}
+interface Produto {
+  nome: string
+  categoria: string
+  preco: number
+}
+
+
+const produtosExtras = ref<ItemConsulta[]>([])
+
+// Lista de produtos disponíveis
+const produtos = ref<Produto[]>([
+  { nome: "Ração Premium", categoria: "Alimento", preco: 200 },
+  { nome: "Coleira Anti-Pulgas", categoria: "Acessório", preco: 80 },
+  { nome: "Vacina Gripe Canina", categoria: "Vacina", preco: 100 },
+  { nome: "Sachê KelCat", categoria: "Alimento", preco: 2.89 },
+  { nome: "Banho e Tosa", categoria: "Serviço", preco: 50 },
+  { nome: "Ração Úmida Quatree Supreme para Cachorros Adultos", categoria: "Alimento", preco: 3.49 },
+  { nome: "Vacina Gripe Canina", categoria: "Vacina", preco: 100 },
+  { nome: "Sachê KelCat", categoria: "Alimento", preco: 2.89 },
+  { nome: "Ração Premium", categoria: "Alimento", preco: 200 },
+  { nome: "Coleira Anti-Pulgas", categoria: "Acessório", preco: 80 },
+  { nome: "Vacina Gripe Canina", categoria: "Vacina", preco: 100 },
+  { nome: "Sachê KelCat", categoria: "Alimento", preco: 2.89 },
+  { nome: "Banho e Tosa", categoria: "Serviço", preco: 50 },
+])
+// Quantidades temporárias no modal
+const quantidades = reactive<Record<string, number>>({})
+
+// Função para remover 1 unidade do produto
+const removeProduto = (item: ItemConsulta) => {
+  const produto = produtosExtras.value.find((p) => p.nome === item.nome)
+  if (!produto) return
+
+  if (produto.qtd > 1) {
+    produto.qtd -= 1
+    produto.total -= produto.total / (produto.qtd + 1) // recalcula o valor unitário e diminui
+  } else {
+    produtosExtras.value = produtosExtras.value.filter((p) => p.nome !== item.nome)
+  }
+}
+// Filtrar produtos por nome ou categoria
+const filteredProducts = computed(() => {
+  if (!search.value) return produtos.value
+  return produtos.value.filter(
+    (p) =>
+      p.nome.toLowerCase().includes(search.value.toLowerCase()) ||
+      p.categoria.toLowerCase().includes(search.value.toLowerCase())
+  )
+})
+
+// Função para adicionar produto à lista de extras
+const addProduto = (produto: Produto) => {
+  const qtd = quantidades[produto.nome] && quantidades[produto.nome] > 0 ? quantidades[produto.nome] : 1
+  const existente = produtosExtras.value.find((p) => p.nome === produto.nome)
+
+  if (existente) {
+    existente.qtd += qtd
+    existente.total += produto.preco * qtd
+  } else {
+    produtosExtras.value.push({
+      nome: produto.nome,
+      qtd,
+      total: produto.preco * qtd,
+    })
+  }
+
+  // Resetar quantidade para 1
+  quantidades[produto.nome] = 1
+  snackbar.value = true
+}
+
+// Soma todos os itens da consulta + extras
+const totalGeral = computed(() => {
+  const totalExtras = produtosExtras.value.reduce((acc, item) => acc + item.total, 0)
+  return totalExtras
+})
+
 
 function submit() {
   console.log({
@@ -198,12 +465,12 @@ function submit() {
     responsavelAtendimento: responsavelAtendimento.value,
     dataAtendimento: dataAtendimento.value,
     horaConsulta: horaConsulta.value,
-    queixa: queixa.value,
-    suspeitaClinica: suspeitaClinica.value,
-    exames: exames.value,
-    tratamento: tratamento.value,
-    prognostico: prognostico.value,
-    destinacao: destinacao.value,
+    queixa: textArea.value.queixa,
+    suspeitaClinica: textArea.value.suspeitaClinica,
+    exames: textArea.value.exames,
+    tratamento: textArea.value.tratamento,
+    prognostico: textArea.value.prognostico,
+    destinacao: textArea.value.destinacao,
     temRetorno: temRetorno.value,
     dataRetorno: dataRetorno.value,
     motivoRetorno: motivoRetorno.value
@@ -313,28 +580,6 @@ defineOptions({
 </script>
 
 <style scoped>
-.title-page {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.sub-page {
-  font-size: 16px;
-  color: #777;
-}
-
-.aba-atual {
-  font-weight: bold;
-  color: #000;
-}
-
-.menu-title-icon,
-.menu-sub-icon {
-  width: 20px;
-  height: 20px;
-  margin-left: 8px;
-}
-
 .container-sintomas {
   width: 250px;
   padding: 15px;

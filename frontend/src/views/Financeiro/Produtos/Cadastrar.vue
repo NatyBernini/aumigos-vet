@@ -44,10 +44,10 @@
                         <v-switch v-model="status" :label="`Status: ${status}`" false-value="inativo" true-value="ativo"
                             hide-details></v-switch>
 
-                            <textArea :modelValue="textarea"
-                @update:modelValue="(value: any) => (textarea = value)" :label="'Descrição'"
-                class="wrap-textarea" :maxLength="300" placeholder="Detalhe mais sobre o serviço ou produto...">
-              </textArea>
+                        <textArea :modelValue="textarea" @update:modelValue="(value: any) => (textarea = value)"
+                            :label="'Descrição'" class="wrap-textarea" :maxLength="300"
+                            placeholder="Detalhe mais sobre o serviço ou produto...">
+                        </textArea>
                         <!-- Botões -->
                         <div class="container-btn mt-5">
                             <p class="msg-auxiliar">Campos Obrigatórios*</p>

@@ -193,28 +193,5 @@ thead {
   color: #434343;
 }
 
-.btn-pagination.v-btn--icon.v-btn--density-default {
-  width: 30px!important;
-  height: 30px!important;
-  --v-btn-size: 15px;
-}
 
-.container-pagination {
-  gap: 12px;
-  display: flex;
-}
-
-.custom-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border-top: 1px solid #e0e0e0;
-  flex-wrap: wrap;
-  gap: 1rem;
-
-  > span {
-    font-weight: 500;
-  }
-}
 </style>

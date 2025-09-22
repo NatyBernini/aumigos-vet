@@ -109,60 +109,79 @@
             </div>
         </v-card-text>
 
-        <v-dialog v-model="dialog" max-width="700px">
-            <v-card>
-                <v-card-title>
-                    <span class="text-h6">Adicionar Produto</span>
-                </v-card-title>
-                <v-card-text>
-                    <!-- Campo de pesquisa -->
-                    <v-text-field v-model="search" label="Pesquisar por nome ou categoria"
-                        prepend-inner-icon="mdi-magnify" clearable />
+       <v-dialog v-model="dialog" max-width="700px">
+  <v-card>
+    <v-card-title>
+      <span class="text-h6">Adicionar Produto</span>
+      <v-btn text @click="dialog = false">X</v-btn>
+    </v-card-title>
+    <v-card-text>
+      <!-- Campo de pesquisa -->
+      <v-text-field v-model="search" label="Pesquisar por nome ou categoria" prepend-inner-icon="mdi-magnify" clearable />
 
-                    <!-- Lista de produtos -->
-                    <v-table>
-                        <thead>
-                            <tr>
-                                <th>Produto</th>
-                                <th>Categoria</th>
-                                <th class="text-center">Preço</th>
-                                <th class="text-center">Qtd</th>
-                                <th class="text-center">Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(produto, i) in filteredProducts" :key="i">
-                                <td>{{ produto.nome }}</td>
-                                <td>{{ produto.categoria }}</td>
-                                <td class="text-center">{{ formatCurrency(produto.preco) }}</td>
-                                <td class="text-center">
-                                    <v-text-field v-model.number="quantidades[produto.nome]" type="number" min="1"
-                                        density="compact" style="max-width: 70px" />
-                                </td>
-                                <td class="text-center">
-                                    <v-btn icon="mdi-plus" size="small" variant="tonal" color="primary"
-                                        @click="addProduto(produto)" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </v-table>
+      <!-- Lista de produtos com paginação -->
+      <v-data-table :items-per-page="-1">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th class="text-center">Preço</th>
+            <th class="text-center">Qtd</th>
+            <th class="text-center">Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(produto, i) in paginatedProducts" :key="i">
+            <td>{{ produto.nome }}</td>
+            <td>{{ produto.categoria }}</td>
+            <td class="text-center">{{ formatCurrency(produto.preco) }}</td>
+            <td class="text-center">
+              <v-text-field v-model.number="quantidades[produto.nome]" type="number" min="1" density="compact" style="max-width: 70px" />
+            </td>
+            <td class="text-center">
+              <v-btn icon="mdi-plus" size="small" variant="tonal" color="primary" @click="addProduto(produto)" />
+            </td>
+          </tr>
+        </tbody>
 
-                    <!-- Mensagem de feedback -->
-                    <v-snackbar v-model="snackbar" timeout="2000" color="success">
-                        Produto adicionado!
-                    </v-snackbar>
-                </v-card-text>
-                <v-card-actions>
-                    <v-spacer />
-                    <v-btn text @click="dialog = false">Fechar</v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
+        <!-- Rodapé com paginação -->
+        <template #bottom>
+          <div class="custom-footer">
+            <span>{{ startIndex }} - {{ endIndex }} de {{ filteredProducts.length }}</span>
+
+            <!-- Navegação manual -->
+            <div class="container-pagination">
+              <v-btn class="btn-pagination" icon @click="prevPage" :disabled="page <= 1">
+                <v-icon>mdi-chevron-left</v-icon>
+              </v-btn>
+              <v-btn class="btn-pagination" icon @click="nextPage" :disabled="page >= pageCount">
+                <v-icon>mdi-chevron-right</v-icon>
+              </v-btn>
+            </div>
+
+            <v-select v-model="itemsPerPage" :items="[5, 10, 20]" label="Itens por página" density="compact"
+              hide-details variant="outlined" style="max-width: 90px; margin-left: 8px" />
+          </div>
+        </template>
+      </v-data-table>
+
+      <!-- Snackbar de feedback -->
+      <v-snackbar v-model="snackbar" timeout="2000" color="success">
+        Produto adicionado!
+      </v-snackbar>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer />
+      <v-btn text @click="dialog = false">Fechar</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
     </v-card>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, reactive, onMounted } from "vue"
+import { ref, computed, reactive, onMounted, watch } from "vue"
 import { formatCurrency } from "@/utils/formaUtils"
 
 // COMPONENTES
@@ -211,6 +230,8 @@ const tiposPagamento = ["Crédito", "Débito", "Dinheiro", "Pix", "Parcelado"]
 const formaPagamento = ref<string[]>([])
 const parcelas = ref<string | undefined>()
 const textInputs = ref<Record<string, string>>({})
+const page = ref(1)
+const itemsPerPage = ref(5)
 
 // Filtrar produtos por nome ou categoria
 const filteredProducts = computed(() => {
@@ -262,6 +283,37 @@ const totalGeral = computed(() => {
     const totalExtras = produtosExtras.value.reduce((acc, item) => acc + item.total, 0)
     return totalConsulta + totalExtras
 })
+
+
+watch(itemsPerPage, () => {
+  page.value = 1
+})
+
+const pageCount = computed(() =>
+  Math.ceil(filteredProducts.value.length / itemsPerPage.value)
+)
+
+const startIndex = computed(() =>
+  filteredProducts.value.length === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1
+)
+
+const endIndex = computed(() =>
+  Math.min(page.value * itemsPerPage.value, filteredProducts.value.length)
+)
+
+const paginatedProducts = computed(() => {
+  const start = (page.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredProducts.value.slice(start, end)
+})
+
+function nextPage() {
+  if (page.value < pageCount.value) page.value++
+}
+
+function prevPage() {
+  if (page.value > 1) page.value--
+}
 
 onMounted(() => {
     textInputs.value['input-nome'] = 'Mingau'

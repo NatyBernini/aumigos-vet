@@ -357,6 +357,22 @@ onMounted(() => {
 
 .v-card {
   box-shadow: none !important;
+
+  .v-card-title {    
+    display: flex !important;
+    justify-content: space-between;
+    color: #2e2e2e !important;
+    font-size: 14px !important;
+    font-weight: 600;
+    flex-direction: row;
+    flex-wrap: wrap;
+    text-wrap: auto;
+    .v-btn{
+      box-shadow: none!important;
+      min-width: auto;
+      padding: 0;
+    }
+  }
 }
 
 .v-row,
@@ -434,5 +450,11 @@ thead {
 .row-padrao {
   gap: 20px;
   margin: 0;
+}
+
+.card-informativo {
+  padding: 15px;
+  background-color: #FFE6CC;
+  border-radius: 10px;
 }
 </style>
