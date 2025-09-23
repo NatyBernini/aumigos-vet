@@ -7,7 +7,7 @@ export const useAppStore = defineStore('app', {
   state: (): AppState => ({
     loading: false,
     isAuthorized: false,
-    userData: null
+    userData: null,
   }),
 
   actions: {
@@ -17,19 +17,24 @@ export const useAppStore = defineStore('app', {
         const persistentStore = usePersistentStore();
 
         // Chama o endpoint de login
-        const response = await API.post('/usuarios/login/', { email, senha });
+        const response = await API.post('/usuarios/login/', { email, password: senha });
 
-        // Supondo que a resposta venha assim: { token: string, user: {...} }
-        const { token, user } = response;
+        // Backend retorna: { refresh, access, usuario, clinica_ativa }
+        const { access, refresh, usuario, clinica_ativa } = response;
 
-        // Salva o token no persistentStore
-        persistentStore.jwtToken = token;
+        // Salva os dados no persistentStore
+        persistentStore.jwtToken = access;
+        persistentStore.refreshToken = refresh;
+        persistentStore.clinicaAtiva = clinica_ativa ?? null;
 
         // Atualiza os dados do usuário e marca como autorizado
-        this.userData = user;
+        this.userData = usuario;
         this.isAuthorized = true;
+
+        // Retorna clinica_ativa para a página decidir o redirecionamento
+        return clinica_ativa ?? null;
+
       } catch (error: any) {
-        // Tratar erros de login
         console.error('Erro ao efetuar login:', error);
         this.isAuthorized = false;
         this.userData = null;
@@ -42,10 +47,13 @@ export const useAppStore = defineStore('app', {
     logout() {
       const persistentStore = usePersistentStore();
 
-      // Limpa token e dados do usuário
+      // Limpa token, clínica ativa e dados do usuário
       persistentStore.jwtToken = null;
+      persistentStore.refreshToken = null;
+      persistentStore.clinicaAtiva = null;
+
       this.userData = null;
       this.isAuthorized = false;
-    }
-  }
+    },
+  },
 });

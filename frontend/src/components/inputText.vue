@@ -1,6 +1,6 @@
 <template>
   <div class="input-text-container mb-4">
-    <v-text-field :label="label" :type="type" :model-value="valueInput" class="inputLocator"
+    <v-text-field :label="label" :type="type" :model-value="valueInput" class="inputPadrao"
       @update:model-value="handleInput" 
       :class="{
         'filled-class': valueInput,
@@ -14,13 +14,13 @@
       validate-on="submit" 
       variant="outlined" 
       autocomplete="off"
-      :maxlength="maxLength !== 0 ? maxLength : undefined" 
+      :maxlength="maxLength !== 0 ? maxLength : 100" 
       :rules="validationRules" 
       :disabled="disabled"
       :error="showError" 
       :error-messages="errorMessage" 
       @blur="validateField" />
-    <div v-if="maxLength && maxLength !== 0" class="char-counter">
+    <div v-if="maxLength && maxLength !== 0 && !ocultaContador" class="char-counter">
       Caracteres {{ valueInput?.length || 0 }}/{{ maxLength }}
     </div>
   </div>
@@ -32,6 +32,10 @@ export default {
   props: {
     label: {
       type: String,
+      required: false
+    },
+    ocultaContador: {
+      type: Boolean,
       required: false
     },
     valueInput: {
@@ -162,8 +166,7 @@ export default {
 </script>
 
 <style lang="scss">
-.inputLocator {
-  width: 100%;
+.inputPadrao {
   min-width: 100px;
   max-width: 540px;
   border: none !important;

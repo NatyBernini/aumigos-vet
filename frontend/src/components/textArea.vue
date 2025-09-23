@@ -18,7 +18,7 @@
       Caracteres {{ charCount }} / {{ maxLength }}
     </span>
 
-    <span v-if="showMaxText && !isLimitExceeded" :class="maxTextClass"> Limite de {{ maxLength }} caracteres </span>
+    <span v-if="showMaxText && !isLimitExceeded" :class="maxTextClass">{{ maxLength }} caracteres </span>
 
     <span v-if="isLimitExceeded" :class="maxTextClass">
       Limite de caracteres atingido! {{ maxLength }}

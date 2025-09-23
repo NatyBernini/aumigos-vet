@@ -139,7 +139,7 @@ import inputText from '@/components/inputText.vue';
 
 // SERVICES
 import { formatPhoneNumberRaw } from '@/utils/formaUtils';
-import { registerUser, loginUser, getMe } from '@/services/auth';
+import { registerUser} from '@/services/auth';
 import { usePersistentStore } from '@/modules/commons/store';
 import { useAppStore } from '@/modules/commons/store';
 
@@ -156,50 +156,45 @@ const persistentStore = usePersistentStore();
 const appStore = useAppStore();
 
 const updateInput = (id: string, newValue: string) => {
-  textInputs.value[id] = newValue;
+    textInputs.value[id] = newValue;
 };
 
 function onPhoneInput(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const oldValue = input.value;
-  const onlyNumbers = oldValue.replace(/\D/g, '').slice(0, 11);
-  const newValue = formatPhoneNumberRaw(onlyNumbers);
-  const cursorPos = input.selectionStart || 0;
+    const input = event.target as HTMLInputElement;
+    const oldValue = input.value;
+    const onlyNumbers = oldValue.replace(/\D/g, '').slice(0, 11);
+    const newValue = formatPhoneNumberRaw(onlyNumbers);
+    const cursorPos = input.selectionStart || 0;
 
-  textInputs.value['input-telefone'] = newValue;
+    textInputs.value['input-telefone'] = newValue;
 
-  nextTick(() => {
-    let newCursor = cursorPos;
-    if (newValue.length < oldValue.length) {
-      newCursor = cursorPos;
-    } else {
-      const diff = newValue.length - oldValue.length;
-      newCursor = cursorPos + diff;
-    }
-    if (newCursor < 0) newCursor = 0;
-    if (newCursor > newValue.length) newCursor = newValue.length;
-    input.setSelectionRange(newCursor, newCursor);
-  });
+    nextTick(() => {
+        let newCursor = cursorPos;
+        if (newValue.length < oldValue.length) {
+            newCursor = cursorPos;
+        } else {
+            const diff = newValue.length - oldValue.length;
+            newCursor = cursorPos + diff;
+        }
+        if (newCursor < 0) newCursor = 0;
+        if (newCursor > newValue.length) newCursor = newValue.length;
+        input.setSelectionRange(newCursor, newCursor);
+    });
 }
 
 // LOGIN 
 const onLogin = async () => {
   try {
-    const payload = {
-      email: textInputs.value['input-email-login'],
-      password: textInputs.value['input-senha-login']
-    };
+    const email = textInputs.value['input-email-login'];
+    const senha = textInputs.value['input-senha-login'];
 
-    const response = await loginUser(payload);
+    const clinicaAtiva = await appStore.login(email, senha);
 
-    // Atualiza o token no PersistentStore
-    persistentStore.jwtToken = response.access;
-
-    appStore.isAuthorized = true;
-    appStore.userData = response.user || null;
-    
-
-    router.push({ name: 'Clinica' });
+    if (clinicaAtiva) {
+      router.push({ name: 'Home' });
+    } else {
+      router.push({ name: 'Clinica' });
+    }
   } catch (error: any) {
     console.error('Erro ao fazer login:', error);
     alert(error?.response?.data?.detail || 'Falha ao realizar login');
@@ -208,53 +203,53 @@ const onLogin = async () => {
 
 // CADASTRO
 const onRegister = async () => {
-  try {
-    const senha = textInputs.value['input-senha'];
-    const cpf = textInputs.value['input-cpf'];
-    const dataNascimento = textInputs.value['input-nascimento'];
+    try {
+        const senha = textInputs.value['input-senha'];
+        const cpf = textInputs.value['input-cpf'];
+        const dataNascimento = textInputs.value['input-nascimento'];
 
-    if (!senha || senha.length < 8) {
-      alert("A senha precisa ter pelo menos 8 caracteres.");
-      return;
+        if (!senha || senha.length < 8) {
+            alert("A senha precisa ter pelo menos 8 caracteres.");
+            return;
+        }
+        if (!cpf) {
+            alert("CPF é obrigatório.");
+            return;
+        }
+        if (!dataNascimento) {
+            alert("Data de nascimento é obrigatória.");
+            return;
+        }
+
+        const payload = {
+            email: textInputs.value['input-email'],
+            senha: senha,
+            tipo_usuario: "admin_clinica",
+            pessoa: {
+                nome_completo: textInputs.value['input-nome'],
+                cpf: cpf,
+                data_nascimento: dataNascimento
+            },
+            contato: {
+                email: textInputs.value['input-email'],
+                telefones: [{ numero: textInputs.value['input-telefone'] }]
+            },
+            first_name: textInputs.value['input-nome'].split(' ')[0] || '',
+            last_name: textInputs.value['input-nome'].split(' ').slice(1).join(' ') || ''
+        };
+
+        const response = await registerUser(payload);
+        // Atualiza o token no PersistentStore
+        persistentStore.jwtToken = response.access;
+
+        appStore.isAuthorized = true;
+        appStore.userData = response.usuario || null;
+
+        router.push({ name: 'Clinica' });
+    } catch (error: any) {
+        console.error("Erro ao cadastrar usuário:", error);
+        alert(error?.response?.data ? JSON.stringify(error.response.data) : "Erro ao cadastrar usuário");
     }
-    if (!cpf) {
-      alert("CPF é obrigatório.");
-      return;
-    }
-    if (!dataNascimento) {
-      alert("Data de nascimento é obrigatória.");
-      return;
-    }
-
-    const payload = {
-      email: textInputs.value['input-email'],
-      senha: senha,
-      tipo_usuario: "admin_clinica",
-      pessoa: {
-        nome_completo: textInputs.value['input-nome'],
-        cpf: cpf,
-        data_nascimento: dataNascimento
-      },
-      contato: {
-        email: textInputs.value['input-email'],
-        telefones: [{ numero: textInputs.value['input-telefone'] }]
-      },
-      first_name: textInputs.value['input-nome'].split(' ')[0] || '',
-      last_name: textInputs.value['input-nome'].split(' ').slice(1).join(' ') || ''
-    };
-
-    const response = await registerUser(payload);
-    // Atualiza o token no PersistentStore
-    persistentStore.jwtToken = response.access;
-
-    appStore.isAuthorized = true;
-    appStore.userData = response.usuario || null;
-    
-    router.push({ name: 'Clinica' });
-  } catch (error: any) {
-    console.error("Erro ao cadastrar usuário:", error);
-    alert(error?.response?.data ? JSON.stringify(error.response.data) : "Erro ao cadastrar usuário");
-  }
 };
 </script>
 

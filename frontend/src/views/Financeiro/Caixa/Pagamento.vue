@@ -326,7 +326,7 @@ onMounted(() => {
 <style lang="scss">
 .card-resumo-consulta {
     max-width: 600px;
-    border: 1px solid #FF6B35;
+    border: 1px solid #ff8200;
     border-radius: 10px;
 }
 

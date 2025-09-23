@@ -40,9 +40,11 @@
                                                     v-model:valueInput="textInputs['input-nome']" id="input-nome"
                                                     append-inner-icon="mdi-account" required :maxLength="0" />
 
-                                                <inputText label="Telefone*" classe="input-locador" type="text" required
-                                                    @input="onPhoneInput($event)"
-                                                    v-model:valueInput="textInputs['input-telefone']" :maxLength="0" />
+                                            
+                                                <inputText label="Telefone*" type="text" required
+                                                    v-model:valueInput="textInputs['input-telefone']" id="input-telefone"
+                                                    placeholder="(00) 00000-0000"  :max-length=15
+                                                    :ocultaContador="true"/>
                                                 <inputText label="CNPJ*" classe="mb-4"
                                                     v-model:valueInput="textInputs['input-cnpj']" id="input-cnpj"
                                                     append-inner-icon="mdi-file-document" required :maxLength="0" />
@@ -160,7 +162,6 @@ import { getCidadesPorEstado, getEstados } from '../services/ibge'
 import { formatCep, limparCep, buscarEnderecoViaCep } from '../utils/cepUtils'
 import Logo from '../assets/logoAumigos.png'
 import { useRouter } from 'vue-router'
-import { formatPhoneNumberRaw } from '@/utils/formaUtils'
 
 // COMPONENTES
 import inputText from '@/components/inputText.vue'
@@ -168,6 +169,7 @@ import multipleCombobox from '@/components/multipleCombobox.vue'
 
 // SERVICES
 import { salvarClinica } from '@/services/clinica'
+import { formatPhoneNumber } from '@/utils/formaUtils'
 
 // Regras
 const required = [(v: string) => !!v || 'Campo obrigatório']
@@ -208,29 +210,6 @@ watch(foto, (novoArquivo) => {
         fotoPreview.value = undefined
     }
 })
-
-function onPhoneInput(event: Event) {
-    const input = event.target as HTMLInputElement
-    const oldValue = input.value
-    const onlyNumbers = oldValue.replace(/\D/g, '').slice(0, 11)
-    const newValue = formatPhoneNumberRaw(onlyNumbers)
-
-    const cursorPos = input.selectionStart || 0
-    textInputs.value['input-telefone'] = newValue
-
-    nextTick(() => {
-        let newCursor = cursorPos
-        if (newValue.length < oldValue.length) {
-            newCursor = cursorPos
-        } else {
-            const diff = newValue.length - oldValue.length
-            newCursor = cursorPos + diff
-        }
-        if (newCursor < 0) newCursor = 0
-        if (newCursor > newValue.length) newCursor = newValue.length
-        input.setSelectionRange(newCursor, newCursor)
-    })
-}
 
 async function onInputCep(e: Event) {
     const input = e.target as HTMLInputElement
@@ -322,20 +301,6 @@ async function carregarCidades() {
     }
 }
 
-watch(estadoSelecionado, () => {
-    if (estadoSelecionado.value) {
-        cidadeSelecionada.value = undefined
-        carregarCidades()
-    } else {
-        cidadeSelecionada.value = undefined
-    }
-})
-
-
-onMounted(async () => {
-    carregarEstados()
-})
-
 const submit = async () => {
     const dados = {
         estado: estadoSelecionado.value,
@@ -365,6 +330,35 @@ const submit = async () => {
     }
 
 }
+
+// WATCH
+watch(estadoSelecionado, () => {
+    if (estadoSelecionado.value) {
+        cidadeSelecionada.value = undefined
+        carregarCidades()
+    } else {
+        cidadeSelecionada.value = undefined
+    }
+})
+
+watch(
+  () => textInputs.value['input-telefone'],
+  (newValue) => {
+    if (!newValue) return
+
+    const formatted = formatPhoneNumber(newValue)
+
+    if (formatted !== newValue) {
+      textInputs.value['input-telefone'] = formatted
+    }
+  }
+)
+
+// MOUNTED
+onMounted(async () => {
+    carregarEstados()
+})
+
 </script>
 
 <style lang="scss" scoped>

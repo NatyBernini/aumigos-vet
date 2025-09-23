@@ -20,15 +20,27 @@
             <p>Informações Básicas</p>
             <v-col>
               <v-row class="row-info-basicas">
-                <v-text-field v-model="nameTutor" :rules="required" label="Nome completo*" max-width="400px" />
-                <v-text-field v-model="cpf" label="CPF*" :rules="[required]" max-width="170px" @input="onInputCpf"
-                  maxlength="14" />
-                <v-text-field v-model="rg" :rules="required" label="RG*" max-width="150px" @input="onInputRg"
-                  maxlength="12" />
+                <inputText label="Nome completo*" type="text" required v-model:valueInput="textInputs['input-nome']"
+                  id="input-nome" @update:valueInput="(value: any) => updateInput('input-nome', value)"
+                  style="width: 300px;" :max-length="0" />
+                <inputText label="CPF*" type="text" required v-model:valueInput="textInputs['input-cpf']" id="input-cpf"
+                  @update:valueInput="(value: any) => updateInput('input-cpf', value)" @input="onInputCpf"
+                  :max-length="0" />
+                <inputText label="RG*" type="text" required v-model:valueInput="textInputs['input-rg']" id="input-rg"
+                  @update:valueInput="(value: any) => updateInput('input-rg', value)" @input="onInputRg" maxlength="12"
+                  :max-length="0" />
+
               </v-row>
               <v-row class="row-info-basicas">
-                <v-text-field v-model="especialidade" :rules="required" label="Especialidade*" max-width="400px" />
-                <v-text-field v-model="crmv" :rules="required" label="CRMV*" max-width="100px" />
+                <inputText label="Especialidade*" type="text" required
+                  v-model:valueInput="textInputs['input-especialidade']" id="input-especialidade"
+                  @update:valueInput="(value: any) => updateInput('input-especialidade', value)" style="width: 300px;"
+                  :max-length="0" />
+
+                <inputText label="CRMV*" type="text" required v-model:valueInput="textInputs['input-crmv']"
+                  id="input-crmv" @update:valueInput="(value: any) => updateInput('input-crmv', value)"
+                  :max-length="0" />
+
               </v-row>
             </v-col>
 
@@ -36,34 +48,52 @@
             <v-col>
               <v-row class="row-info-basicas">
 
-                <v-select v-model="estadoSelecionado" :items="estados" item-value="value" label="Estado" dense outlined
-                  clearable filterable min-width="300px" max-width="300px" />
+                <multipleCombobox v-model="estadoSelecionado" :items="listEstados" :extra-items="estados"
+                  label="Estado*" variant="outlined" id="estado" :isRequired="false" :isMultipleSelect="false"
+                  class="container-combobox-padrao mt-4 mb-4" placeholder="Selecione o estado"
+                  style="max-width: 350px;" />
 
-                <v-select v-model="cidadeSelecionada" :items="cidades" item-text="nome" item-value="id" label="Cidade"
-                  dense outlined :rules="[required]" :disabled="!estadoSelecionado" clearable min-width="300px"
-                  max-width="300px" />
+                <multipleCombobox v-model="cidadeSelecionada" :items="listCidade" :extra-items="cidades" label="Cidade*"
+                  variant="outlined" id="cidade" :isRequired="false" :isMultipleSelect="false"
+                  class="container-combobox-padrao mt-4 mb-4" placeholder="Selecione a cidade" style="max-width: 350px;"
+                  :disabled="!estadoSelecionado" />
 
 
               </v-row>
               <v-row class="row-info-basicas">
-                <v-text-field v-model="cep" label="CEP" maxlength="9" placeholder="00000-000" @input="onInputCep"
-                  style="max-width: 150px;" />
+                <inputText label="CEP*" type="text" required v-model:valueInput="textInputs['input-cep']"
+                  placeholder="00000-000" id="input-cep"
+                  @update:valueInput="(value: any) => updateInput('input-cep', value)" @input="onInputCep"
+                  :max-length="0" />
+
               </v-row>
               <v-row class="row-info-basicas">
-                <v-text-field v-model="bairro" :rules="required" label="Bairro*" max-width="400px" />
-                <v-text-field v-model="rua" :rules="required" label="Rua*" max-width="400px" />
+                <inputText label="Bairro*" type="text" required v-model:valueInput="textInputs['input-bairro']"
+                  id="input-bairro" @update:valueInput="(value: any) => updateInput('input-bairro', value)"
+                  style="width: 300px;" :max-length="0" />
+
+                <inputText label="Rua*" type="text" required v-model:valueInput="textInputs['input-rua']" id="input-rua"
+                  @update:valueInput="(value: any) => updateInput('input-rua', value)" style="width: 300px;"
+                  :max-length="0" />
               </v-row>
               <v-row class="row-info-basicas">
-                <v-text-field v-model="numero" :rules="required" label="N*" type="number" max-width="100px" />
-                <v-text-field v-model="complemento" :rules="required" label="Complemento*" max-width="400px" />
+                <inputText label="N*" type="text" required v-model:valueInput="textInputs['input-numero']"
+                  id="input-numero" @update:valueInput="(value: any) => updateInput('input-numero', value)"
+                  :max-length="0" />
+
+                <inputText label="Complemento*" type="text" required
+                  v-model:valueInput="textInputs['input-complemento']" id="input-complemento"
+                  @update:valueInput="(value: any) => updateInput('input-complemento', value)" style="width: 300px;"
+                  :max-length="0" />
               </v-row>
             </v-col>
 
             <p>Informações para Contato</p>
             <v-col>
               <v-row class="row-info-basicas" v-for="(item, index) in phones" :key="index">
-                <v-text-field v-model="item.number" :rules="required" label="Telefone*" placeholder="(00) 00000-0000"
-                  maxlength="15" max-width="200px" />
+
+                <inputText label="Telefone*" type="text" required v-model:valueInput="item.number" id="input-telefone"
+                  placeholder="(00) 00000-0000" style="width: 200px;" :max-length=15 :ocultaContador="true" />
                 <template v-if="!readOnly">
                   <v-btn icon @click="addPhone" v-if="index === phones.length - 1">
                     <v-icon>mdi-plus</v-icon>
@@ -74,19 +104,21 @@
                 </template>
               </v-row>
               <v-row class="row-info-basicas">
-                <v-text-field v-model="email" :rules="required" label="E-mail*" max-width="400px" />
+                <inputText label="E-mail*" type="text" required v-model:valueInput="textInputs['input-email']"
+                  id="input-email" @update:valueInput="(value: any) => updateInput('input-email', value)"
+                  style="width: 400px;" :ocultaContador="true" />
               </v-row>
             </v-col>
 
-            <v-textarea v-model="textarea.ObservacoesGerais" :rules="obsRules" label="Observações" counter
-              maxlength="300" placeholder="Observação" max-width="500px" />
+            <textArea :modelValue="textarea.ObservacoesGerais" @update:modelValue="(value: any) => (textarea = value)"
+              :label="'Observação'" class="wrap-textarea" :maxLength="300" placeholder="Observação...">
+</textArea>
 
             <div class="container-btn mt-5">
               <p class="msg-auxiliar">Campos Obrigatórios*</p>
             </div>
 
             <div class="container-btn mt-5">
-              <v-btn class="btn-padrao" @click="handleReset">Limpar Tudo</v-btn>
               <v-btn class="me-4 btn-padrao" type="submit">Salvar</v-btn>
             </div>
           </v-form>
@@ -98,10 +130,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { getCidadesPorEstado, getEstados, getEnderecoPorCep } from '../../services/ibge'
 import { formatCep, limparCep, buscarEnderecoViaCep } from '../../utils/cepUtils'
 import { formatCpf, formatRg, formatPhoneNumber } from '../../utils/formaUtils'
+
+// COMPONENTES
+import inputText from '@/components/inputText.vue'
+import multipleCombobox from '@/components/select.vue'
+import textArea from '@/components/textArea.vue'
 
 defineOptions({ name: 'VeterinarioCadastro' })
 
@@ -113,63 +150,31 @@ const formRef = ref()
 const required = [(v: string) => !!v || 'Campo obrigatório']
 const obsRules = [(v: string) => v.length <= 300 || 'Máximo 300 caracteres']
 
-// Campos
-const nameTutor = ref('')
-const cpf = ref('')
-const rg = ref('')
-const especialidade = ref('')
-const crmv = ref('')
+
 const estados = ref<Array<any>>([])
-const cidades = ref<Array<any>>([])
-const bairro = ref('')
-const rua = ref('')
-const numero = ref('')
-const complemento = ref('')
+const listEstados = ref<string[]>([])
+const cidades = ref<Array<{ id: string; descricao: string }>>([])
+const listCidade = ref<string[]>([])
+
 const phones = ref([{ number: '' }])
-const email = ref('')
 const textarea = ref({ ObservacoesGerais: '' })
-const cep = ref('')
 
-const estadoSelecionado = ref<string | null>(null);
+const textInputs = ref<Record<string, string>>({});
+const updateInput = (id: string, newValue: string) => {
+  textInputs.value[id] = newValue;
+};
 
 
-const cidadeSelecionada = ref<string | null>(null);
+// Agora selecionados guardam o objeto, não string
+const estadoSelecionado = ref<string | undefined>(undefined)
+const cidadeSelecionada = ref<string | undefined>(undefined)
 
 async function submit() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
-
-  alert(JSON.stringify({
-    nameTutor: nameTutor.value,
-    cpf: cpf.value,
-    rg: rg.value,
-    especialidade: especialidade.value,
-    crmv: crmv.value,
-    bairro: bairro.value,
-    rua: rua.value,
-    numero: numero.value,
-    complemento: complemento.value,
-    phones: phones.value.map(p => p.number),
-    email: email.value,
-    observacoes: textarea.value.ObservacoesGerais
-  }, null, 2))
 }
 
-function handleReset() {
-  nameTutor.value = ''
-  cpf.value = ''
-  rg.value = ''
-  especialidade.value = ''
-  crmv.value = ''
-  bairro.value = ''
-  rua.value = ''
-  numero.value = ''
-  complemento.value = ''
-  phones.value = [{ number: '' }]
-  email.value = ''
-  textarea.value.ObservacoesGerais = ''
-  formRef.value?.resetValidation()
-}
+
 
 function addPhone() {
   phones.value.push({ number: '' })
@@ -181,73 +186,110 @@ function removePhone(index: number) {
 
 function onInputCpf(e: Event) {
   const input = e.target as HTMLInputElement
-  cpf.value = formatCpf(input.value)
+  textInputs.value['input-cpf'] = formatCpf(input.value)
 }
 
 function onInputRg(e: Event) {
   const input = e.target as HTMLInputElement
-  rg.value = formatRg(input.value)
+  textInputs.value['input-rg'] = formatRg(input.value)
 }
 
-function onInputCep(e: Event) {
+async function onInputCep(e: Event) {
   const input = e.target as HTMLInputElement
   const valorFormatado = formatCep(input.value)
-  cep.value = valorFormatado
 
   const cepLimpo = limparCep(valorFormatado)
   if (cepLimpo.length === 8) {
-    buscarEnderecoViaCep(cepLimpo)
-      .then(data => {
-        rua.value = data.logradouro || ''
-        bairro.value = data.bairro || ''
-      })
-      .catch(() => {
-        rua.value = ''
-        bairro.value = ''
-      })
+    try {
+      const data = await buscarEnderecoViaCep(cepLimpo)
+
+      textInputs.value['input-rua'] = data.logradouro || ''
+      textInputs.value['input-bairro'] = data.bairro || ''
+
+      // Procura o estado na lista de estados
+      const estadoEncontrado = estados.value.find(
+        (estado: { id: string; descricao: string }) =>
+          estado.descricao === `${data.estado} (${data.uf})`
+      )
+
+      if (estadoEncontrado) {
+        estadoSelecionado.value = estadoEncontrado.descricao
+
+        // Espera o nextTick para garantir que o v-model do combobox atualize
+        await nextTick()
+
+        // Carrega as cidades do estado encontrado
+        const resposta = await getCidadesPorEstado(estadoEncontrado.id)
+        listCidade.value = resposta.map((cidade: any) => `${cidade.nome}`)
+        cidades.value = resposta.map((cidade: any) => ({
+          id: cidade.nome,
+          descricao: cidade.nome,
+        }))
+
+        // Seleciona a cidade retornada pelo CEP
+        const cidadeEncontrada = cidades.value.find(
+          (c: { id: string; descricao: string }) => c.descricao === data.localidade
+        )
+        cidadeSelecionada.value = cidadeEncontrada ? cidadeEncontrada.descricao : undefined
+      }
+    } catch {
+      textInputs.value['input-rua'] = ''
+      textInputs.value['input-bairro'] = ''
+      estadoSelecionado.value = undefined
+      cidadeSelecionada.value = undefined
+    }
   } else {
-    rua.value = ''
-    bairro.value = ''
+    textInputs.value['input-rua'] = ''
+    textInputs.value['input-bairro'] = ''
+    estadoSelecionado.value = undefined
+    cidadeSelecionada.value = undefined
   }
 }
 
-async function carregarEstados() {
-  const resposta = await getEstados()
-  // Antes de atribuir ao combo
-  estados.value = resposta.map((estado: any) => (
-    `${estado.nome} (${estado.sigla})`))
-
-  console.log("Estados: ", estados.value)
-}
 
 // Carregar cidades com base no estado selecionado
+async function carregarEstados() {
+  const resposta = await getEstados()
+  listEstados.value = resposta.map((estado: any) => (`${estado.nome} (${estado.sigla})`))
+  estados.value = resposta.map((estado: any) => ({
+    id: estado.sigla,
+    descricao: `${estado.nome} (${estado.sigla})`,
+  }))
+}
+
 async function carregarCidades() {
   if (estadoSelecionado.value) {
-    // Extrai a sigla entre parênteses
-    const match = estadoSelecionado.value.match(/\(([^)]+)\)/);
-    const siglaEstado = match ? match[1] : null;
+    // Procura o estado na lista de estados pelo campo descricao
+    const estadoEncontrado = estados.value.find(
+      (estado: { id: string; descricao: string }) => estado.descricao === estadoSelecionado.value
+    )
 
-    if (siglaEstado) {
-      const resposta = await getCidadesPorEstado(siglaEstado);
-      cidades.value = resposta.map((cidade: any) => (
-        `${cidade.nome}`))
+    const estadoId = estadoEncontrado ? estadoEncontrado.id : null
+    console.log("Estado selecionado ID:", estadoId)
+
+    if (estadoId) {
+      const resposta = await getCidadesPorEstado(estadoId)
+      listCidade.value = resposta.map((cidade: any) => (`${cidade.nome}`))
+      cidades.value = resposta.map((cidade: any) => ({
+        id: cidade.id,
+        descricao: cidade.nome,
+      }))
     } else {
-      cidades.value = [];
-      cidadeSelecionada.value = null;
+      cidades.value = []
+      cidadeSelecionada.value = undefined
     }
   } else {
-    cidades.value = [];
-    cidadeSelecionada.value = null;
+    cidades.value = []
+    cidadeSelecionada.value = undefined
   }
 }
 
 watch(estadoSelecionado, () => {
   if (estadoSelecionado.value) {
-    cidadeSelecionada.value = null; // Reseta a cidade selecionada ao mudar estado
+    cidadeSelecionada.value = undefined
     carregarCidades()
-  }
-  if (estadoSelecionado.value === null) {
-    cidadeSelecionada.value = null; // Reseta a cidade selecionada ao mudar estado
+  } else {
+    cidadeSelecionada.value = undefined
   }
 })
 
@@ -258,7 +300,9 @@ watch(phones, (newPhones) => {
   })
 }, { deep: true })
 
-carregarEstados()
+onMounted(async () => {
+  carregarEstados()
+})
 </script>
 
 

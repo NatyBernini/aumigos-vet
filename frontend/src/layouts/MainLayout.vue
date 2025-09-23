@@ -7,8 +7,8 @@
         <img src="../assets/logoAumigos.png" alt="Ícone" class="menu-title-icon mt-2 mb-2" />
       </div>
 
-        <!-- Botão de fechar só no mobile -->
-        <v-btn v-if="isMobile" icon="mdi-close" variant="text" @click="drawer = false" />
+      <!-- Botão de fechar só no mobile -->
+      <v-btn v-if="isMobile" icon="mdi-close" variant="text" @click="drawer = false" />
       <v-divider></v-divider>
 
       <!-- Lista de menus -->
@@ -50,15 +50,45 @@
 
 
     <!-- AppBar -->
+    <!-- AppBar -->
     <v-app-bar app dark>
       <!-- Hamburguer só aparece no mobile -->
       <v-app-bar-nav-icon v-if="isMobile" @click="drawer = !drawer" />
 
-      <v-toolbar-title>
-        Natália Bernini
-        <img src="../assets/icons/fotoPerfil.jpg" alt="Ícone" class="menu-user-icon" />
+      <v-toolbar-title class="d-flex align-center gap-3">
+        {{ appStore.userData?.pessoa.nome_completo || 'Usuário' }}
+
+        <!-- Menu de usuário -->
+        <v-menu location="end" offset-y class="menu-usuario">
+          <template #activator="{ props }">
+            <v-btn v-bind="props" icon>
+              <img :src="FotoPerfil" alt="Ícone" class="menu-user-icon" />
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title><strong>Nome:</strong> {{ appStore.userData?.pessoa.nome_completo || '-'
+                  }}</v-list-item-title>
+                <v-list-item-subtitle><strong>Email:</strong> {{ appStore.userData?.email || '-'
+                  }}</v-list-item-subtitle>
+                  <v-list-item-subtitle><strong>Cargo:</strong> {{ appStore.userData?.tipo_usuario || '-'
+                  }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+
+            <v-divider></v-divider>
+
+            <v-list-item @click="logoutUser">
+              <v-list-item-title>Logout</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-toolbar-title>
+
     </v-app-bar>
+
 
     <v-main>
       <div :class="['container-conteudo', isMobile ? 'pa-3' : 'pa-15']">
@@ -83,6 +113,19 @@ import iconeConsulta from '../assets/icons/iconeConsulta.png'
 import iconeFormulario from '../assets/icons/iconeFormulario.png'
 import iconeServices from '../assets/icons/iconServicesProducts.png'
 import iconCaixa from '../assets/icons/iconCaixa.png'
+import FotoPerfil from '../assets/icons/avatar-do-usuario.png'
+
+import { useAppStore } from '@/modules/commons/store';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const appStore = useAppStore();
+
+const logoutUser = () => {
+  appStore.logout();
+  // redireciona para tela de login
+  router.push({ name: 'Login' });
+};
 
 const drawer = ref(true)
 const isMobile = ref(false)
@@ -143,7 +186,7 @@ const menuItems = [
       { title: 'Cadastrar', to: '/servicos/cadastrar', icon: iconCadastrarPaciente },
     ],
   },
-    {
+  {
     title: 'Caixa',
     icon: iconCaixa,
     to: '/caixa'
@@ -226,7 +269,7 @@ onMounted(() => {
   }
 
   .v-list-item--active {
-    color: #ff6a00;
+    color: #ff8200;
   }
 
   .menu-icon {
@@ -301,7 +344,7 @@ onMounted(() => {
   padding-right: 15px;
 
   &:hover {
-    background: #FF8A33 !important;
+    background: #ff8200 !important;
     color: #fff !important;
   }
 }
@@ -343,7 +386,7 @@ onMounted(() => {
 }
 
 .v-tab__slider {
-  background: #FF6A00 !important;
+  background: #ff8200 !important;
   border-radius: 5px;
   height: 3px !important;
 }
@@ -353,13 +396,13 @@ onMounted(() => {
 }
 
 .v-tab-item--selected .v-btn__content {
-  color: #FF6A00;
+  color: #ff8200;
 }
 
 .v-card {
   box-shadow: none !important;
 
-  .v-card-title {    
+  .v-card-title {
     display: flex !important;
     justify-content: space-between;
     color: #2e2e2e !important;
@@ -368,8 +411,9 @@ onMounted(() => {
     flex-direction: row;
     flex-wrap: wrap;
     text-wrap: auto;
-    .v-btn{
-      box-shadow: none!important;
+
+    .v-btn {
+      box-shadow: none !important;
       min-width: auto;
       padding: 0;
     }
