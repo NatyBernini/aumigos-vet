@@ -1,17 +1,14 @@
-// Plugins
-import vue from '@vitejs/plugin-vue';
-import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
+import vue from '@vitejs/plugin-vue'
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import { defineConfig } from 'vite'
+import { fileURLToPath, URL } from 'node:url'
+import dns from 'dns'
 
-
-import { defineConfig } from 'vitest/config';
-import { fileURLToPath, URL } from 'node:url';
-import dns from 'dns';
-
-dns.setDefaultResultOrder('verbatim');
+dns.setDefaultResultOrder('verbatim')
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  base:'/aumigos-vet/',
+export default defineConfig(({ mode }) => ({
+  base: '/aumigos-vet/',
   build: {
     outDir: '../docs',
   },
@@ -20,7 +17,8 @@ export default defineConfig({
       template: {
         transformAssetUrls,
         compilerOptions: {
-          isCustomElement: (tag: string) => tag.includes('*-*') || tag.includes('v-list-item-content')
+          isCustomElement: (tag: string) =>
+            tag.includes('*-*') || tag.includes('v-list-item-content')
         }
       }
     }),
@@ -42,14 +40,17 @@ export default defineConfig({
   },
   server: {
     port: 9081,
-    proxy: {
-      '/api': {
-        target: 'https://controlepet.onrender.com', // URL do backend
-        changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api') // mantém o mesmo path
-      }
-    }
+    proxy:
+      mode === 'development'
+        ? {
+            '/api': {
+              target: 'https://controlepet.onrender.com',
+              changeOrigin: true,
+              secure: true,
+              rewrite: (path) => path.replace(/^\/api/, '/api')
+            }
+          }
+        : undefined
   },
   test: {
     environment: 'jsdom',
@@ -57,4 +58,4 @@ export default defineConfig({
     deps: { inline: ['vuetify'] },
     globals: true
   }
-})
+}))
