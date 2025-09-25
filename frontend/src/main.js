@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, watch } from 'vue'
 import App from './App.vue'
 import router from './router'
 import '@mdi/font/css/materialdesignicons.css'
@@ -12,6 +12,8 @@ import * as directives from 'vuetify/directives'
 
 import { createPinia } from 'pinia'
 import piniaPersist from 'pinia-plugin-persistedstate'
+import { useAppStore } from '@/modules/commons/store';
+
 
 const vuetify = createVuetify({
   components,
@@ -29,5 +31,19 @@ app.use(pinia)
 app.use(router)
 app.use(vuetify)
 app.use(VueTheMask)
+
+// --- Watch global de userData ---
+const appStore = useAppStore()
+watch(
+  () => appStore.userData,
+  (newVal) => {
+    if (!newVal) {
+      console.log('userData perdido, fazendo logout...')
+      appStore.logout()
+
+      router.push({ name: 'Login' });
+    }
+  }
+)
 
 app.mount('#app')

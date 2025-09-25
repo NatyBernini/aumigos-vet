@@ -17,8 +17,11 @@ import ProdutoCadastrar from '../views/Financeiro/Produtos/Cadastrar.vue'
 import ProdutoListagem from '../views/Financeiro/Produtos/Listagem.vue'
 import CaixaListagem from '../views/Financeiro/Caixa/Listagem.vue'
 import CaixaPagamento from '../views/Financeiro/Caixa/Pagamento.vue'
+import Perfil from '../views/User/Perfil.vue'
 
 import { usePersistentStore } from '@/modules/commons/store';
+import { useAppStore } from '@/modules/commons/store/appStore/app'
+
 
 const routes = [
   {
@@ -63,6 +66,12 @@ const routes = [
       // { path: 'adocao/cadastrar', component: AdocaoCadastro },
     ],
   },
+  {
+    path: '/perfil',
+    name: 'Perfil',
+    component: Perfil,
+    meta: { requiresAuth: true }
+  },
 ]
 
 
@@ -72,15 +81,36 @@ const router = createRouter({
 })
 
 // proteção global das rotas
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const persistentStore = usePersistentStore()
+  const appStore = useAppStore()
 
-  if (to.meta.requiresAuth && !persistentStore.jwtToken) {
-    // se a rota exige auth e não há token → volta pro Login
-    next({ name: 'Login' })
-  } else {
-    next()
+  if (to.meta.requiresAuth) {
+    // se não houver token → redireciona pro login
+    if (!persistentStore.jwtToken) {
+      appStore.logout()
+      return next({ name: 'Login' })
+    }
+
+    // se houver token mas não houver userData → tenta buscar
+    if (!appStore.userData) {
+      try {
+        await appStore.fetchUserData()
+        return next()
+      } catch (error) {
+        // se falhar ao buscar dados → logout
+        appStore.logout()
+        return next({ name: 'Login' })
+      }
+    }
+
+    // se tiver token e userData → segue normalmente
+    return next()
   }
+
+  // rotas públicas
+  next()
 })
+
 
 export default router

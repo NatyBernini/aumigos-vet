@@ -31,6 +31,9 @@ export const useAppStore = defineStore('app', {
         this.userData = usuario;
         this.isAuthorized = true;
 
+        // Faz chamada extra para garantir que userData está atualizado
+        await this.fetchUserData();
+
         // Retorna clinica_ativa para a página decidir o redirecionamento
         return clinica_ativa ?? null;
 
@@ -43,7 +46,18 @@ export const useAppStore = defineStore('app', {
         this.loading = false;
       }
     },
-
+    async fetchUserData() {
+      try {
+        const response = await API.get('/usuarios/me');
+        this.userData = response;
+        this.isAuthorized = true
+        console.log("data:", this.userData)
+      } catch (error) {
+        console.error('Erro ao buscar dados do usuário:', error);
+        this.logout()
+        throw error
+      }
+    },
     logout() {
       const persistentStore = usePersistentStore();
 

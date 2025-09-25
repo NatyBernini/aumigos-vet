@@ -9,16 +9,33 @@ export interface TokenResponse {
   token_type: string;
 }
 
-export interface UserDataUnidadeResponse {
+export interface DataPeople {
+  id: number;
+  nome_completo: string;
+  cpf: string;
+  data_nascimento: string;
+}
+
+export interface UserPlano {
   id: number;
   nome: string;
-  codigo: string;
+  preco_mensal: string;
+  preco_anual: string;
+  usuarios_simultaneos: string;
+}
+
+export interface UserDataClinica {
+  id: number;
+  nome: string;
+  cnpj: string;
+  plano: UserPlano;
+  criado_em: string;
+  modificado_em: string;
 }
 export interface UserDataResponse {
-  nome: string;
   email: string;
-  login: string;
-  unidade: UserDataUnidadeResponse;
+  pessoa: DataPeople;
   roles: string[];
-  temMultiplasUnidades: boolean;
+  tipo_usuario: string;
+  clinicas: UserDataClinica[]
 }

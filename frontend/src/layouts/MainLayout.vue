@@ -69,18 +69,21 @@
           <v-list>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title><strong>Nome:</strong> {{ appStore.userData?.pessoa.nome_completo || '-'
-                  }}</v-list-item-title>
-                <v-list-item-subtitle><strong>Email:</strong> {{ appStore.userData?.email || '-'
-                  }}</v-list-item-subtitle>
-                  <v-list-item-subtitle><strong>Cargo:</strong> {{ appStore.userData?.tipo_usuario || '-'
-                  }}</v-list-item-subtitle>
+                <v-list-item-title class="mb-3"><strong>Nome:</strong> {{ appStore.userData?.pessoa.nome_completo || '-'
+                }}</v-list-item-title>
+                <v-list-item-subtitle class="mb-2"><strong>Email:</strong> {{ appStore.userData?.email || '-'
+                }}</v-list-item-subtitle>
+                <v-list-item-subtitle class="mb-2"><strong>Cargo:</strong> {{ appStore.userData?.tipo_usuario || '-'
+                }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
 
             <v-divider></v-divider>
 
-            <v-list-item @click="logoutUser">
+          
+            <v-list-item to="/perfil">
+              <v-list-item-title>Configurações</v-list-item-title>
+            </v-list-item>  <v-list-item @click="logoutUser">
               <v-list-item-title>Logout</v-list-item-title>
             </v-list-item>
           </v-list>
@@ -123,8 +126,6 @@ const appStore = useAppStore();
 
 const logoutUser = () => {
   appStore.logout();
-  // redireciona para tela de login
-  router.push({ name: 'Login' });
 };
 
 const drawer = ref(true)
@@ -231,7 +232,7 @@ onMounted(() => {
   border: none !important;
   box-shadow: rgba(0, 0, 0, 0.12) 1px 2px 20px 0px !important;
   position: relative;
-
+  padding-bottom: 70px;
   .divider-Menu-Lateral {
     margin-top: 20px;
     margin-bottom: 20px !important;
@@ -501,5 +502,11 @@ thead {
   padding: 15px;
   background-color: #FFE6CC;
   border-radius: 10px;
+}
+
+.menu-usuario {
+  .v-overlay__content {
+  border-radius: 10px;
+  }
 }
 </style>
