@@ -41,7 +41,8 @@
                                         </v-btn>
                                     </div>
 
-                                    <v-btn color="secondary" class="mb-4" block @click="onLogin">
+                                    <v-btn :disabled="isLoading" :loading="isLoading" color="secondary" class="mb-4"
+                                        block @click="onLogin">
                                         Entrar
                                     </v-btn>
                                 </v-form>
@@ -97,7 +98,8 @@
                                         :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
                                         @click:append-inner="showPasswordCadastro = !showPasswordCadastro" required
                                         :maxLength="0" />
-                                    <v-btn color="secondary" block class="mb-4 mt-6" @click="onRegister">
+                                    <v-btn :disabled="isLoading" :loading="isLoading" color="secondary" block
+                                        class="mb-4 mt-6" @click="onRegister">
                                         Cadastrar
                                     </v-btn>
                                 </v-form>
@@ -128,6 +130,10 @@
             </v-window-item>
         </v-window>
     </div>
+    <!-- Spinner de Carregamento -->
+    <v-container v-if="isLoading" class="d-flex align-center justify-center">
+        <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
+    </v-container>
 </template>
 
 <script lang="ts" setup>
@@ -139,7 +145,7 @@ import inputText from '@/components/inputText.vue';
 
 // SERVICES
 import { formatPhoneNumberRaw } from '@/utils/formaUtils';
-import { registerUser} from '@/services/auth';
+import { registerUser } from '@/services/auth';
 import { usePersistentStore } from '@/modules/commons/store';
 import { useAppStore } from '@/modules/commons/store';
 
@@ -154,6 +160,7 @@ const textInputs = ref<Record<string, string>>({});
 const showPasswordCadastro = ref(false);
 const persistentStore = usePersistentStore();
 const appStore = useAppStore();
+const isLoading = ref(false);
 
 const updateInput = (id: string, newValue: string) => {
     textInputs.value[id] = newValue;
@@ -184,26 +191,30 @@ function onPhoneInput(event: Event) {
 
 // LOGIN 
 const onLogin = async () => {
-  try {
-    const email = textInputs.value['input-email-login'];
-    const senha = textInputs.value['input-senha-login'];
+    try {
+        isLoading.value = true;
+        const email = textInputs.value['input-email-login'];
+        const senha = textInputs.value['input-senha-login'];
 
-    const clinicaAtiva = await appStore.login(email, senha);
+        const clinicaAtiva = await appStore.login(email, senha);
 
-    if (clinicaAtiva) {
-      router.push({ name: 'Home' });
-    } else {
-      router.push({ name: 'Clinica' });
+        if (clinicaAtiva) {
+            router.push({ name: 'Home' });
+        } else {
+            router.push({ name: 'Clinica' });
+        }
+    } catch (error: any) {
+        console.error('Erro ao fazer login:', error);
+        alert(error?.response?.data?.detail || 'Falha ao realizar login');
+    } finally {
+        isLoading.value = false;
     }
-  } catch (error: any) {
-    console.error('Erro ao fazer login:', error);
-    alert(error?.response?.data?.detail || 'Falha ao realizar login');
-  }
 };
 
 // CADASTRO
 const onRegister = async () => {
     try {
+        isLoading.value = true;
         const senha = textInputs.value['input-senha'];
         const cpf = textInputs.value['input-cpf'];
         const dataNascimento = textInputs.value['input-nascimento'];
@@ -249,6 +260,8 @@ const onRegister = async () => {
     } catch (error: any) {
         console.error("Erro ao cadastrar usuário:", error);
         alert(error?.response?.data ? JSON.stringify(error.response.data) : "Erro ao cadastrar usuário");
+    } finally {
+        isLoading.value = false;
     }
 };
 </script>

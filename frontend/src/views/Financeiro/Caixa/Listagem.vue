@@ -1,10 +1,10 @@
 <template>
   <v-row>
     <v-col>
-      <span class="title-page">Veterinários</span>
+      <span class="title-page">Consultas e Serviços</span>
       <br />
       <span class="breadcrumb">
-        Veterinários / <span class="page-active">Lista de Veterinários</span>
+        Caixa / <span class="page-active">Consultas e Serviços</span>
       </span>
 
       <v-data-table :headers="headers" :items="paginatedPacientes" :items-per-page="-1" class="pt-15">

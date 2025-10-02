@@ -31,6 +31,11 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface RedefinirSenha {
+  senha_atual: string;
+  nova_senha: string;
+}
+
 async function registerUser(payload: RegistroUsuarioPayload) {
   try {
     const response = await API.post("/usuarios/registro/", payload);
@@ -61,8 +66,13 @@ async function getMe() {
   }
 }
 
+async function redefinirSenha(params: RedefinirSenha) {
+  return await API.put("/usuarios/usuario/minha-senha/", params)
+}
+
 export {
   loginUser,
   getMe,
-  registerUser
+  registerUser,
+  redefinirSenha
 }

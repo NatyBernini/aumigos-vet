@@ -7,8 +7,6 @@ import VeterinarioCadastro from '../views/Veterinarios/Cadastrar.vue'
 import ConsultaList from '../views/Consultas/Listagem.vue'
 import Consultar from '../views/Consultas/Consultar.vue'
 import RelatorioList from '../views/Relatorios/Listagem.vue'
-// import AdocaoList from '../views/Adocao/Listagem.vue'
-// import AdocaoCadastro from '../views/Adocao/Cadastrar.vue'
 import Empresa from '../layouts/Empresa.vue'
 import Login from '../layouts/Login.vue'
 import MainLayout from '../layouts/MainLayout.vue'
@@ -33,44 +31,49 @@ const routes = [
     path: '/clinica',
     name: 'Clinica',
     component: Empresa,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, roles: ['admin_clinica'] }
   },
   {
     path: '/planos',
     name: 'Planos',
     component: Planos,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, roles: ['admin_clinica'] }
   },
   {
     path: '/',
     component: MainLayout,
     meta: { requiresAuth: true },
     children: [
-      { path: 'pacientes', name: 'Home', component: PacientesList },
-      { path: 'pacientes/cadastrar', component: PacienteCadastro },
-      { path: 'pacientes/visualizar/:id', name: 'PacienteVisualizar', component: PacienteVisualizar, props: true },
+      // Pacientes
+      { path: 'pacientes', name: 'Home', component: PacientesList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
+      { path: 'pacientes/cadastrar', component: PacienteCadastro, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
+      { path: 'pacientes/visualizar/:id', name: 'PacienteVisualizar', component: PacienteVisualizar, props: true, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
 
-      { path: 'veterinarios', component: VeterinariosList },
-      { path: 'veterinarios/cadastrar', component: VeterinarioCadastro },
+      // Veterinários
+      { path: 'veterinarios', component: VeterinariosList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
+      { path: 'veterinarios/cadastrar', component: VeterinarioCadastro, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
 
-      { path: 'consultas', component: ConsultaList },
-      { path: 'consultas/consultar', component: Consultar,  name: 'Consultar', },
+      // Consultas
+      { path: 'consultas', component: ConsultaList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
+      { path: 'consultas/consultar', name: 'Consultar', component: Consultar, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
 
-      { path: 'relatorios', component: RelatorioList },
+      // Relatórios
+      { path: 'relatorios', component: RelatorioList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
 
-      { path: 'servicos', component: ProdutoListagem },
-      { path: 'servicos/cadastrar', component: ProdutoCadastrar },
-      { path: 'caixa', component: CaixaListagem },
-      { path: 'caixa/pagamento/:id',  name: 'Pagamento', component: CaixaPagamento, props: true  },
-      // { path: 'adocao', component: AdocaoList },
-      // { path: 'adocao/cadastrar', component: AdocaoCadastro },
+      // Serviços (Produtos/Financeiro)
+      { path: 'servicos', component: ProdutoListagem, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
+      { path: 'servicos/cadastrar', component: ProdutoCadastrar, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
+
+      // Caixa
+      { path: 'caixa', component: CaixaListagem, meta: { requiresAuth: true, roles: ['admin_clinica', 'caixa'] } },
+      { path: 'caixa/pagamento/:id', name: 'Pagamento', component: CaixaPagamento, props: true, meta: { requiresAuth: true, roles: ['admin_clinica', 'caixa'] } },
     ],
   },
   {
     path: '/perfil',
     name: 'Perfil',
     component: Perfil,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, roles: ['admin_clinica', 'caixa', 'veterinario'] }
   },
 ]
 
@@ -92,25 +95,26 @@ router.beforeEach(async (to, from, next) => {
       return next({ name: 'Login' })
     }
 
-    // se houver token mas não houver userData → tenta buscar
+    // se não tiver dados do usuário → busca
     if (!appStore.userData) {
       try {
         await appStore.fetchUserData()
-        return next()
       } catch (error) {
-        // se falhar ao buscar dados → logout
         appStore.logout()
         return next({ name: 'Login' })
       }
     }
 
-    // se tiver token e userData → segue normalmente
+    // 🔹 Checa se tem restrição de roles na rota
+    if (to.meta.roles && !to.meta.roles.includes(appStore.userData?.tipo_usuario)) {
+      return next({ path: '/caixa' }) // redireciona para uma rota segura
+    }
+
     return next()
   }
 
   // rotas públicas
   next()
 })
-
 
 export default router

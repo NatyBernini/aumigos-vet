@@ -17,10 +17,40 @@ export interface Clinica {
     cep: string
 }
 
+export interface Pessoa {
+    nome_completo: string;
+    cpf: string;
+    data_nascimento: string
+}
+
+export interface Contato {
+    email: string
+}
+
+export interface UserClinica {
+    email: string;
+    senha: string;
+    tipo_usuario: string;
+    pessoa: Pessoa;
+    contato: Contato;
+    first_name: string;
+    last_name: string
+}
+
 async function salvarClinica(payload: Clinica) {
     return API.post("/usuarios/clinicas/", payload);
 }
 
+async function usuariosClinica() {
+    return await API.get('/usuarios/clinica/usuarios/')
+}
+
+async function cadastrarUsuarioClinica(payload: UserClinica) {
+    return API.post("/usuarios/clinica/cadastrar-usuario/", payload);
+}
+
 export {
-    salvarClinica
+    salvarClinica,
+    usuariosClinica,
+    cadastrarUsuarioClinica
 }

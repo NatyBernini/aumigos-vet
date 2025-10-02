@@ -80,10 +80,10 @@
 
             <v-divider></v-divider>
 
-          
+
             <v-list-item to="/perfil">
               <v-list-item-title>Configurações</v-list-item-title>
-            </v-list-item>  <v-list-item @click="logoutUser">
+            </v-list-item> <v-list-item @click="logoutUser">
               <v-list-item-title>Logout</v-list-item-title>
             </v-list-item>
           </v-list>
@@ -102,8 +102,8 @@
   </v-app>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
 
 import iconePacientes from '../assets/icons/iconePacientes.png'
 import iconListagemPaciente from '../assets/icons/iconeLista.png'
@@ -112,7 +112,6 @@ import iconCadastrarPaciente from '../assets/icons/iconeCadastro.png'
 
 import iconeVeterinarios from '../assets/icons/iconeVeterinarios.png'
 import iconeConsulta from '../assets/icons/iconeConsulta.png'
-// import iconeAdocaoGato from '../assets/icons/iconeAdocaoGato.png'
 import iconeFormulario from '../assets/icons/iconeFormulario.png'
 import iconeServices from '../assets/icons/iconServicesProducts.png'
 import iconCaixa from '../assets/icons/iconCaixa.png'
@@ -132,73 +131,85 @@ const drawer = ref(true)
 const isMobile = ref(false)
 
 const checkMobile = () => {
-  isMobile.value = window.innerWidth < 960 // breakpoint padrão (md)
-  if (isMobile.value) {
-    drawer.value = false
-  } else {
-    drawer.value = true
-  }
+  isMobile.value = window.innerWidth < 960
+  drawer.value = !isMobile.value
 }
 
-const menuItems = [
+// 🔹 Agora cada child também pode ter roles
+const allMenuItems = [
   {
     title: 'Pacientes',
     icon: iconePacientes,
+    roles: ['admin_clinica', 'veterinario'],
     children: [
-      { title: 'Listagem', to: '/pacientes', icon: iconListagemPaciente },
-      { title: 'Cadastrar', to: '/pacientes/cadastrar', icon: iconCadastrarPaciente },
+      { title: 'Listagem', to: '/pacientes', icon: iconListagemPaciente, roles: ['admin_clinica', 'veterinario'] },
+      { title: 'Cadastrar', to: '/pacientes/cadastrar', icon: iconCadastrarPaciente, roles: ['admin_clinica', 'veterinario'] },
     ],
   },
   {
     title: 'Veterinários',
     icon: iconeVeterinarios,
+    roles: ['admin_clinica', 'veterinario'],
     children: [
-      { title: 'Listagem', to: '/veterinarios', icon: iconListagemPaciente },
-      { title: 'Cadastrar', to: '/veterinarios/cadastrar', icon: iconCadastrarPaciente },
+      { title: 'Listagem', to: '/veterinarios', icon: iconListagemPaciente, roles: ['admin_clinica', 'veterinario'] },
+      { title: 'Cadastrar', to: '/veterinarios/cadastrar', icon: iconCadastrarPaciente, roles: ['admin_clinica'] },
     ],
   },
   {
     title: 'Consultas',
     icon: iconeConsulta,
+    roles: ['admin_clinica', 'veterinario'],
     children: [
-      { title: 'Agenda', to: '/consultas', icon: iconListagemPaciente },
-      { title: 'Consultar', to: '/consultas/consultar', icon: iconCadastrarPaciente },
-      { title: 'Agendar', to: '/consultas/agendar', icon: iconAgenda },
+      { title: 'Agenda', to: '/consultas', icon: iconListagemPaciente, roles: ['admin_clinica', 'veterinario'] },
+      { title: 'Consultar', to: '/consultas/consultar', icon: iconCadastrarPaciente, roles: ['admin_clinica', 'veterinario'] },
+      { title: 'Agendar', to: '/consultas/agendar', icon: iconAgenda, roles: ['admin_clinica', 'veterinario'] },
     ],
   },
-  // {
-  //   title: 'Adoção',
-  //   icon: iconeAdocaoGato,
-  //   children: [
-  //     { title: 'Listagem', to: '/adocao', icon: iconListagemPaciente },
-  //     { title: 'Cadastrar', to: '/adocao/cadastrar', icon: iconCadastrarPaciente },
-  //   ],
-  // },
   {
     title: 'Relatórios',
     icon: iconeFormulario,
-    to: '/relatorios'
+    to: '/relatorios',
+    roles: ['admin_clinica', 'veterinario'],
   },
   {
     title: 'Serviços',
     icon: iconeServices,
+    roles: ['admin_clinica'],
     children: [
-      { title: 'Listagem', to: '/servicos', icon: iconListagemPaciente },
-      { title: 'Cadastrar', to: '/servicos/cadastrar', icon: iconCadastrarPaciente },
+      { title: 'Listagem', to: '/servicos', icon: iconListagemPaciente, roles: ['admin_clinica'] },
+      { title: 'Cadastrar', to: '/servicos/cadastrar', icon: iconCadastrarPaciente, roles: ['admin_clinica'] },
     ],
   },
   {
     title: 'Caixa',
     icon: iconCaixa,
-    to: '/caixa'
+    to: '/caixa',
+    roles: ['admin_clinica', 'caixa'],
   },
 ]
+
+const menuItems = computed(() => {
+  const role = appStore.userData?.tipo_usuario
+  if (!role) return [] // nenhum menu se não tiver role
+
+  return allMenuItems
+    .filter(item => item.roles?.includes(role))
+    .map(item => {
+      if (item.children) {
+        const filteredChildren = item.children.filter(child => child.roles?.includes(role))
+        return { ...item, children: filteredChildren }
+      }
+      return item
+    })
+})
+
 
 onMounted(() => {
   checkMobile()
   window.addEventListener("resize", checkMobile)
 })
 </script>
+
 
 <style lang="scss">
 * {
@@ -233,6 +244,7 @@ onMounted(() => {
   box-shadow: rgba(0, 0, 0, 0.12) 1px 2px 20px 0px !important;
   position: relative;
   padding-bottom: 70px;
+
   .divider-Menu-Lateral {
     margin-top: 20px;
     margin-bottom: 20px !important;
@@ -348,6 +360,17 @@ onMounted(() => {
     background: #ff8200 !important;
     color: #fff !important;
   }
+}
+
+
+.v-btn--disabled.v-btn--variant-elevated .v-btn__overlay {
+  opacity: 0 !important;
+}
+
+button.v-btn.v-btn--disabled.v-theme--light.v-btn--density-default.v-btn--size-default.v-btn--variant-elevated.me-4.btn-padrao {
+  background: #ededed !important;
+  color: #a8a8a8 !important;
+  opacity: 1;
 }
 
 .container-btn {
@@ -506,7 +529,46 @@ thead {
 
 .menu-usuario {
   .v-overlay__content {
-  border-radius: 10px;
+    border-radius: 10px;
   }
+}
+
+.v-alert {
+  border-radius: 4px;
+  position: fixed!important;
+  right: 40px;
+  top: 112px;
+  max-width: 480px;
+  z-index: 100;
+  font-family: Inter;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  display: flex!important;
+  flex-wrap: wrap!important;
+  white-space: pre-line;
+
+  &.bg-error {
+    color: #5A5A5A!important;
+    background: rgb(255, 227, 227)!important;
+    border-left: 5px solid #D14A4A!important;
+  }
+
+  &.bg-info {
+    border-left: 5px solid #6A8FD2!important;
+    background: #dee6f6!important;
+    color: #5A5A5A!important;
+  }
+
+   &.bg-success {
+    border-left: 5px solid #83b940!important;
+    background: #cef79b!important;
+    color: #5A5A5A!important;
+  }
+
+  .v-alert__prepend {
+    display: none!important;
+  }
+
 }
 </style>
