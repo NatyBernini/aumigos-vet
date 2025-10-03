@@ -11,7 +11,7 @@
                         <img src="../../assets/icons/avatar-do-usuario.png" alt="Ícone"
                             class="menu-title-icon mt-2 mb-2" />
                     </div>
-                    <p class="user-nome">{{ appStore.userData?.pessoa.nome_completo || '-' }}</p>
+                    <p class="user-nome">{{ appStore.userData?.pessoa?.nome_completo || '-' }}</p>
                     <p class="user-cargo">{{ appStore.userData?.tipo_usuario || '-' }}</p>
                 </div>
 
@@ -234,17 +234,17 @@ onMounted(async () => {
     window.addEventListener('resize', checkMobile)
 
     // popula dados do usuário
-    textInputs.value['input-nome'] = appStore.userData?.pessoa.nome_completo || '-'
-    textInputs.value['input-cpf'] = formatCpf(appStore.userData?.pessoa.cpf ?? '') || '-'
+    textInputs.value['input-nome'] = appStore.userData?.pessoa?.nome_completo || '-'
+    textInputs.value['input-cpf'] = formatCpf(appStore.userData?.pessoa?.cpf ?? '') || '-'
     textInputs.value['input-email'] = appStore.userData?.email || '-'
-    textInputs.value['input-data-nasc'] = appStore.userData?.pessoa.data_nascimento || '-'
-    textInputs.value['input-clinica'] = appStore.userData?.clinicas[0].nome || '-'
-    textInputs.value['input-cnpj'] = appStore.userData?.clinicas[0].cnpj || '-'
-    textInputs.value['input-data-criacao'] = appStore.userData?.clinicas[0].criado_em || '-'
-    textInputs.value['input-plano'] = appStore.userData?.clinicas[0].plano.nome || '-'
-    textInputs.value['input-preco-anual'] = appStore.userData?.clinicas[0].plano.preco_anual || '-'
-    textInputs.value['input-preco-mensal'] = appStore.userData?.clinicas[0].plano.preco_mensal || '-'
-    textInputs.value['input-usuarios'] = appStore.userData?.clinicas[0].plano.usuarios_simultaneos || '-'
+    textInputs.value['input-data-nasc'] = appStore.userData?.pessoa?.data_nascimento || '-'
+    textInputs.value['input-clinica'] = appStore.userData?.clinicas[0]?.nome || '-'
+    textInputs.value['input-cnpj'] = appStore.userData?.clinicas[0]?.cnpj || '-'
+    textInputs.value['input-data-criacao'] = appStore.userData?.clinicas[0]?.criado_em || '-'
+    textInputs.value['input-plano'] = appStore.userData?.clinicas[0]?.plano?.nome || '-'
+    textInputs.value['input-preco-anual'] = appStore.userData?.clinicas[0]?.plano?.preco_anual || '-'
+    textInputs.value['input-preco-mensal'] = appStore.userData?.clinicas[0]?.plano?.preco_mensal || '-'
+    textInputs.value['input-usuarios'] = appStore.userData?.clinicas[0]?.plano?.usuarios_simultaneos || '-'
 
     // adiciona abas de admin
     if (appStore.userData?.tipo_usuario === 'admin_clinica') {
@@ -258,8 +258,9 @@ onMounted(async () => {
 
 <style lang="scss">
 .container-acoes-user {
-    background-color: #fff;
+    background-color: #f1f1f1!important;
     border-radius: 10px;
+    box-shadow: none!important;
     padding: 20px;
     margin: 35px;
     height: calc(100% - 70px) !important;

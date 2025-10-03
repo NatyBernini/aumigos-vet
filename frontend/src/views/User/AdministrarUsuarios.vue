@@ -20,6 +20,9 @@
         <template #item.email="{ item }">
             {{ item.email }}
         </template>
+        <template #item.clinica="{ item }">
+            {{ item.clinica }}
+        </template>
         <template #item.tipo="{ item }">
             {{ item.tipo }}
         </template>
@@ -81,6 +84,7 @@ const showScheduleForm = ref(false)
 const headers = ref([
     { title: 'Nome do Veterinário', key: 'nome' },
     { title: 'Email', key: 'email' },
+    { title: 'Clínica', key: 'clinica' },
     { title: 'Tipo', key: 'tipo' },
     { title: 'Ações', key: 'actions', sortable: false },
 ])
@@ -131,9 +135,13 @@ async function loadUsuarios() {
         isLoading.value = true
         const response = await usuariosClinica()
         pacientes.value = response.map((user: any) => ({
-            nome: `${user.first_name} ${user.last_name}`,
+            nome: `${user.pessoa.nome_completo}`,
             email: user.email,
             tipo: user.tipo_usuario,
+            clinica: user.clinicas[0].nome,
+            email_contato: user.pessoa.contato.email,
+            data_nascimento: user.pessoa.data_nascimento,
+            cpf: user.pessoa.cpf
         }))
     } catch (err) {
         console.error('Erro ao buscar usuários:', err)

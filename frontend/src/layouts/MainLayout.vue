@@ -56,7 +56,7 @@
       <v-app-bar-nav-icon v-if="isMobile" @click="drawer = !drawer" />
 
       <v-toolbar-title class="d-flex align-center gap-3">
-        {{ appStore.userData?.pessoa.nome_completo || 'Usuário' }}
+        {{ appStore.userData?.pessoa?.nome_completo || 'Usuário' }}
 
         <!-- Menu de usuário -->
         <v-menu location="end" offset-y class="menu-usuario">
@@ -69,7 +69,7 @@
           <v-list>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title class="mb-3"><strong>Nome:</strong> {{ appStore.userData?.pessoa.nome_completo || '-'
+                <v-list-item-title class="mb-3"><strong>Nome:</strong> {{ appStore.userData?.pessoa?.nome_completo || '-'
                 }}</v-list-item-title>
                 <v-list-item-subtitle class="mb-2"><strong>Email:</strong> {{ appStore.userData?.email || '-'
                 }}</v-list-item-subtitle>

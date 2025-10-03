@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="dialogVisible" width="50%" max-width="500px" persistent>
+    <v-dialog v-model="dialogVisible" width="95%" max-width="500px" persistent>
         <v-card v-if="!isLoading" id="card-modal-cadastro">
             <row class="row-close-modal">
                 <v-btn id="btn-close-modal" @click="cancel">X</v-btn>
@@ -8,19 +8,19 @@
                 <v-icon color="#ff8200" class="mr-2">mdi-alert-circle</v-icon> Cadastrar Usuário
             </v-card-title>
 
-            <v-card-text class="w-100">
+            <v-card-text class="w-100 d-flex flex-column flex-wrap ga-4">
                 <v-alert v-if="showAlert" :type="alertType" class="mt-3" dismissible @click:close="showAlert = false">
                     {{ alertMessage }}
                 </v-alert>
-                <inputText label="Nome Completo" type="text" :ocultaContador="true"
+                <inputText label="Nome Completo*" type="text" :ocultaContador="true"
                     v-model:valueInput="textInputs['input-nome']" />
-                <inputText label="CPF" type="text" :ocultaContador="true"
+                <inputText label="CPF*" type="text" :ocultaContador="true"
                     v-model:valueInput="textInputs['input-cpf']" />
                 <inputText label="E-mail" type="text" :ocultaContador="true"
                     v-model:valueInput="textInputs['input-email']" />
-                <inputText label="E-mail de acesso" type="text" :ocultaContador="true"
+                <inputText label="E-mail de acesso*" type="text" :ocultaContador="true"
                     v-model:valueInput="textInputs['input-email-acesso']" />
-                <inputText label="Data de Nascimento" type="date" :ocultaContador="true"
+                <inputText label="Data de Nascimento*" type="date" :ocultaContador="true"
                     v-model:valueInput="textInputs['input-data-nasc']" />
                 <inputText label="Senha de Acesso*" v-model:valueInput="textInputs[`input-senha`]" id="input-senha"
                     :type="showNewPassword ? 'text' : 'password'"
@@ -40,6 +40,7 @@
             <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
         </v-container>
     </v-dialog>
+    <modalCamposObrigatorios v-if="!isLoading" :isOpen="showModalConfirmation" @update:isOpen="showModalConfirmation = $event" />
 </template>
 
 <script setup lang="ts">
@@ -48,6 +49,7 @@ import { defineProps, defineEmits, watch, ref, onMounted } from 'vue';
 // COMPONENTES
 import inputText from '@/components/inputText.vue';
 import combo from '@/components/select.vue';
+import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue';
 
 // SERVICES
 import { cadastrarUsuarioClinica } from '@/services/clinica';
@@ -58,6 +60,7 @@ const props = defineProps<{
 
 
 const dialogVisible = ref(props.isOpen);
+const showModalConfirmation = ref(false);
 const isLoading = ref(false);
 const textInputs = ref<Record<string, string>>({})
 const showNewPassword = ref(false);
@@ -102,65 +105,78 @@ const loading = ref(false);
 
 
 const cadastrarUsuario = async () => {
-    let tipoUsuario;
-    tipoUsuario = document.getElementsByClassName('combo-box-tipo-usuario');
-    let complementoTipoUsuario = undefined;
-    if (tipoUsuario.length > 0) {
-        const elementoComAtributo = Array.from(tipoUsuario).find((el) => el.hasAttribute('data-complemento'));
-        complementoTipoUsuario = elementoComAtributo?.getAttribute('data-complemento') ?? undefined;
+  // Verificar obrigatórios
+  const obrigatoriosPreenchidos =
+    textInputs.value['input-nome'] &&
+    textInputs.value['input-cpf'] &&
+    textInputs.value['input-email-acesso'] &&
+    textInputs.value['input-data-nasc'] &&
+    textInputs.value['input-senha'] &&
+    responsavelAtendimento.value
+
+  if (!obrigatoriosPreenchidos) {
+    showModalConfirmation.value = true
+    return
+  }
+
+  let tipoUsuario;
+  tipoUsuario = document.getElementsByClassName('combo-box-tipo-usuario');
+  let complementoTipoUsuario = undefined;
+  if (tipoUsuario.length > 0) {
+    const elementoComAtributo = Array.from(tipoUsuario).find((el) => el.hasAttribute('data-complemento'));
+    complementoTipoUsuario = elementoComAtributo?.getAttribute('data-complemento') ?? undefined;
+  }
+
+  const dados = {
+    email: textInputs.value['input-email'],
+    senha: textInputs.value['input-senha'],
+    tipo_usuario: complementoTipoUsuario,
+    first_name: textInputs.value['input-nome'].split(' ')[0] || '',
+    last_name: textInputs.value['input-nome'].split(' ').slice(1).join(' ') || '',
+    pessoa: {
+      nome_completo: textInputs.value['input-nome'],
+      cpf: textInputs.value['input-cpf'],
+      data_nascimento: textInputs.value['input-data-nasc'] || ''
+    },
+    contato: {
+      email: textInputs.value['input-email-acesso'] || ''
+    }
+  };
+
+  try {
+    isLoading.value = true;
+    const response = await cadastrarUsuarioClinica(dados);
+    emit('usuarioCadastrado');
+    alertMessage.value = 'Usuário cadastrado com sucesso!';
+    alertType.value = 'success';
+    showAlert.value = true;
+
+    setTimeout(() => {
+      showAlert.value = false;
+    }, 5000);
+  } catch (error: any) {
+    if (error.tipo === 'VALIDATION' && error.errors) {
+      const firstKey = Object.keys(error.errors)[0];
+      alertMessage.value = error.errors[firstKey][0];
+    } else if (error.tipo === 'ERROR') {
+      alertMessage.value = error.msg;
+    } else {
+      alertMessage.value = 'Ocorreu um erro inesperado';
     }
 
-    const dados = {
-        email: textInputs.value['input-email'],
-        senha: textInputs.value['input-senha'],
-        tipo_usuario: complementoTipoUsuario,
-        first_name: textInputs.value['input-nome'].split(' ')[0] || '',
-        last_name: textInputs.value['input-nome'].split(' ').slice(1).join(' ') || '',
-        pessoa: {
-            nome_completo: textInputs.value['input-nome'],
-            cpf: textInputs.value['input-cpf'],
-            data_nascimento: textInputs.value['input-data-nasc'] || ''
-        },
-        contato: {
-            email: textInputs.value['input-email-acesso'] || ''
-        }
-    };
+    alertType.value = 'error';
+    showAlert.value = true;
 
-    let response;
-    try {
-        isLoading.value = true;
-        response = await cadastrarUsuarioClinica(dados);
-        emit('usuarioCadastrado');
-        alertMessage.value = 'Usuário cadastrado com sucesso!';
-        alertType.value = 'success';
-        showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+    }, 5000);
 
-        setTimeout(() => {
-            showAlert.value = false;
-        }, 5000);
-    } catch (error: any) {
-        // Captura erro de validação do backend
-        if (error.tipo === 'VALIDATION' && error.errors) {
-            const firstKey = Object.keys(error.errors)[0];
-            alertMessage.value = error.errors[firstKey][0];
-        } else if (error.tipo === 'ERROR') {
-            alertMessage.value = error.msg;
-        } else {
-            alertMessage.value = 'Ocorreu um erro inesperado';
-        }
-
-        alertType.value = 'error';
-        showAlert.value = true;
-
-        setTimeout(() => {
-            showAlert.value = false;
-        }, 5000);
-
-        throw error;
-    } finally {
-        isLoading.value = false;
-    }
+    throw error;
+  } finally {
+    isLoading.value = false;
+  }
 };
+
 </script>
 <style lang="scss">
 .row-close-modal {

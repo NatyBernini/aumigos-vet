@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialogVisible" width="50%" max-width="500px" persistent>
+  <v-dialog v-model="dialogVisible" width="95%" max-width="500px" persistent>
     <v-card v-if="!isLoading" id="card-modal-cadastro">
       <row class="row-close-modal">
         <v-btn id="btn-close-modal" @click="cancel">X</v-btn>
@@ -10,16 +10,16 @@
         Visualizar Usuário
       </v-card-title>
 
-      <v-card-text class="w-100">
-        <inputText label="Nome Completo" type="text" v-model:valueInput="textInputs['input-nome']"
+      <v-card-text class="w-100 d-flex flex-column flex-wrap ga-4">
+        <inputText label="Nome Completo" type="text" v-model:valueInput="textInputs['input-nome']" :ocultaContador="true"
           :disabled="!isEditing" />
-        <inputText label="CPF" type="text" v-model:valueInput="textInputs['input-cpf']"
+        <inputText label="CPF" type="text" v-model:valueInput="textInputs['input-cpf']" :ocultaContador="true"
           :disabled="!isEditing" />
-        <inputText label="E-mail" type="text" v-model:valueInput="textInputs['input-email']"
+        <inputText label="E-mail" type="text" v-model:valueInput="textInputs['input-email']" :ocultaContador="true"
           :disabled="!isEditing" />
-        <inputText label="E-mail de acesso" type="text" v-model:valueInput="textInputs['input-email-acesso']"
+        <inputText label="E-mail de acesso" type="text" v-model:valueInput="textInputs['input-email-acesso']" :ocultaContador="true"
           :disabled="!isEditing" />
-        <inputText label="Data de Nascimento" type="date" v-model:valueInput="textInputs['input-data-nasc']"
+        <inputText label="Data de Nascimento" type="date" v-model:valueInput="textInputs['input-data-nasc']" :ocultaContador="true"
           :disabled="!isEditing" />
         <combo v-model="responsavelAtendimento" :items="tipoUsuario" :extra-items="tipoUsuarioExtra"
           label="Tipo de Usuário*" variant="outlined" id="tipo-user" :isRequired="false"
@@ -97,7 +97,7 @@ function preencherCampos() {
 
   // preencher os inputs
   textInputs.value['input-nome'] = `${props.userData.nome}`
-  textInputs.value['input-email'] = props.userData.email
+  textInputs.value['input-email'] = props.userData.email_contato
   textInputs.value['input-email-acesso'] = props.userData.email
   textInputs.value['input-cpf'] = props.userData.cpf || ''
   textInputs.value['input-data-nasc'] = props.userData.data_nascimento || ''
