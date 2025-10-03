@@ -30,7 +30,7 @@ export interface Contato {
 export interface UserClinica {
     email: string;
     senha: string;
-    tipo_usuario: string;
+    tipo_usuario?: string;
     pessoa: Pessoa;
     contato: Contato;
     first_name: string;
@@ -38,7 +38,7 @@ export interface UserClinica {
 }
 
 async function salvarClinica(payload: Clinica) {
-    return API.post("/usuarios/clinicas/", payload);
+    return API.post("/usuarios/clinica/", payload);
 }
 
 async function usuariosClinica() {
@@ -46,7 +46,7 @@ async function usuariosClinica() {
 }
 
 async function cadastrarUsuarioClinica(payload: UserClinica) {
-    return API.post("/usuarios/clinica/cadastrar-usuario/", payload);
+    return API.post("/usuarios/clinica/usuario/", payload);
 }
 
 export {

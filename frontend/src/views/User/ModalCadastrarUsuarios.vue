@@ -4,11 +4,11 @@
             <row class="row-close-modal">
                 <v-btn id="btn-close-modal" @click="cancel">X</v-btn>
             </row>
-            <v-card-title>
+            <v-card-title class="mb-5">
                 <v-icon color="#ff8200" class="mr-2">mdi-alert-circle</v-icon> Cadastrar Usuário
             </v-card-title>
 
-            <v-card-text>
+            <v-card-text class="w-100">
                 <v-alert v-if="showAlert" :type="alertType" class="mt-3" dismissible @click:close="showAlert = false">
                     {{ alertMessage }}
                 </v-alert>
@@ -22,13 +22,16 @@
                     v-model:valueInput="textInputs['input-email-acesso']" />
                 <inputText label="Data de Nascimento" type="date" :ocultaContador="true"
                     v-model:valueInput="textInputs['input-data-nasc']" />
-                <inputText label="Nova senha*" v-model:valueInput="textInputs[`input-senha`]" id="input-senha"
+                <inputText label="Senha de Acesso*" v-model:valueInput="textInputs[`input-senha`]" id="input-senha"
                     :type="showNewPassword ? 'text' : 'password'"
                     :append-inner-icon="showNewPassword ? 'mdi-eye-off' : 'mdi-eye'"
                     @click:append-inner="showNewPassword = !showNewPassword" required :maxLength="0" />
-
+                <combo v-model="responsavelAtendimento" :items="tipoUsuario" :extra-items="tipoUsuarioExtra"
+                    label="Tipo de Usuário*" variant="outlined" id="tipo-user" :isRequired="false"
+                    :isMultipleSelect="false" class="container-combobox-padrao combo-box-tipo-usuario"
+                    placeholder="Selecione um tipo" />
             </v-card-text>
-            <v-card-actions>
+            <v-card-actions class="mt-5 pa-0 w-100 d-flex justify-end flex-row">
                 <v-spacer />
                 <v-btn class="btn-padrao" :loading="loading" @click="cadastrarUsuario">Cadastrar </v-btn>
             </v-card-actions>
@@ -44,6 +47,7 @@ import { defineProps, defineEmits, watch, ref, onMounted } from 'vue';
 
 // COMPONENTES
 import inputText from '@/components/inputText.vue';
+import combo from '@/components/select.vue';
 
 // SERVICES
 import { cadastrarUsuarioClinica } from '@/services/clinica';
@@ -53,10 +57,6 @@ const props = defineProps<{
 }>();
 
 
-const emit = defineEmits<{
-    (e: 'update:isOpen', value: boolean): void;
-}>();
-
 const dialogVisible = ref(props.isOpen);
 const isLoading = ref(false);
 const textInputs = ref<Record<string, string>>({})
@@ -64,6 +64,14 @@ const showNewPassword = ref(false);
 const showAlert = ref(false);
 const alertMessage = ref('');
 const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error');
+const responsavelAtendimento = ref()
+const tipoUsuario = ['admin_clinica', 'caixa', 'veterinario']
+const tipoUsuarioExtra = [{ descricao: 'admin_clinica', id: 'admin_clinica' }, { descricao: 'caixa', id: 'caixa' }, { descricao: 'veterinario', id: 'veterinario' }]
+
+const emit = defineEmits<{
+    (e: 'update:isOpen', value: boolean): void;
+    (e: 'usuarioCadastrado'): void;
+}>();
 
 watch(
     () => props.isOpen,
@@ -72,11 +80,21 @@ watch(
     }
 );
 
-watch(dialogVisible, (val: any) => {
+
+watch(dialogVisible, (val: boolean) => {
     emit('update:isOpen', val);
 });
 
+
 function cancel() {
+    textInputs.value['input-email'] = '';
+    textInputs.value['input-senha'] = '';
+    textInputs.value['input-nome'] = '';
+    textInputs.value['input-cpf'] = '';
+    textInputs.value['input-data-nasc'] = '';
+    textInputs.value['input-email-acesso'] = '';
+    responsavelAtendimento.value = undefined
+
     dialogVisible.value = false;
 }
 
@@ -84,11 +102,18 @@ const loading = ref(false);
 
 
 const cadastrarUsuario = async () => {
-    // Monta o payload com os dados do formulário
+    let tipoUsuario;
+    tipoUsuario = document.getElementsByClassName('combo-box-tipo-usuario');
+    let complementoTipoUsuario = undefined;
+    if (tipoUsuario.length > 0) {
+        const elementoComAtributo = Array.from(tipoUsuario).find((el) => el.hasAttribute('data-complemento'));
+        complementoTipoUsuario = elementoComAtributo?.getAttribute('data-complemento') ?? undefined;
+    }
+
     const dados = {
         email: textInputs.value['input-email'],
         senha: textInputs.value['input-senha'],
-        tipo_usuario: 'veterinario', // ou outro valor que faça sentido
+        tipo_usuario: complementoTipoUsuario,
         first_name: textInputs.value['input-nome'].split(' ')[0] || '',
         last_name: textInputs.value['input-nome'].split(' ').slice(1).join(' ') || '',
         pessoa: {
@@ -105,13 +130,10 @@ const cadastrarUsuario = async () => {
     try {
         isLoading.value = true;
         response = await cadastrarUsuarioClinica(dados);
-
+        emit('usuarioCadastrado');
         alertMessage.value = 'Usuário cadastrado com sucesso!';
         alertType.value = 'success';
         showAlert.value = true;
-
-        // Fecha o diálogo após cadastro
-        dialogVisible.value = false;
 
         setTimeout(() => {
             showAlert.value = false;
@@ -171,10 +193,9 @@ const cadastrarUsuario = async () => {
     .v-card-title {
         padding: 0;
         font-weight: 700;
-        font-size: 16px;
+        font-size: 18px;
         line-height: 16px;
         letter-spacing: 0%;
-        color: #ff8200;
         text-wrap: auto !important;
     }
 

@@ -139,18 +139,7 @@
 
                 <!-- Aba: Administrar Usuários (apenas admin) -->
                 <div v-else-if="abaAtiva === 'usuarios' && appStore.userData?.tipo_usuario === 'admin_clinica'">
-                    <v-card class="card-informativo mb-7"><v-icon class="mr-2">mdi-alert-circle</v-icon>
-                        Nesta aba, você, como administrador, pode visualizar e gerenciar usuários da clínica.
-                    </v-card>
-                    <div class="info-box">
-                        <h3>Administrar Usuários
-                            <v-btn color="accent" large @click.stop="showScheduleForm = true"
-                                class="btn-padrao">
-                                Cadastrar Novo Usuário
-                                <v-icon class="icon-close ml-3">mdi-format-align-left</v-icon>
-                            </v-btn>
-                        </h3>
-                    </div>
+                  <AdministrarUsuarios />
                 </div>
             </div>
         </v-main>
@@ -160,7 +149,6 @@
     <v-container v-if="isLoading" class="d-flex align-center justify-center">
         <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
     </v-container>
-    <ModalCadastrarUsuarios :isOpen="showScheduleForm" @update:isOpen="showScheduleForm = $event" />
 </template>
 
 <script lang="ts" setup>
@@ -171,17 +159,16 @@ import { useRouter } from 'vue-router'
 
 // SERVICES
 import { redefinirSenha } from '@/services/auth'
-import { usuariosClinica } from '@/services/clinica'
 
 // COMPONENTES
-import ModalCadastrarUsuarios from './ModalCadastrarUsuarios.vue'
 import inputText from '@/components/inputText.vue'
+import AdministrarUsuarios from './AdministrarUsuarios.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
 
 const logoutUser = () => {
-  appStore.logout()
+    appStore.logout()
 }
 
 type Aba = 'informacoes' | 'assinatura' | 'senha' | 'usuarios'
@@ -194,12 +181,11 @@ const isLoading = ref(false)
 const showAlert = ref(false)
 const alertMessage = ref('')
 const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error')
-const showScheduleForm = ref(false)
 
 // Lista de abas visíveis
 const opcoes = ref<{ label: string; value: Aba }[]>([
-  { label: 'Informações Pessoais', value: 'informacoes' },
-  { label: 'Redefinir Senha', value: 'senha' }
+    { label: 'Informações Pessoais', value: 'informacoes' },
+    { label: 'Redefinir Senha', value: 'senha' }
 ])
 
 // Drawer e responsividade
@@ -207,66 +193,66 @@ const drawer = ref(true)
 const isMobile = ref(false)
 
 const checkMobile = () => {
-  isMobile.value = window.innerWidth < 960
-  drawer.value = !isMobile.value
+    isMobile.value = window.innerWidth < 960
+    drawer.value = !isMobile.value
 }
 
 const redefineSenha = async () => {
-  const dados = {
-    senha_atual: textInputs.value['input-senha'],
-    nova_senha: textInputs.value['input-nova-senha']
-  }
-  try {
-    isLoading.value = true
-    const response = await redefinirSenha(dados)
-    alertMessage.value = response.detail
-    alertType.value = 'success'
-    showAlert.value = true
-    setTimeout(() => (showAlert.value = false), 5000)
-  } catch (error: any) {
-    if (error.tipo === 'VALIDATION' && error.errors) {
-      const firstKey = Object.keys(error.errors)[0]
-      alertMessage.value = error.errors[firstKey][0]
-    } else if (error.tipo === 'ERROR') {
-      alertMessage.value = error.msg
-    } else {
-      alertMessage.value = 'Ocorreu um erro inesperado'
+    const dados = {
+        senha_atual: textInputs.value['input-senha'],
+        nova_senha: textInputs.value['input-nova-senha']
     }
-    alertType.value = 'error'
-    showAlert.value = true
-    setTimeout(() => (showAlert.value = false), 5000)
-    throw error
-  } finally {
-    isLoading.value = false
-  }
+    try {
+        isLoading.value = true
+        const response = await redefinirSenha(dados)
+        alertMessage.value = response.detail
+        alertType.value = 'success'
+        showAlert.value = true
+        setTimeout(() => (showAlert.value = false), 5000)
+    } catch (error: any) {
+        if (error.tipo === 'VALIDATION' && error.errors) {
+            const firstKey = Object.keys(error.errors)[0]
+            alertMessage.value = error.errors[firstKey][0]
+        } else if (error.tipo === 'ERROR') {
+            alertMessage.value = error.msg
+        } else {
+            alertMessage.value = 'Ocorreu um erro inesperado'
+        }
+        alertType.value = 'error'
+        showAlert.value = true
+        setTimeout(() => (showAlert.value = false), 5000)
+        throw error
+    } finally {
+        isLoading.value = false
+    }
 }
 
 onMounted(async () => {
-  isLoading.value = true
-//   await usuariosClinica()
-  checkMobile()
-  window.addEventListener('resize', checkMobile)
+    isLoading.value = true
+    //   await usuariosClinica()
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
 
-  // popula dados do usuário
-  textInputs.value['input-nome'] = appStore.userData?.pessoa.nome_completo || '-'
-  textInputs.value['input-cpf'] = formatCpf(appStore.userData?.pessoa.cpf ?? '') || '-'
-  textInputs.value['input-email'] = appStore.userData?.email || '-'
-  textInputs.value['input-data-nasc'] = appStore.userData?.pessoa.data_nascimento || '-'
-  textInputs.value['input-clinica'] = appStore.userData?.clinicas[0].nome || '-'
-  textInputs.value['input-cnpj'] = appStore.userData?.clinicas[0].cnpj || '-'
-  textInputs.value['input-data-criacao'] = appStore.userData?.clinicas[0].criado_em || '-'
-  textInputs.value['input-plano'] = appStore.userData?.clinicas[0].plano.nome || '-'
-  textInputs.value['input-preco-anual'] = appStore.userData?.clinicas[0].plano.preco_anual || '-'
-  textInputs.value['input-preco-mensal'] = appStore.userData?.clinicas[0].plano.preco_mensal || '-'
-  textInputs.value['input-usuarios'] = appStore.userData?.clinicas[0].plano.usuarios_simultaneos || '-'
+    // popula dados do usuário
+    textInputs.value['input-nome'] = appStore.userData?.pessoa.nome_completo || '-'
+    textInputs.value['input-cpf'] = formatCpf(appStore.userData?.pessoa.cpf ?? '') || '-'
+    textInputs.value['input-email'] = appStore.userData?.email || '-'
+    textInputs.value['input-data-nasc'] = appStore.userData?.pessoa.data_nascimento || '-'
+    textInputs.value['input-clinica'] = appStore.userData?.clinicas[0].nome || '-'
+    textInputs.value['input-cnpj'] = appStore.userData?.clinicas[0].cnpj || '-'
+    textInputs.value['input-data-criacao'] = appStore.userData?.clinicas[0].criado_em || '-'
+    textInputs.value['input-plano'] = appStore.userData?.clinicas[0].plano.nome || '-'
+    textInputs.value['input-preco-anual'] = appStore.userData?.clinicas[0].plano.preco_anual || '-'
+    textInputs.value['input-preco-mensal'] = appStore.userData?.clinicas[0].plano.preco_mensal || '-'
+    textInputs.value['input-usuarios'] = appStore.userData?.clinicas[0].plano.usuarios_simultaneos || '-'
 
-  // adiciona abas de admin
-  if (appStore.userData?.tipo_usuario === 'admin_clinica') {
-    opcoes.value.push({ label: 'Assinatura', value: 'assinatura' })
-    opcoes.value.push({ label: 'Administrar Usuários', value: 'usuarios' })
-  }
+    // adiciona abas de admin
+    if (appStore.userData?.tipo_usuario === 'admin_clinica') {
+        opcoes.value.push({ label: 'Assinatura', value: 'assinatura' })
+        opcoes.value.push({ label: 'Administrar Usuários', value: 'usuarios' })
+    }
 
-  isLoading.value = false
+    isLoading.value = false
 })
 </script>
 
@@ -349,6 +335,12 @@ onMounted(async () => {
 
         .input-text-container {
             margin-bottom: 35px !important;
+        }
+
+        .span-info-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
     }
 }

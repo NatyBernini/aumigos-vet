@@ -429,12 +429,13 @@ button.v-btn.v-btn--disabled.v-theme--light.v-btn--density-default.v-btn--size-d
   .v-card-title {
     display: flex !important;
     justify-content: space-between;
-    color: #2e2e2e !important;
-    font-size: 14px !important;
+    color: #2e2e2e;
+    font-size: 14px;
     font-weight: 600;
     flex-direction: row;
     flex-wrap: wrap;
     text-wrap: auto;
+    align-items: center;
 
     .v-btn {
       box-shadow: none !important;
@@ -535,7 +536,7 @@ thead {
 
 .v-alert {
   border-radius: 4px;
-  position: fixed!important;
+  position: fixed !important;
   right: 40px;
   top: 112px;
   max-width: 480px;
@@ -544,30 +545,30 @@ thead {
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  display: flex!important;
-  flex-wrap: wrap!important;
+  display: flex !important;
+  flex-wrap: wrap !important;
   white-space: pre-line;
 
   &.bg-error {
-    color: #5A5A5A!important;
-    background: rgb(255, 227, 227)!important;
-    border-left: 5px solid #D14A4A!important;
+    color: #5A5A5A !important;
+    background: rgb(255, 227, 227) !important;
+    border-left: 5px solid #D14A4A !important;
   }
 
   &.bg-info {
-    border-left: 5px solid #6A8FD2!important;
-    background: #dee6f6!important;
-    color: #5A5A5A!important;
+    border-left: 5px solid #6A8FD2 !important;
+    background: #dee6f6 !important;
+    color: #5A5A5A !important;
   }
 
-   &.bg-success {
-    border-left: 5px solid #83b940!important;
-    background: #cef79b!important;
-    color: #5A5A5A!important;
+  &.bg-success {
+    border-left: 5px solid #83b940 !important;
+    background: #cef79b !important;
+    color: #5A5A5A !important;
   }
 
   .v-alert__prepend {
-    display: none!important;
+    display: none !important;
   }
 
 }

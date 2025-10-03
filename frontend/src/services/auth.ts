@@ -67,7 +67,7 @@ async function getMe() {
 }
 
 async function redefinirSenha(params: RedefinirSenha) {
-  return await API.put("/usuarios/usuario/minha-senha/", params)
+  return await API.put("/usuarios/redefinir-senha/", params)
 }
 
 export {
