@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import PacientesList from '../views/Pacientes/Listagem.vue'
 import PacienteCadastro from '../views/Pacientes/Cadastrar.vue'
 import PacienteVisualizar from '../views/Pacientes/Visualizar.vue'
@@ -17,11 +17,19 @@ import CaixaListagem from '../views/Financeiro/Caixa/Listagem.vue'
 import CaixaPagamento from '../views/Financeiro/Caixa/Pagamento.vue'
 import Perfil from '../views/User/Perfil.vue'
 
-import { usePersistentStore } from '@/modules/commons/store';
+import { usePersistentStore } from '@/modules/commons/store'
 import { useAppStore } from '@/modules/commons/store/appStore/app'
 
+interface CustomRouteMeta {
+  requiresAuth?: boolean
+  roles?: string[]
+}
 
-const routes = [
+declare module 'vue-router' {
+  interface RouteMeta extends CustomRouteMeta { }
+}
+
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Login',
@@ -31,13 +39,13 @@ const routes = [
     path: '/clinica',
     name: 'Clinica',
     component: Empresa,
-    meta: { requiresAuth: true, roles: ['admin_clinica'] }
+    meta: { requiresAuth: true, roles: ['admin_clinica'] },
   },
   {
     path: '/planos',
     name: 'Planos',
     component: Planos,
-    meta: { requiresAuth: true, roles: ['admin_clinica'] }
+    meta: { requiresAuth: true, roles: ['admin_clinica'] },
   },
   {
     path: '/',
@@ -65,37 +73,34 @@ const routes = [
       { path: 'servicos/cadastrar', component: ProdutoCadastrar, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
 
       // Caixa
-      { path: 'caixa', component: CaixaListagem, meta: { requiresAuth: true, roles: ['admin_clinica', 'caixa'] } },
-      { path: 'caixa/pagamento/:id', name: 'Pagamento', component: CaixaPagamento, props: true, meta: { requiresAuth: true, roles: ['admin_clinica', 'caixa'] } },
+      { path: 'caixa', component: CaixaListagem, meta: { requiresAuth: true, roles: ['admin_clinica', 'atendente'] } },
+      { path: 'caixa/pagamento/:id', name: 'Pagamento', component: CaixaPagamento, props: true, meta: { requiresAuth: true, roles: ['admin_clinica', 'atendente'] } },
     ],
   },
   {
     path: '/perfil',
     name: 'Perfil',
     component: Perfil,
-    meta: { requiresAuth: true, roles: ['admin_clinica', 'caixa', 'veterinario'] }
+    meta: { requiresAuth: true, roles: ['admin_clinica', 'atendente', 'veterinario'] },
   },
 ]
-
 
 const router = createRouter({
   history: createWebHistory('/aumigos-vet/'),
   routes,
 })
 
-// proteção global das rotas
+// 🔐 Proteção global de rotas
 router.beforeEach(async (to, from, next) => {
   const persistentStore = usePersistentStore()
   const appStore = useAppStore()
 
   if (to.meta.requiresAuth) {
-    // se não houver token → redireciona pro login
     if (!persistentStore.jwtToken) {
       appStore.logout()
       return next({ name: 'Login' })
     }
 
-    // se não tiver dados do usuário → busca
     if (!appStore.userData) {
       try {
         await appStore.fetchUserData()
@@ -105,15 +110,17 @@ router.beforeEach(async (to, from, next) => {
       }
     }
 
-    // 🔹 Checa se tem restrição de roles na rota
-    if (to.meta.roles && !to.meta.roles.includes(appStore.userData?.tipo_usuario)) {
-      return next({ path: '/caixa' }) // redireciona para uma rota segura
+    if (to.meta.roles) {
+      const tipoUsuario = appStore.userData?.tipo_usuario
+      if (!tipoUsuario || !to.meta.roles.includes(tipoUsuario)) {
+        return next({ path: '/caixa' })
+      }
     }
+
 
     return next()
   }
 
-  // rotas públicas
   next()
 })
 

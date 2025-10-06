@@ -12,6 +12,7 @@
       <v-tab value="anamnese">Anamnese Sistemas</v-tab>
       <v-tab value="historico">Histórico Clínico e Exame Físico</v-tab>
       <v-tab value="servicos">Serviços e Produtos</v-tab>
+      <v-tab value="relatorio">Relatórios e Documentos</v-tab>
     </v-tabs>
 
     <v-card-text>
@@ -229,6 +230,14 @@
           </v-card>
         </v-tabs-window-item>
 
+        <v-tabs-window-item value="relatorio" class="pt-5">
+
+          <p class="subtitle-padrao">Relatórios e Documentos</p>
+          <v-card class="card-informativo mt-2 mb-5" v-if="!produtosExtras.length"><v-icon
+              class="mr-2">mdi-alert-circle</v-icon>Para adicionar um documento ou relatório, clique no botão
+            abaixo.</v-card>
+          <GerarRelatorio />
+        </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
 
@@ -314,6 +323,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import combo from '@/components/select.vue'
 import textArea from '@/components/textArea.vue'
 import inputText from '@/components/inputText.vue'
+import GerarRelatorio from './GerarRelatorio.vue'
 
 // SERVICES
 import { formatCurrency } from '@/utils/formaUtils'

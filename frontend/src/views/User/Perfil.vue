@@ -72,15 +72,34 @@
                                 <v-btn class="me-4 btn-padrao" type="submit">Editar Cadastro</v-btn>
                             </div>
                         </div>
-
-                        <!-- Informações da Clínica -->
+                    </div>
+                    <div class="info-sections mt-10">
+                           <!-- Informações da Clínica -->
                         <div class="info-box">
                             <h3 class="mb-6">Informações da Clínica</h3>
                             <inputText label="Nome da Clínica" type="text" :ocultaContador="true"
                                 v-model:valueInput="textInputs['input-clinica']" :disabled="true" />
                             <inputText label="CNPJ" type="text" :ocultaContador="true"
                                 v-model:valueInput="textInputs['input-cnpj']" :disabled="true" />
-                            <inputText label="Data de Criação" type="text" :ocultaContador="true"
+                            <inputText label="E-mail" type="text" :ocultaContador="true"
+                                v-model:valueInput="textInputs['input-email-clinica']" :disabled="true" />
+                            <inputText label="CEP" type="text" :ocultaContador="true"
+                                v-model:valueInput="textInputs['input-cep']" :disabled="true" />
+                            <inputText label="Estado" type="text" :ocultaContador="true"
+                                v-model:valueInput="textInputs['input-estado']" :disabled="true" />
+                            <inputText label="Cidade" type="text" :ocultaContador="true"
+                                v-model:valueInput="textInputs['input-cidade']" :disabled="true" />
+                            <inputText label="Bairro" type="text" :ocultaContador="true"
+                                v-model:valueInput="textInputs['input-bairro']" :disabled="true" />
+                            <inputText label="Rua" type="text" :ocultaContador="true"
+                                v-model:valueInput="textInputs['input-rua']" :disabled="true" />
+                            <inputText label="N" type="text" :ocultaContador="true"
+                                v-model:valueInput="textInputs['input-numero']" :disabled="true" />
+                            <inputText label="Telefone" type="text" :ocultaContador="true"
+                                v-model:valueInput="textInputs['input-telefone']" :disabled="true" />
+                            <inputText label="Whatsapp" type="text" :ocultaContador="true"
+                                v-model:valueInput="textInputs['input-whatsapp']" :disabled="true" />
+                            <inputText label="Data de Criação" type="date" :ocultaContador="true"
                                 v-model:valueInput="textInputs['input-data-criacao']" :disabled="true" />
                             <div class="container-btn mt-5" v-if="appStore.userData?.tipo_usuario === 'admin_clinica'">
                                 <v-btn class="me-4 btn-padrao" type="submit">Editar Clínica</v-btn>
@@ -240,6 +259,16 @@ onMounted(async () => {
     textInputs.value['input-data-nasc'] = appStore.userData?.pessoa?.data_nascimento || '-'
     textInputs.value['input-clinica'] = appStore.userData?.clinicas[0]?.nome || '-'
     textInputs.value['input-cnpj'] = appStore.userData?.clinicas[0]?.cnpj || '-'
+    textInputs.value['input-email-clinica'] = appStore.userData?.clinicas[0]?.email || '-'
+    textInputs.value['input-bairro'] = appStore.userData?.clinicas[0]?.bairro || '-'
+    textInputs.value['input-cep'] = appStore.userData?.clinicas[0]?.cep || '-'
+    textInputs.value['input-complemento'] = appStore.userData?.clinicas[0]?.complemento || '-'
+    textInputs.value['input-estado'] = appStore.userData?.clinicas[0]?.estado || '-'
+    textInputs.value['input-cidade'] = appStore.userData?.clinicas[0]?.cidade || '-'
+    textInputs.value['input-numero'] = appStore.userData?.clinicas[0]?.numero || '-'
+    textInputs.value['input-rua'] = appStore.userData?.clinicas[0]?.rua || '-'
+    textInputs.value['input-telefone'] = appStore.userData?.clinicas[0]?.telefone || '-'
+    textInputs.value['input-whatsapp'] = appStore.userData?.clinicas[0]?.whatsapp || '-'
     textInputs.value['input-data-criacao'] = appStore.userData?.clinicas[0]?.criado_em || '-'
     textInputs.value['input-plano'] = appStore.userData?.clinicas[0]?.plano?.nome || '-'
     textInputs.value['input-preco-anual'] = appStore.userData?.clinicas[0]?.plano?.preco_anual || '-'

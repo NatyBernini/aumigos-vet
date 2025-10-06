@@ -11,54 +11,43 @@
                 <v-divider />
 
                 <v-card-text class="scrollable-content">
-                    <v-text-field v-model="form.nome" label="Nome *" variant="outlined" density="compact" clearable
+                    <!-- 🔹 Título -->
+                    <v-text-field v-model="form.nome" label="Título *" variant="outlined" density="compact" clearable
                         required />
 
-                    <v-select v-model="form.modeloCabecalho" :items="modelosCabecalho" label="Modelo de Cabeçalho"
-                        variant="outlined" density="compact" />
+                    <!-- 🔹 Descrição -->
+                    <v-textarea v-model="form.descricao" label="Descrição *" rows="3" auto-grow variant="outlined"
+                        density="compact" clearable required />
 
-                    <v-select v-model="form.modeloAnimal" :items="modelosAnimal" label="Informações do Animal"
-                        variant="outlined" density="compact" />
-
-                    <v-textarea v-model="form.conteudo" label="Conteúdo do Documento *" rows="6" auto-grow
-                        variant="outlined" density="compact" />
-
-                    <div class="mt-4">
-                        <p class="text-subtitle-2 mb-2">Etiquetas disponíveis:</p>
-                        <div class="d-flex flex-wrap ga-2">
-                            <v-chip v-for="tag in etiquetas" :key="tag" color="primary" variant="outlined"
-                                @click="inserirEtiqueta(tag)">
-                                {{ tag }}
-                            </v-chip>
-                        </div>
-                    </div>
+                    <!-- 🔹 Conteúdo -->
+                    <v-textarea v-model="form.conteudo" label="Conteúdo do Documento *" rows="8" auto-grow
+                        variant="outlined" density="compact" clearable required />
                 </v-card-text>
 
                 <v-divider />
 
-                <v-card-actions class="d-flex justify-end">
+                <v-card-actions class="d-flex justify-end pa-5">
                     <v-btn color="grey" variant="text" @click="dialog = false">Cancelar</v-btn>
-                    <v-btn color="primary" variant="flat" @click="salvar">Salvar</v-btn>
+                    <v-btn class="btn-padrao" variant="flat" @click="salvar">Salvar</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
 
         <!-- Botão para abrir modal -->
-        <v-btn color="primary" @click="dialog = true">Novo Documento</v-btn>
+        <v-btn class="btn-padrao" @click="dialog = true">Novo Documento</v-btn>
 
         <!-- Lista de documentos salvos -->
         <div class="mt-6">
             <h3>Documentos Salvos</h3>
-            <v-list>
-                <v-list-item v-for="(doc, index) in documentos" :key="index">
-                    <v-list-item-content>
-                        <v-list-item-title>{{ doc.nome }}</v-list-item-title>
-                    </v-list-item-content>
-                    <v-list-item-action>
-                        <v-btn color="secondary" @click="verDocumento(doc)">Ver Documento</v-btn>
-                    </v-list-item-action>
-                </v-list-item>
-            </v-list>
+            <v-row class="row-cards mt-4 mb-4">
+                <v-card class="card-document pa-2" v-for="(doc, index) in documentos" :key="index">
+                    <v-card-title>{{ doc.nome }}</v-card-title>
+                    <v-card-text>{{ doc.descricao }}</v-card-text>
+                    <v-card-actions>
+                        <v-btn class="btn-padrao" @click="verDocumento(doc)">Ver Documento</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-row>
         </div>
 
         <!-- Modal de visualização PDF -->
@@ -66,7 +55,7 @@
             <v-card>
                 <v-card-title class="d-flex justify-space-between align-center">
                     <span class="text-h6">Visualizar Documento</span>
-                    <v-btn icon="mdi-close" @click="pdfDialog = false"></v-btn>
+                    <v-btn class="btn-padrao" icon="mdi-close" @click="pdfDialog = false"></v-btn>
                 </v-card-title>
 
                 <v-divider />
@@ -79,6 +68,7 @@
     </div>
 </template>
 
+
 <script lang="ts" setup>
 import { ref } from "vue";
 import jsPDF from "jspdf";
@@ -86,8 +76,7 @@ import logo from "@/assets/LogoAumigo.png";
 
 interface Documento {
     nome: string;
-    modeloCabecalho: number | null;
-    modeloAnimal: number | null;
+    descricao: string;
     conteudo: string;
 }
 
@@ -97,59 +86,41 @@ const pdfUrl = ref<string | null>(null);
 
 const form = ref<Documento>({
     nome: "",
-    modeloCabecalho: null,
-    modeloAnimal: null,
+    descricao: "",
     conteudo: "",
 });
 
 const documentos = ref<Documento[]>([
     {
-        nome: "Documento de Teste",
-        modeloCabecalho: 1,
-        modeloAnimal: 1,
+        nome: "Termo de Consentimento",
+        descricao: "Documento assinado pelo tutor autorizando procedimentos médicos ou cirúrgicos, após esclarecimento sobre riscos, benefícios e alternativas.",
         conteudo: "Este é um conteúdo de teste do documento. Aqui você pode colocar informações sobre o animal ou observações gerais."
     },
 
-       {
+    {
         nome: "Receituário",
-        modeloCabecalho: 1,
-        modeloAnimal: 1,
-        conteudo: "Este é um conteúdo de teste do documento. AquiNão gosta de humanos Não gosta de ficar em casa, apenas em seu habitat natural Mesmo tendo ração ainda no pote faz drama Conclusão: Não há o que fazer, pois já vive dessa forma há 10 anos, então o melhor a se fazer Não gosta de humanos Não gosta de ficar em casa, apenas em seu habitat natural Mesmo tendo ração ainda no pote faz drama Conclusão: Não há o que fazer, pois já vive dessa forma há 10 anos, então o melhor a se fazer é dar muito amor e carinho para ver se um dia amolece o coração delaNão gosta de humanos Não gosta de ficar em casa, apenas em seu habitat natural Mesmo tendo ração ainda no pote faz drama Conclusão: Não há o que fazer, pois já vive dessa forma há 10 anos, então o melhor a se fazer é dar muito amor e carinho para ver se um dia amolece o coração delaé dar muito amor e carinho para ver se um dia amolece o coração dela você pode colocar informações sobre o animal ou observações gerais."
+        descricao: "Prescrição oficial emitida pelo médico veterinário, contendo as orientações de uso de medicamentos, dosagens, duração do tratamento e instruções adicionais para o tutor.",
+        conteudo:
+            "Este é um conteúdo de teste do documento.\n\n" +
+            "Aqui não gosta de humanos.\n" +
+            "Não gosta de ficar em casa, apenas em seu habitat natural.\n" +
+            "Mesmo tendo ração ainda no pote faz drama.\n\n" +
+            "Conclusão: Não há o que fazer, pois já vive dessa forma há 10 anos.\n" +
+            "Então o melhor a se fazer é dar muito amor e carinho para ver se um dia amolece o coração dela."
     }
 ]);
 
-
-const modelosCabecalho = [
-    { title: "Modelo 1 - Logo e endereço", value: 1 },
-    { title: "Modelo 2 - Logo e dados completos", value: 2 },
-    { title: "Modelo 3 - Minimalista", value: 3 },
-    { title: "Nenhum", value: 4 },
-];
-
-const modelosAnimal = [
-    { title: "Modelo 1 - Básico", value: 1 },
-    { title: "Modelo 2 - Completo", value: 2 },
-    { title: "Nenhum", value: 3 },
-];
-
-const etiquetas = ["{nome}", "{cpf}", "{data_nasc}", "{responsavel}", "{peso}", "{especie}"];
-
-function inserirEtiqueta(tag: string) {
-    form.value.conteudo += " " + tag;
-}
-
 function salvar() {
-    if (!form.value.nome || !form.value.conteudo) {
-        alert("Preencha os campos obrigatórios.");
+    if (!form.value.nome || !form.value.descricao || !form.value.conteudo) {
+        alert("Preencha todos os campos obrigatórios.");
         return;
     }
 
     documentos.value.push({ ...form.value });
 
-    form.value = { nome: "", modeloCabecalho: null, modeloAnimal: null, conteudo: "" };
+    form.value = { nome: "", descricao: "", conteudo: "" };
     dialog.value = false;
 }
-
 
 async function verDocumento(doc: Documento) {
     const pdf = new jsPDF("p", "mm", "a4"); // formato A4
@@ -376,5 +347,25 @@ async function verDocumento(doc: Documento) {
 .scrollable-content {
     max-height: 60vh;
     overflow-y: auto;
+}
+
+.row-cards {
+    gap: 40px;
+}
+
+.v-card.card-document {
+    border: 2px solid #ffc38b;
+    border-radius: 10px;
+    max-width: 400px;
+
+    .v-card-title {
+        color: #2e2e2e !important;
+        font-size: 14px !important;
+        font-weight: 600;
+    }
+
+    .v-card-actions {
+        justify-content: flex-end;
+    }
 }
 </style>

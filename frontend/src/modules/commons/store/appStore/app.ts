@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { API } from '@/modules/commons/services';
 import { usePersistentStore } from '../persistentStore';
 import { AppState } from '../types';
+import router from '@/router';
+
 
 export const useAppStore = defineStore('app', {
   state: (): AppState => ({
@@ -58,16 +60,26 @@ export const useAppStore = defineStore('app', {
         throw error
       }
     },
-    logout() {
+    async logout() {
       const persistentStore = usePersistentStore();
+      try {
+        await API.post('/usuarios/logout/', { refresh: persistentStore.refreshToken });
 
-      // Limpa token, clínica ativa e dados do usuário
-      persistentStore.jwtToken = null;
-      persistentStore.refreshToken = null;
-      persistentStore.clinicaAtiva = null;
+        // Limpa token, clínica ativa e dados do usuário
+        persistentStore.jwtToken = null;
+        persistentStore.refreshToken = null;
+        persistentStore.clinicaAtiva = null;
 
-      this.userData = null;
-      this.isAuthorized = false;
-    },
+        // this.userData = null;
+        // this.isAuthorized = false;
+
+        router.push({ name: 'Login' });
+
+      } catch (error) {
+        console.error('Erro ao efetuar logout:', error);
+        throw error;
+      }
+    }
+
   },
 });

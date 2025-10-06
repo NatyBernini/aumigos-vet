@@ -68,8 +68,8 @@ const showAlert = ref(false);
 const alertMessage = ref('');
 const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error');
 const responsavelAtendimento = ref()
-const tipoUsuario = ['admin_clinica', 'caixa', 'veterinario']
-const tipoUsuarioExtra = [{ descricao: 'admin_clinica', id: 'admin_clinica' }, { descricao: 'caixa', id: 'caixa' }, { descricao: 'veterinario', id: 'veterinario' }]
+const tipoUsuario = ['admin_clinica', 'atendente', 'veterinario']
+const tipoUsuarioExtra = [{ descricao: 'admin_clinica', id: 'admin_clinica' }, { descricao: 'atendente', id: 'atendente' }, { descricao: 'veterinario', id: 'veterinario' }]
 
 const emit = defineEmits<{
     (e: 'update:isOpen', value: boolean): void;

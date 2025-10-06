@@ -69,8 +69,9 @@
           <v-list>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title class="mb-3"><strong>Nome:</strong> {{ appStore.userData?.pessoa?.nome_completo || '-'
-                }}</v-list-item-title>
+                <v-list-item-title class="mb-3"><strong>Nome:</strong> {{ appStore.userData?.pessoa?.nome_completo ||
+                  '-'
+                  }}</v-list-item-title>
                 <v-list-item-subtitle class="mb-2"><strong>Email:</strong> {{ appStore.userData?.email || '-'
                 }}</v-list-item-subtitle>
                 <v-list-item-subtitle class="mb-2"><strong>Cargo:</strong> {{ appStore.userData?.tipo_usuario || '-'
@@ -117,14 +118,14 @@ import iconeServices from '../assets/icons/iconServicesProducts.png'
 import iconCaixa from '../assets/icons/iconCaixa.png'
 import FotoPerfil from '../assets/icons/avatar-do-usuario.png'
 
-import { useAppStore } from '@/modules/commons/store';
+import { useAppStore, usePersistentStore } from '@/modules/commons/store';
 import { useRouter } from 'vue-router';
 
-const router = useRouter();
 const appStore = useAppStore();
 
 const logoutUser = () => {
-  appStore.logout();
+  appStore.userData = null;
+  appStore.isAuthorized = false;
 };
 
 const drawer = ref(true)
@@ -158,11 +159,11 @@ const allMenuItems = [
   {
     title: 'Consultas',
     icon: iconeConsulta,
-    roles: ['admin_clinica', 'veterinario'],
+    roles: ['admin_clinica', 'veterinario', 'atendente'],
     children: [
       { title: 'Agenda', to: '/consultas', icon: iconListagemPaciente, roles: ['admin_clinica', 'veterinario'] },
       { title: 'Consultar', to: '/consultas/consultar', icon: iconCadastrarPaciente, roles: ['admin_clinica', 'veterinario'] },
-      { title: 'Agendar', to: '/consultas/agendar', icon: iconAgenda, roles: ['admin_clinica', 'veterinario'] },
+      { title: 'Agendar', to: '/consultas/agendar', icon: iconAgenda, roles: ['admin_clinica', 'veterinario', 'atendente'] },
     ],
   },
   {
@@ -184,7 +185,7 @@ const allMenuItems = [
     title: 'Caixa',
     icon: iconCaixa,
     to: '/caixa',
-    roles: ['admin_clinica', 'caixa'],
+    roles: ['admin_clinica', 'atendente'],
   },
 ]
 

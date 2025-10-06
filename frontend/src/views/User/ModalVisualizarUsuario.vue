@@ -74,10 +74,10 @@ const responsavelAtendimento = ref('')
 // backup dos dados originais
 const originalData = ref<any>(null)
 
-const tipoUsuario = ['admin_clinica', 'caixa', 'veterinario']
+const tipoUsuario = ['admin_clinica', 'atendente', 'veterinario']
 const tipoUsuarioExtra = [
   { descricao: 'admin_clinica', id: 'admin_clinica' },
-  { descricao: 'caixa', id: 'caixa' },
+  { descricao: 'atendente', id: 'atendente' },
   { descricao: 'veterinario', id: 'veterinario' }
 ]
 

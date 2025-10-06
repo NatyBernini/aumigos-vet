@@ -1,6 +1,6 @@
 import { createApp, watch } from 'vue'
 import App from './App.vue'
-import router from './router'
+import router from '@/router'
 import '@mdi/font/css/materialdesignicons.css'
 import "@fontsource/poppins";
 import { VueTheMask } from 'vue-the-mask'
@@ -40,8 +40,6 @@ watch(
     if (!newVal) {
       console.log('userData perdido, fazendo logout...')
       appStore.logout()
-
-      router.push({ name: 'Login' });
     }
   }
 )

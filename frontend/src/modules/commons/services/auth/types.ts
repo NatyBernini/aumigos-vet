@@ -24,13 +24,26 @@ export interface UserPlano {
   usuarios_simultaneos: string;
 }
 
-export interface UserDataClinica {
+export interface Endereco {
+  bairro: string;
+  cep: string;
+  cidade: string;
+  complemento: string;
+  estado: string;
+  numero: string;
+  rua: string;
+}
+
+export interface UserDataClinica extends Endereco {
   id: number;
   nome: string;
   cnpj: string;
   plano: UserPlano;
   criado_em: string;
   modificado_em: string;
+  email: string;
+  telefone: string;
+  whatsapp: string
 }
 export interface UserDataResponse {
   email: string;
@@ -39,3 +52,5 @@ export interface UserDataResponse {
   tipo_usuario: string;
   clinicas: UserDataClinica[]
 }
+
+
