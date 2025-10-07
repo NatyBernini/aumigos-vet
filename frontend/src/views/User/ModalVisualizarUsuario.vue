@@ -11,33 +11,63 @@
       </v-card-title>
 
       <v-card-text class="w-100 d-flex flex-column flex-wrap ga-4">
-        <inputText label="Nome Completo" type="text" v-model:valueInput="textInputs['input-nome']" :ocultaContador="true"
-          :disabled="!isEditing" />
-        <inputText label="CPF" type="text" v-model:valueInput="textInputs['input-cpf']" :ocultaContador="true"
-          :disabled="!isEditing" />
-        <inputText label="E-mail" type="text" v-model:valueInput="textInputs['input-email']" :ocultaContador="true"
-          :disabled="!isEditing" />
-        <inputText label="E-mail de acesso" type="text" v-model:valueInput="textInputs['input-email-acesso']" :ocultaContador="true"
-          :disabled="!isEditing" />
-        <inputText label="Data de Nascimento" type="date" v-model:valueInput="textInputs['input-data-nasc']" :ocultaContador="true"
-          :disabled="!isEditing" />
-        <combo v-model="responsavelAtendimento" :items="tipoUsuario" :extra-items="tipoUsuarioExtra"
-          label="Tipo de Usuário*" variant="outlined" id="tipo-user" :isRequired="false"
-          :isMultipleSelect="false" class="container-combobox-padrao combo-box-tipo-usuario"
-          placeholder="Selecione um tipo" :disabled="!isEditing" />
+        <inputText
+          label="Nome Completo"
+          type="text"
+          v-model:valueInput="textInputs['input-nome']"
+          :ocultaContador="true"
+          :disabled="!isEditing"
+        />
+        <inputText
+          label="CPF"
+          type="text"
+          v-model:valueInput="textInputs['input-cpf']"
+          :ocultaContador="true"
+          :disabled="!isEditing"
+        />
+        <inputText
+          label="E-mail"
+          type="text"
+          v-model:valueInput="textInputs['input-email']"
+          :ocultaContador="true"
+          :disabled="!isEditing"
+        />
+        <inputText
+          label="E-mail de acesso"
+          type="text"
+          v-model:valueInput="textInputs['input-email-acesso']"
+          :ocultaContador="true"
+          :disabled="!isEditing"
+        />
+        <inputText
+          label="Data de Nascimento"
+          type="date"
+          v-model:valueInput="textInputs['input-data-nasc']"
+          :ocultaContador="true"
+          :disabled="!isEditing"
+        />
+        <combo
+          v-model="responsavelAtendimento"
+          :items="tipoUsuario"
+          :extra-items="tipoUsuarioExtra"
+          label="Tipo de Usuário*"
+          variant="outlined"
+          id="tipo-user"
+          :isRequired="false"
+          :isMultipleSelect="false"
+          class="container-combobox-padrao combo-box-tipo-usuario"
+          placeholder="Selecione um tipo"
+          :disabled="!isEditing"
+        />
       </v-card-text>
 
       <v-card-actions class="mt-5 pa-0 w-100 d-flex justify-end flex-row">
-        <!-- Editar -->
-        <v-btn class="btn-padrao" text color="primary" v-if="!isEditing"
-          @click="habilitarEdicao">Editar</v-btn>
+        <v-btn class="btn-padrao" text color="primary" v-if="!isEditing" @click="habilitarEdicao">Editar</v-btn>
 
-        <!-- Salvar -->
         <v-btn class="btn-padrao" text color="success" v-if="isEditing" @click="salvarAlteracoes">
           Salvar
         </v-btn>
 
-        <!-- Desfazer -->
         <v-btn class="btn-padrao ml-2" text color="warning" v-if="isEditing" @click="desfazerAlteracoes">
           Desfazer
         </v-btn>
@@ -45,7 +75,7 @@
     </v-card>
 
     <v-container v-if="isLoading" class="d-flex align-center justify-center">
-      <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
+      <v-progress-circular indeterminate color="primary" size="40" width="5" />
     </v-container>
   </v-dialog>
 </template>
@@ -54,9 +84,11 @@
 import { ref, watch } from 'vue'
 import inputText from '@/components/inputText.vue'
 import combo from '@/components/select.vue'
+import { editarUsuarioClinica } from '@/services/clinica'
+import type { Usuario } from '@/services/types'
 
 const props = defineProps<{
-  userData: any
+  userData: Usuario | null
   isOpen: boolean
 }>()
 
@@ -70,21 +102,17 @@ const isLoading = ref(false)
 const isEditing = ref(false)
 const textInputs = ref<Record<string, string>>({})
 const responsavelAtendimento = ref('')
-
-// backup dos dados originais
 const originalData = ref<any>(null)
 
 const tipoUsuario = ['admin_clinica', 'atendente', 'veterinario']
 const tipoUsuarioExtra = [
-  { descricao: 'admin_clinica', id: 'admin_clinica' },
-  { descricao: 'atendente', id: 'atendente' },
-  { descricao: 'veterinario', id: 'veterinario' }
+  { descricao: 'Administrador da clínica', id: 'admin_clinica' },
+  { descricao: 'Atendente', id: 'atendente' },
+  { descricao: 'Veterinário', id: 'veterinario' }
 ]
 
-watch(
-  () => props.isOpen,
-  (val) => (dialogVisible.value = val)
-)
+// sincroniza abertura do modal
+watch(() => props.isOpen, (val) => (dialogVisible.value = val))
 
 watch(dialogVisible, (val) => {
   emit('update:isOpen', val)
@@ -95,23 +123,24 @@ watch(dialogVisible, (val) => {
 function preencherCampos() {
   if (!props.userData) return
 
-  // preencher os inputs
-  textInputs.value['input-nome'] = `${props.userData.nome}`
-  textInputs.value['input-email'] = props.userData.email_contato
-  textInputs.value['input-email-acesso'] = props.userData.email
-  textInputs.value['input-cpf'] = props.userData.cpf || ''
-  textInputs.value['input-data-nasc'] = props.userData.data_nascimento || ''
-  responsavelAtendimento.value = props.userData.tipo
+  const user = props.userData
 
-  // guardar cópia original
-  originalData.value = {
+  textInputs.value['input-nome'] = user.pessoa?.nome_completo || ''
+  textInputs.value['input-email'] = user.email || ''
+  textInputs.value['input-email-acesso'] = user.email || ''
+  textInputs.value['input-cpf'] = user.pessoa?.cpf || ''
+  textInputs.value['input-data-nasc'] = user.pessoa?.data_nascimento || ''
+  responsavelAtendimento.value = user.tipo_usuario || ''
+
+  // backup
+  originalData.value = JSON.parse(JSON.stringify({
     nome: textInputs.value['input-nome'],
     email: textInputs.value['input-email'],
     emailAcesso: textInputs.value['input-email-acesso'],
     cpf: textInputs.value['input-cpf'],
     dataNasc: textInputs.value['input-data-nasc'],
     tipo: responsavelAtendimento.value
-  }
+  }))
 }
 
 function cancel() {
@@ -124,16 +153,15 @@ function habilitarEdicao() {
 
 function desfazerAlteracoes() {
   if (!originalData.value) return
-  textInputs.value['input-nome'] = originalData.value.nome
-  textInputs.value['input-email'] = originalData.value.email
-  textInputs.value['input-email-acesso'] = originalData.value.emailAcesso
-  textInputs.value['input-cpf'] = originalData.value.cpf
-  textInputs.value['input-data-nasc'] = originalData.value.dataNasc
-  responsavelAtendimento.value = originalData.value.tipo
+  Object.entries(originalData.value).forEach(([k, v]) => {
+    if (k === 'tipo') responsavelAtendimento.value = v as string
+    else textInputs.value[`input-${k.replace(/[A-Z]/g, m => '-' + m.toLowerCase())}`] = v as string
+  })
   isEditing.value = false
 }
 
 async function salvarAlteracoes() {
+  if (!props.userData) return
   isLoading.value = true
   try {
     const [first_name, ...rest] = textInputs.value['input-nome'].split(' ')
@@ -141,13 +169,19 @@ async function salvarAlteracoes() {
     const dadosAtualizados = {
       first_name,
       last_name,
-      email: textInputs.value['input-email-acesso'],
+      pessoa: {
+        nome_completo: textInputs.value['input-nome'],
+        cpf: textInputs.value['input-cpf'],
+        data_nascimento: textInputs.value['input-data-nasc'],
+      },
+      contato: { email: textInputs.value['input-email-acesso'] },
       tipo_usuario: responsavelAtendimento.value
     }
-    // await atualizarUsuarioClinica(props.userData.id, dadosAtualizados)
+
+    await editarUsuarioClinica(props.userData.id, dadosAtualizados)
     emit('usuarioAtualizado')
-    isEditing.value = false
     dialogVisible.value = false
+    isEditing.value = false
   } catch (err) {
     console.error('Erro ao atualizar usuário:', err)
   } finally {

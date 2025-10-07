@@ -28,8 +28,8 @@ export interface Contato {
 }
 
 export interface UserClinica {
-    email: string;
-    senha: string;
+    email?: string;
+    senha?: string;
     tipo_usuario?: string;
     pessoa: Pessoa;
     contato: Contato;
@@ -37,8 +37,12 @@ export interface UserClinica {
     last_name: string
 }
 
+export interface Password {
+    nova_senha: string
+}
+
 async function salvarClinica(payload: Clinica) {
-    return API.post("/usuarios/clinica/", payload);
+    return await API.post("/usuarios/clinica/", payload);
 }
 
 async function usuariosClinica() {
@@ -46,11 +50,25 @@ async function usuariosClinica() {
 }
 
 async function cadastrarUsuarioClinica(payload: UserClinica) {
-    return API.post("/usuarios/clinica/usuario/", payload);
+    return await API.post("/usuarios/clinica/usuario/", payload);
 }
 
+async function editarUsuarioClinica(idUser: number, params: UserClinica) {
+    return await API.put(`/usuarios/clinica/usuario/${idUser}/`, params)
+}
+
+async function redefinirSenhaUsuarioClinica(idUser: string, params: Password) {
+    return await API.post(`/usuarios/clinica/usuario/${idUser}/redefinir-senha/`, params)
+}
+
+async function deletarUsuarioClinica(clinica_id: number, usuario_id: number) {
+    return await API.del(`/usuarios/clinicas/${clinica_id}/usuario/${usuario_id}/`)
+}
 export {
     salvarClinica,
     usuariosClinica,
-    cadastrarUsuarioClinica
+    cadastrarUsuarioClinica,
+    editarUsuarioClinica,
+    redefinirSenhaUsuarioClinica, 
+    deletarUsuarioClinica
 }

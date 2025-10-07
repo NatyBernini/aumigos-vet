@@ -8,7 +8,7 @@
       </v-card-title>
 
       <v-card-text class="w-100">
-        Existem <strong>campos obrigatórios</strong> que precisam ser preenchidos antes de salvar.
+        Existem <strong>campos obrigatórios</strong> que precisam ser preenchidos antes de {{ props.acao }}.
       </v-card-text>
 
       <v-card-actions class="mt-5 pa-0">
@@ -29,9 +29,18 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 
-const props = defineProps<{
-  isOpen: boolean
-}>()
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    required: true
+  },
+  acao: {
+    type: String,
+    default: 'Salvar',
+    required: false
+  }
+})
+
 
 const dialogVisible = ref(false)
 const isLoading = ref(false)

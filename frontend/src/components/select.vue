@@ -219,6 +219,10 @@ export default {
   caret-color: transparent;
 }
 
+.container-combobox-padrao.filled-combobox .v-field--variant-outlined .v-field__outline {
+  color: #797979;
+  --v-field-border-opacity: 1;
+}
 /* Cursor visível em inputs normais */
 input,
 textarea {
@@ -356,10 +360,11 @@ textarea {
 
   &.combo-preenchido .v-field {
     background: rgb(var(--v-theme-white)) !important;
+    border: 1px solid #d14a4a!important;
   }
 
   &.combo-preenchido .v-field__outline {
-    color: #6f6f6f !important;
+    color: rgb(207, 207, 207) !important;
     --v-field-border-opacity: 1 !important;
     --v-field-border-width: 1px !important;
   }

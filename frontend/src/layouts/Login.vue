@@ -25,7 +25,7 @@
                                 <h2 class="mb-6">Login</h2>
 
                                 <v-form class="formulario-autenticacao" @submit.prevent>
-                                    <inputText label="E-mail*" classe="input-locador" type="text" required
+                                    <inputText label="E-mail*" classe="input-locador" type="text"
                                         v-model:valueInput="textInputs[`input-email-login`]" id="input-email"
                                         :maxLength="0" />
 
@@ -33,7 +33,7 @@
                                         v-model:valueInput="textInputs[`input-senha-login`]" id="input-senha"
                                         :type="showPasswordCadastro ? 'text' : 'password'"
                                         :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
-                                        @click:append-inner="showPasswordCadastro = !showPasswordCadastro" required
+                                        @click:append-inner="showPasswordCadastro = !showPasswordCadastro"
                                         :maxLength="0" />
                                     <div class="text-end mb-4">
                                         <v-btn variant="text" color="primary" class="text-caption">
@@ -134,6 +134,9 @@
     <v-container v-if="isLoading" class="d-flex align-center justify-center">
         <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
     </v-container>
+    <modalCamposObrigatorios v-if="!isLoading" :isOpen="showModalConfirmation"
+        @update:isOpen="showModalConfirmation = $event" acao="Autenticar"/>
+
 </template>
 
 <script lang="ts" setup>
@@ -142,6 +145,7 @@ import { useRouter } from 'vue-router';
 
 // COMPONENTES
 import inputText from '@/components/inputText.vue';
+import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue';
 
 // SERVICES
 import { formatPhoneNumberRaw } from '@/utils/formaUtils';
@@ -161,6 +165,7 @@ const showPasswordCadastro = ref(false);
 const persistentStore = usePersistentStore();
 const appStore = useAppStore();
 const isLoading = ref(false);
+const showModalConfirmation = ref(false);
 
 const updateInput = (id: string, newValue: string) => {
     textInputs.value[id] = newValue;
@@ -191,6 +196,16 @@ function onPhoneInput(event: Event) {
 
 // LOGIN 
 const onLogin = async () => {
+    // Verificar obrigatórios
+    const obrigatoriosPreenchidos =
+        textInputs.value['input-email-login'] &&
+        textInputs.value['input-senha-login'];
+
+    if (!obrigatoriosPreenchidos) {
+        showModalConfirmation.value = true
+        return
+    }
+
     try {
         isLoading.value = true;
         const email = textInputs.value['input-email-login'];
@@ -213,6 +228,19 @@ const onLogin = async () => {
 
 // CADASTRO
 const onRegister = async () => {
+      // Verificar obrigatórios
+    const obrigatoriosPreenchidos =
+        textInputs.value['input-cpf'] &&
+        textInputs.value['input-senha'] &&
+        textInputs.value['input-nascimento'] &&
+        textInputs.value['input-email'] &&
+        textInputs.value['input-telefone'] &&
+        textInputs.value['input-nome'];
+
+    if (!obrigatoriosPreenchidos) {
+        showModalConfirmation.value = true
+        return
+    }
     try {
         isLoading.value = true;
         const senha = textInputs.value['input-senha'];
@@ -221,14 +249,6 @@ const onRegister = async () => {
 
         if (!senha || senha.length < 8) {
             alert("A senha precisa ter pelo menos 8 caracteres.");
-            return;
-        }
-        if (!cpf) {
-            alert("CPF é obrigatório.");
-            return;
-        }
-        if (!dataNascimento) {
-            alert("Data de nascimento é obrigatória.");
             return;
         }
 

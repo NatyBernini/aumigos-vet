@@ -15,22 +15,50 @@
 
         <!-- Colunas personalizadas -->
         <template #item.nome="{ item }">
-            {{ item.nome }}
+            {{ item.pessoa?.nome_completo }}
         </template>
+
         <template #item.email="{ item }">
             {{ item.email }}
         </template>
+
         <template #item.clinica="{ item }">
-            {{ item.clinica }}
+            {{ item.clinicas?.[0]?.nome || '-' }}
         </template>
+
         <template #item.tipo="{ item }">
-            {{ item.tipo }}
+            {{ item.tipo_usuario }}
         </template>
+
         <template #item.actions="{ item }">
-            <v-btn icon @click="visualizar(item)" color="#434343" variant="text">
-                <v-icon>mdi-eye</v-icon>
-            </v-btn>
+            <!-- Ícone Visualizar -->
+            <v-tooltip text="Visualizar detalhes" location="bottom" open-delay="300">
+                <template #activator="{ props }">
+                    <v-btn v-bind="props" icon color="#434343" variant="text" @click="visualizar(item, 1)">
+                        <v-icon>mdi-eye</v-icon>
+                    </v-btn>
+                </template>
+            </v-tooltip>
+
+            <!-- Ícone Editar -->
+            <v-tooltip text="Redefinir Senha" location="bottom" open-delay="300">
+                <template #activator="{ props }">
+                    <v-btn v-bind="props" icon color="#434343" variant="text" @click="visualizar(item, 2)">
+                        <v-icon>mdi-circle-edit-outline</v-icon>
+                    </v-btn>
+                </template>
+            </v-tooltip>
+
+            <!-- Ícone Excluir  -->
+            <v-tooltip text="Deletar Usuário" location="bottom" open-delay="300">
+                <template #activator="{ props }">
+                    <v-btn v-bind="props" icon color="#434343" variant="text" @click="visualizar(item, 3)">
+                        <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                </template>
+            </v-tooltip>
         </template>
+
 
         <!-- Rodapé customizado -->
         <template #bottom>
@@ -67,18 +95,28 @@
     <ModalVisualizarUsuario :userData="usuarioSelecionado" :isOpen="showVisualizarDialog"
         @update:isOpen="showVisualizarDialog = $event" @usuarioAtualizado="loadUsuarios" />
 
+    <ModalRedefinirSenhaUsuarios :userData="usuarioSelecionado" :isOpen="showDialogRedefinirSenha"
+        @update:isOpen="showDialogRedefinirSenha = $event" @usuarioAtualizado="loadUsuarios" />
+
+    <modalConfirmacao v-if="!isLoading" :isOpen="showModalConfirmation" @update:isOpen="showModalConfirmation = $event"
+        @confirm="deletarUsuario()" acao="o usuário será deletado permanentemente" />
 </template>
+
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 // COMPONENTES
 import ModalCadastrarUsuarios from './ModalCadastrarUsuarios.vue'
 import ModalVisualizarUsuario from './ModalVisualizarUsuario.vue'
+import ModalRedefinirSenhaUsuarios from './ModalRedefinirSenhaUsuarios.vue'
+import modalConfirmacao from '@/components/modalConfirmacao.vue'
 
 // SERVICES
-import { usuariosClinica } from '@/services/clinica'
+import { usuariosClinica, deletarUsuarioClinica } from '@/services/clinica'
+import { Usuario } from '@/services/types'
 
 const isLoading = ref(false)
 const showScheduleForm = ref(false)
+const showModalConfirmation = ref(false)
 
 
 const headers = ref([
@@ -89,7 +127,9 @@ const headers = ref([
     { title: 'Ações', key: 'actions', sortable: false },
 ])
 
-const pacientes = ref<any[]>([])
+const pacientes = ref<Usuario[]>([]) // lista de usuários
+const usuarioSelecionado = ref<Usuario | null>(null) // selecionado
+
 
 const page = ref(1)
 const itemsPerPage = ref(5)
@@ -129,19 +169,14 @@ function prevPage() {
     }
 }
 
-// 🔹 Função para buscar usuários
 async function loadUsuarios() {
     try {
         isLoading.value = true
         const response = await usuariosClinica()
-        pacientes.value = response.map((user: any) => ({
-            nome: `${user.pessoa.nome_completo}`,
-            email: user.email,
-            tipo: user.tipo_usuario,
-            clinica: user.clinicas[0].nome,
-            email_contato: user.pessoa.contato.email,
-            data_nascimento: user.pessoa.data_nascimento,
-            cpf: user.pessoa.cpf
+
+        pacientes.value = response.map((user: Usuario) => ({
+            ...user, // mantém todos os dados originais
+            nome: user.pessoa.nome_completo // adiciona campo extra opcional
         }))
     } catch (err) {
         console.error('Erro ao buscar usuários:', err)
@@ -150,16 +185,37 @@ async function loadUsuarios() {
     }
 }
 
+
 function handleModalClose() {
     loadUsuarios()
 }
 
-const usuarioSelecionado = ref(null)
 const showVisualizarDialog = ref(false)
+const showDialogRedefinirSenha = ref(false)
 
-function visualizar(item: any) {
+function visualizar(item: any, acao: number) {
     usuarioSelecionado.value = item
-    showVisualizarDialog.value = true
+    if (acao === 1) showVisualizarDialog.value = true
+    else if (acao === 2) showDialogRedefinirSenha.value = true
+    else if (acao === 3) showModalConfirmation.value = true
+}
+
+
+const deletarUsuario = async () => {
+    if (!usuarioSelecionado.value?.clinicas?.length) {
+        console.error('Usuário selecionado inválido:', usuarioSelecionado.value)
+        return
+    }
+
+    try {
+        await deletarUsuarioClinica(
+            usuarioSelecionado.value.clinicas[0].id,
+            usuarioSelecionado.value.id
+        )
+        await loadUsuarios()
+    } catch (err) {
+        console.error('Erro ao deletar usuário:', err)
+    }
 }
 
 onMounted(() => {
