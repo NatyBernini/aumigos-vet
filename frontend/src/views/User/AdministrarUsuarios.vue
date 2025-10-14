@@ -1,9 +1,9 @@
 <template>
     <v-card class="card-informativo mb-7"><v-icon class="mr-2">mdi-alert-circle</v-icon>
-        Nesta aba, você, como administrador, pode visualizar e gerenciar usuários da clínica.
+        Nesta aba, você, como administrador, pode visualizar e gerenciar usuários/funcionários da clínica.
     </v-card>
     <div class="info-box" v-if="!isLoading">
-        <span class="span-info-box">Administrar Usuários
+        <span class="span-info-box">Administrar Funcionários
             <v-btn color="accent" large @click.stop="showScheduleForm = true" class="btn-padrao">
                 Cadastrar Novo Usuário
                 <v-icon class="icon-close ml-3">mdi-format-align-left</v-icon>
@@ -120,7 +120,7 @@ const showModalConfirmation = ref(false)
 
 
 const headers = ref([
-    { title: 'Nome do Veterinário', key: 'nome' },
+    { title: 'Nome do Funcionário', key: 'nome' },
     { title: 'Email', key: 'email' },
     { title: 'Clínica', key: 'clinica' },
     { title: 'Tipo', key: 'tipo' },

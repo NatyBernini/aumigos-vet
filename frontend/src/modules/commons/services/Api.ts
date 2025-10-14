@@ -26,11 +26,11 @@ API.defineResponseInterceptor({
   },
   onError: async (error) => {
     const appStore = useAppStore();
-
+    // TO DO
     // se for 401 → desloga
-    if (error?.response?.status === 401) {
-      await appStore.logout();
-    }
+    // if (error?.response?.status === 401) {
+    //   await appStore.logout();
+    // }
 
     // se backend retornou validação do DRF
     if (error?.response?.data && typeof error.response.data === 'object') {

@@ -7,6 +7,10 @@
     <p class="sub-page">Serviços / <span class="aba-atual">Caixa</span>
       <img src="/./src/assets/icons/iconeCadastro.png" alt="Ícone" class="menu-sub-icon" />
     </p>
+    <v-btn color="accent" @click.stop="showScheduleForm = true" large class="btn-padrao">
+      Agendar Consulta
+      <v-icon class="icon-close ml-3">mdi-format-align-left</v-icon>
+    </v-btn>
     <div class="container-header-agenda" align="center">
       <h2 class="text-h5 font-weight-bold">{{ dataFormatada }}</h2>
       <div class="container-header-agenda">
@@ -29,7 +33,7 @@
     </div>
 
     <!-- Visão Diário -->
-    <v-sheet class="pa-4 agenda-sheet"  v-if="modo === 'diario'">
+    <v-sheet class="pa-4 agenda-sheet" v-if="modo === 'diario'">
       <v-row dense>
         <v-col v-for="hora in horarios" :key="hora" class="py-1" cols="12">
           <div class="hora-linha diaria">
@@ -49,7 +53,7 @@
       </v-row>
     </v-sheet>
     <!-- Visão Semanal -->
-    <v-sheet class="pa-4 agenda-sheet"  v-else-if="modo === 'semanal'">
+    <v-sheet class="pa-4 agenda-sheet" v-else-if="modo === 'semanal'">
       <div class="agenda-semanal-grid">
         <!-- Coluna de horários -->
         <div class="hora-coluna">
@@ -108,6 +112,8 @@
     </v-sheet>
 
   </v-container>
+  <ModalAgendar :isOpen="showScheduleForm" 
+        @update:isOpen="showScheduleForm = $event" />
 </template>
 
 
@@ -116,6 +122,7 @@ import { computed, ref } from 'vue'
 
 // COMPONENTES
 import combo from '@/components/select.vue'
+import ModalAgendar from './ModalAgendar.vue'
 
 interface Consulta {
   id: number
@@ -132,6 +139,7 @@ const dataAtual = ref(new Date())
 const diaAtual = computed(() => dataAtual.value.getDate())
 const mesAtual = computed(() => dataAtual.value.getMonth())
 const anoAtual = computed(() => dataAtual.value.getFullYear())
+const showScheduleForm = ref(false)
 
 const diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 const meses = [

@@ -163,7 +163,6 @@ const allMenuItems = [
     children: [
       { title: 'Agenda', to: '/consultas', icon: iconListagemPaciente, roles: ['admin_clinica', 'veterinario'] },
       { title: 'Consultar', to: '/consultas/consultar', icon: iconCadastrarPaciente, roles: ['admin_clinica', 'veterinario'] },
-      { title: 'Agendar', to: '/consultas/agendar', icon: iconAgenda, roles: ['admin_clinica', 'veterinario', 'atendente'] },
     ],
   },
   {

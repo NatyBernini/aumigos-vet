@@ -1,4 +1,7 @@
 <template>
+  <v-alert v-if="showAlert" :type="alertType" class="mt-3" dismissible @click:close="showAlert = false">
+    {{ alertMessage }}
+  </v-alert>
   <v-card>
     <!-- Cabeçalho / Breadcrumb -->
     <p class="title-page">
@@ -6,8 +9,7 @@
       <img src="../../assets/icons/iconLapisCadastro.png" alt="Ícone" class="menu-title-icon" />
     </p>
     <p class="sub-page">
-      Pacientes /
-      <span class="aba-atual">Cadastrar</span>
+      Pacientes / <span class="aba-atual">Cadastrar</span>
       <img src="../../assets/icons/iconeCadastro.png" alt="Ícone" class="menu-sub-icon" />
     </p>
 
@@ -15,37 +17,24 @@
     <v-tabs v-model="tab">
       <v-tab value="paciente">Informações do Paciente</v-tab>
       <v-tab value="tutor">Informações do Responsável</v-tab>
+      <v-tab value="protocolo">Vacinação e Vermifugação</v-tab>
     </v-tabs>
 
     <v-card-text>
       <v-tabs-window v-model="tab">
+        <!-- ======================= ABA PACIENTE ======================= -->
         <v-tabs-window-item value="paciente">
-          <!-- <div>
-                <v-btn
-                      color="accent"
-                      large
-                      @click.stop="showScheduleForm = true"
-                      class="btn-novo-cadastro"
-                    >
-                      Cadastrar Tutor
-                      <v-icon class="icon-close ml-3">mdi-format-align-left</v-icon>
-                    </v-btn>
-                  </div> -->
-
-          <!-- Formulário -->
           <form @submit.prevent="submit">
-            <!-- Origem -->
             <div class="row-info-radios">
-              <v-radio-group v-model="origem" :error-messages="origemError" inline>
+              <v-radio-group v-model="origem" inline>
                 <v-radio label="Doméstico" value="domestico" />
                 <v-radio label="Resgatado" value="resgatado" />
               </v-radio-group>
             </div>
 
-            <!-- Espécie -->
             <p>Espécie*</p>
             <div class="row-info-radios">
-              <v-radio-group v-model="especie" :error-messages="especieError" inline max-width="300px">
+              <v-radio-group v-model="especie" inline max-width="300px">
                 <v-radio label="Canina" value="especieCan" />
                 <v-radio label="Felina" value="especieFel" />
                 <v-radio label="Outra" value="especieOutra" />
@@ -56,135 +45,92 @@
                 id="input-especificar-outra-especie" />
             </div>
 
-            <!-- Informações básicas -->
             <p>Informações Básicas</p>
             <v-col>
               <v-row class="row-info-basicas">
                 <inputText label="Nome*" type="text" required v-model:valueInput="textInputs['input-nome']"
                   id="input-nome" @update:valueInput="(value: any) => updateInput('input-nome', value)" />
-                <inputText label="Idade*" classe="input-locador" type="text" required
-                  v-model:valueInput="textInputs[`input-idade`]" id="input-idade" />
-
-
+                <inputText label="Data de Nascimento*" type="date" :ocultaContador="true"
+                  v-model:valueInput="textInputs['input-data-nascimento-animal']" />
               </v-row>
 
               <v-row class="row-info-basicas">
                 <inputText label="Peso*" classe="input-locador" type="text" required suffix="gramas"
-                  v-model:valueInput="textInputs[`input-peso`]" :id="`input-peso`" @input="validateDecimalInput($event)"
+                  v-model:valueInput="textInputs['input-peso']" :id="'input-peso'" @input="validateDecimalInput($event)"
                   :maxLength="0" />
 
                 <inputText label="Raça*" classe="input-locador" type="text" required
-                  v-model:valueInput="textInputs[`input-raca`]" id="input-raca" />
+                  v-model:valueInput="textInputs['input-raca']" id="input-raca" />
 
                 <inputText label="Pelagem*" classe="input-locador" type="text" required
-                  v-model:valueInput="textInputs[`input-pelagem`]" id="input-pelagem" />
-
+                  v-model:valueInput="textInputs['input-pelagem']" id="input-pelagem" />
               </v-row>
             </v-col>
 
-            <!-- Porte -->
             <p>Porte</p>
             <div class="row-info-radios">
               <v-radio-group v-model="porte" inline>
-                <v-radio label="Pequeno" value="porteP" />
-                <v-radio label="Médio" value="porteM" />
-                <v-radio label="Grande" value="porteG" />
+                <v-radio label="Pequeno" value="pequeno" />
+                <v-radio label="Médio" value="medio" />
+                <v-radio label="Grande" value="grande" />
               </v-radio-group>
             </div>
 
-            <!-- Sexo -->
             <p>Sexo*</p>
             <div class="row-info-radios">
-              <v-radio-group v-model="sexo" :error-messages="sexoError" inline>
-                <v-radio label="Masculino" value="sexoM" />
-                <v-radio label="Feminino" value="sexoF" />
+              <v-radio-group v-model="sexo" inline>
+                <v-radio label="Masculino" value="macho" />
+                <v-radio label="Feminino" value="femea" />
               </v-radio-group>
             </div>
 
-            <!-- Castração -->
             <p>Castrado?*</p>
             <div class="row-info-radios">
-              <v-radio-group v-model="castrado" :error-messages="castradoError" inline max-width="150px">
+              <v-radio-group v-model="castrado" inline max-width="150px">
                 <v-radio label="Sim" value="castradoS" />
                 <v-radio label="Não" value="castradoN" />
               </v-radio-group>
 
-              <v-text-field v-if="castrado === 'castradoS'" v-model="dataCastrado" :error-messages="dataCastradoError"
-                label="Data*" type="date" max-width="150px" />
+              <inputText v-if="castrado === 'castradoS'" label="Data*" type="date" :ocultaContador="true"
+                v-model:valueInput="textInputs['input-data-castracao']" />
             </div>
-
-            <!-- Vermifugação -->
-            <p>Vermifugado?*</p>
-            <div class="row-info-radios">
-              <v-radio-group v-model="vermifugado" :error-messages="vermifugadoError" inline max-width="150px">
-                <v-radio label="Sim" value="vermifugadoS" />
-                <v-radio label="Não" value="vermifugadoN" />
-              </v-radio-group>
-
-              <v-text-field v-if="vermifugado === 'vermifugadoS'" v-model="dataVermifugado"
-                :error-messages="dataVermifugadoError" label="Data*" type="date" max-width="150px" />
-            </div>
-
-            <!-- Vacinas -->
-            <p>Vacinado?*</p>
-            <div class="row-info-radios">
-              <v-radio-group v-model="vacina" :error-messages="vacinaError" inline max-width="150px">
-                <v-radio label="Sim" value="vacinadoS" />
-                <v-radio label="Não" value="vacinadoN" />
-              </v-radio-group>
-
-              <TextArea v-if="vacina === 'vacinadoS'" :modelValue="textarea.vacinas"
-                @update:modelValue="(value: any) => (textarea.vacinas = value)" :label="'Quais Vacinas?*'"
-                class="wrap-textarea" :maxLength="300" placeholder="Detalhe quais vacinas foram tomadas...">
-              </TextArea>
-            </div>
-
-            <!-- Observações -->
 
             <TextArea :modelValue="textarea.ObservacoesGerais"
               @update:modelValue="(value: any) => (textarea.ObservacoesGerais = value)" label="Observações/Detalhamento"
-              class="wrap-textarea" :maxLength="300" placeholder="Detalhe algum ponto extra sobre o paciente...">
-            </TextArea>
-            <!-- Botões -->
-            <div class="container-btn mt-5">
-              <p class="msg-auxiliar">Campos Obrigatórios*</p>
-            </div>
+              class="wrap-textarea" :maxLength="300" placeholder="Detalhe algum ponto extra sobre o paciente..." />
 
-            <div class="container-btn mt-5">
-              <v-btn class="btn-padrao" @click="resetFormCustom">
-                Limpar Tudo
-              </v-btn>
-              <v-btn class="me-4 btn-padrao" type="submit">Salvar</v-btn>
-            </div>
           </form>
         </v-tabs-window-item>
-        <v-tabs-window-item value="tutor" class="pt-5">
 
+        <!-- ======================= ABA TUTOR ======================= -->
+        <v-tabs-window-item value="tutor" class="pt-5">
           <v-form ref="form">
+            <!-- Botão para abrir modal -->
+            <v-btn class="btn-padrao mb-4" color="primary" @click="dialogTutores = true">
+              Selecionar Tutor Cadastrado
+            </v-btn>
 
             <!-- Informações básicas -->
             <p>Informações Básicas</p>
             <v-col>
               <v-row class="row-info-basicas">
-
                 <inputText label="Nome do Responsável*" classe="input-locador" type="text" required
-                  v-model:valueInput="textInputs[`input-nome-tutor`]" id="input-nome-tutor" />
-
+                  v-model:valueInput="textInputs['input-nome-tutor']" id="input-nome-tutor" />
               </v-row>
 
               <v-row class="row-info-basicas">
                 <inputText label="CPF*" type="text" v-model:valueInput="textInputs['input-cpf']" id="input-cpf"
-                  @update:valueInput="(value: any) => {
-                    const formatado = formatCpf(value);
-                    updateInput('input-cpf', formatado);
-                  }" :maxLength="14" required />
-                <inputText label="RG*" classe="input-locador" type="text" required
-                  v-model:valueInput="textInputs[`input-rg`]" id="input-rg" />
-
+                  :maxLength="14" required :ocultaContador="true" />
+                <inputText label="Data de Nascimento*" type="date" :ocultaContador="true"
+                  v-model:valueInput="textInputs['input-data-nascimento-tutor']" />
               </v-row>
-            </v-col>
 
-            <!-- Contatos -->
+              <TextArea :modelValue="textarea.ObservacoesGeraisTutor"
+                @update:modelValue="(value: any) => (textarea.ObservacoesGeraisTutor = value)"
+                label="Observações/Detalhamento" class="wrap-textarea" :maxLength="300"
+                placeholder="Detalhe algum ponto extra sobre o tutor..." />
+            </v-col>
+  <!-- Contatos -->
             <p>Informações para Contato</p>
             <v-col>
               <v-row class="row-info-basicas" v-for="(item, index) in phones" :key="index">
@@ -238,132 +184,145 @@
 
               </v-row>
             </v-col>
-
-            <!-- <v-row>
-                <v-col cols="12" sm="12">
-                  <multipleCombobox
-                  class="container-combobox-padrao combo-box-tipo-concessionaria"
-                  :v-model="combos.tipoConcessionarias"
-                  :items="tiposConcessionariasItems"
-                  label="Tipo de concessionária* "
-                  placeholder="Tipo de concessionaria"
-                  variant="outlined"
-                  integer
-                  id="tipo-estrutura"
-                  :isRequired="true"
-                  :extraItems="tiposConcessionariasItemsResponse"
-                  :isMultipleSelect="false"
-                  required
-                >
-                </multipleCombobox>
-                </v-col>
-              </v-row> -->
-            <v-col cols="12" sm="12">
-              <v-btn text="Cadastrar" class="btn-padrao" id="btn-salvar-concessionaria"></v-btn>
-            </v-col>
           </v-form>
         </v-tabs-window-item>
+
+        <!-- ======================= ABA PROTOCOLO ======================= -->
+        <v-tabs-window-item value="protocolo" class="pt-5">
+          <v-form ref="form">
+            <p class="mb-3">Informações Básicas</p>
+            <p>Vermifugado?*</p>
+            <div class="row-info-radios">
+              <v-radio-group v-model="vermifugado" inline max-width="150px">
+                <v-radio label="Sim" value="vermifugadoS" />
+                <v-radio label="Não" value="vermifugadoN" />
+              </v-radio-group>
+
+              <v-text-field v-if="vermifugado === 'vermifugadoS'" v-model="dataVermifugado" label="Data*" type="date"
+                max-width="150px" />
+            </div>
+
+            <p>Vacinas</p>
+            <v-btn class="btn-padrao" @click="dialogVacina = true">Adicionar Vacina</v-btn>
+
+          </v-form>
+        </v-tabs-window-item>
+        <div class="container-btn mt-5">
+          <p class="msg-auxiliar">Campos Obrigatórios*</p>
+        </div>
+
+        <div class="container-btn mt-5">
+          <v-btn class="btn-padrao" @click="resetFormCustom">Limpar Tudo</v-btn>
+          <v-btn class="me-4 btn-padrao" @click="submit">Salvar</v-btn>
+        </div>
       </v-tabs-window>
     </v-card-text>
   </v-card>
 
-  <!-- <ModalCadastrarTutor :visible="showScheduleForm" @close="showScheduleForm = false" /> -->
+  <!-- MODAL DE SELEÇÃO DE TUTOR -->
+  <v-dialog v-if="!isLoading" v-model="dialogTutores" max-width="900px">
+    <v-card class="pa-5">
+      <v-card-title>
+        <span class="text-h6">Selecionar Tutor</span>
+        <v-spacer></v-spacer>
+        <v-btn text @click="dialogTutores = false">X</v-btn>
+      </v-card-title>
+
+      <v-card-text>
+        <v-text-field v-model="searchTutor" label="Pesquisar por nome ou CPF" prepend-inner-icon="mdi-magnify"
+          clearable />
+
+        <v-data-table :items="filteredTutores" :headers="headersTutores" :items-per-page="5">
+          <template #item.acao="{ item }">
+            <v-btn class="btn-padrao" variant="tonal" size="small" @click="selecionarTutor(item)">
+              Selecionar
+            </v-btn>
+          </template>
+        </v-data-table>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer />
+        <v-btn text @click="dialogTutores = false">Fechar</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <!-- Spinner de Carregamento -->
+  <v-container v-if="isLoading" class="d-flex align-center justify-center">
+    <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
+  </v-container>
+
+  <ModalVacina :isOpen="dialogVacina" @vacinaCadastrado="handleModalClose" @update:isOpen="dialogVacina = $event"
+    :id_animal="0" />
+  <modalCamposObrigatorios v-if="!isLoading" :isOpen="showModalConfirmation"
+    @update:isOpen="showModalConfirmation = $event" />
 </template>
-
 <script setup lang="ts">
-
-import { ref, nextTick   } from 'vue'
-import { useField, useForm } from 'vee-validate'
-import { formatCpf } from '@/utils/formaUtils'
+import { ref, onMounted, computed } from 'vue'
+import { useAppStore } from '@/modules/commons/store'
 
 // COMPONENTES
 import inputText from '@/components/inputText.vue'
 import TextArea from '@/components/textArea.vue'
-// import ModalCadastrarTutor from '../Tutor/modalCadastrarTutor.vue'
+import ModalVacina from './ModalVacina.vue'
+import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
+
+// SERVICES
+import { salvarPaciente } from '@/services/paciente'
+import { salvarTutor, recuperarTutores } from '@/services/tutor'
+import { replaceCommaWithDot } from '@/utils/formaUtils'
+
+
+const appStore = useAppStore()
 
 defineOptions({ name: 'PacienteCadastro' })
+
+// Estado geral
 const tab = ref('paciente')
+const dialogVacina = ref(false)
+const isLoading = ref(false)
+const dialogTutores = ref(false)
+const showModalConfirmation = ref(false)
 
-const showScheduleForm = ref(false);
+// Controle de alertas e mensagens
+const showAlert = ref(false)
+const alertMessage = ref('')
+const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error')
 
-const { handleSubmit, handleReset } = useForm({
-  validationSchema: {
-    name: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
-    idade: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
-    raca: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
-    peso: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
-    pelagem: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
-    especie: (v: unknown) => !!v || 'Selecione uma espécie.',
-    outraEspecie(value: unknown) {
-      if (especie.value === 'especieOutra') {
-        return typeof value === 'string' && value.length > 0 || 'Campo Obrigatório.'
-      }
-      return true
-    },
-    sexo: (v: unknown) => !!v || 'Informe o sexo.',
-    porte: (v: unknown) => !!v || 'Informe o porte.',
-    castrado: (v: unknown) => !!v || 'Informe se é castrado.',
-    vermifugado: (v: unknown) => !!v || 'Informe se é vermifugado.',
-    vacina: (v: unknown) => !!v || 'Informe se é vacinado.',
-    dataCastrado(value: unknown) {
-      if (castrado.value === 'castradoS') {
-        return typeof value === 'string' && value.length > 0 || 'Informe a data.'
-      }
-      return true
-    },
-    dataVermifugado(value: unknown) {
-      if (vermifugado.value === 'vermifugadoS') {
-        return typeof value === 'string' && value.length > 0 || 'Informe a data.'
-      }
-      return true
-    },
-    quaisVacinas(value: unknown) {
-      if (vacina.value === 'vacinadoS') {
-        return typeof value === 'string' && value.length > 0 || 'Informe as vacinas.'
-      }
-      return true
-    },
-    nameTutor: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
-    rg: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
-    cpf: (v: unknown) => typeof v === 'string' && v.length > 0 || 'Campo obrigatório.',
-    phone(value: unknown) {
-      const digits = String(value ?? '').replace(/\D/g, '')
-      if (digits.length === 0) return 'Telefone é obrigatório.'
-      return digits.length >= 7 || 'Telefone precisa ter ao menos 7 dígitos.'
-    },
-    email: (v: unknown) =>
-      typeof v === 'string' && /^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(v) || 'E-mail inválido.',
-  },
+// Estrutura dos campos
+const textInputs = ref<Record<string, string>>({})
+const textarea = ref({
+  ObservacoesGerais: '',
+  vacinas: '',
+  ObservacoesGeraisTutor: ''
 })
 
-function resetFormCustom() {
-  handleReset();
-  textarea.value.ObservacoesGerais = '';
-}
-
-// Paciente
-const { value: especie, errorMessage: especieError } = useField<string>('especie')
-const { value: origem, errorMessage: origemError } = useField<string>('origem')
-const { value: porte, errorMessage: porteError } = useField<string>('porte')
-const { value: sexo, errorMessage: sexoError } = useField<string>('sexo')
-const { value: castrado, errorMessage: castradoError } = useField<string>('castrado')
-const { value: dataCastrado, errorMessage: dataCastradoError } = useField<string>('dataCastrado')
-const { value: vermifugado, errorMessage: vermifugadoError } = useField<string>('vermifugado')
-const { value: dataVermifugado, errorMessage: dataVermifugadoError } = useField<string>('dataVermifugado')
-const { value: vacina, errorMessage: vacinaError } = useField<string>('vacina')
+const idTutor = ref<number>(0)
 
 // Telefones
 const phones = ref<{ number: string }[]>([{ number: '' }])
 
+// Campos de radio
+const origem = ref('')
+const especie = ref('')
+const porte = ref('')
+const sexo = ref('')
+const castrado = ref('')
+const vermifugado = ref('')
+
+// Datas
+const dataCastrado = ref('')
+const dataVermifugado = ref('')
+
 function addPhone() {
   phones.value.push({ number: '' })
 }
-
 function removePhone(index: number) {
   phones.value.splice(index, 1)
 }
 
-// Formata e limita o número em tempo real
+// Formatação de telefone
 function formatPhoneNumberRaw(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11)
   if (digits.length <= 10) {
@@ -375,35 +334,9 @@ function formatPhoneNumberRaw(value: string): string {
 
 function onPhoneInput(index: number, event: Event) {
   const input = event.target as HTMLInputElement
-  const oldValue = input.value
-  const onlyNumbers = oldValue.replace(/\D/g, '').slice(0, 11)
-  const newValue = formatPhoneNumberRaw(onlyNumbers)
-
-  const cursorPos = input.selectionStart || 0
-
-  // Atualiza o v-model sem travar o backspace
-  phones.value[index].number = newValue
-
-  // Ajusta cursor de forma inteligente
-  nextTick(() => {
-    let newCursor = cursorPos
-
-    // Se usuário está apagando e o cursor está antes do final, mantém cursor
-    if (newValue.length < oldValue.length) {
-      newCursor = cursorPos
-    } else {
-      // Se adicionando, ajusta para a máscara
-      const diff = newValue.length - oldValue.length
-      newCursor = cursorPos + diff
-    }
-
-    if (newCursor < 0) newCursor = 0
-    if (newCursor > newValue.length) newCursor = newValue.length
-
-    input.setSelectionRange(newCursor, newCursor)
-  })
+  const digits = input.value.replace(/\D/g, '').slice(0, 11)
+  phones.value[index].number = formatPhoneNumberRaw(digits)
 }
-
 // Validação para números com até 2 casas decimais
 const validateDecimalInput = (event: Event) => {
   const inputElement = event.target as HTMLInputElement;
@@ -439,18 +372,185 @@ const validateDecimalInput = (event: Event) => {
     if (textInputs.value && id) textInputs.value[id] = formatted;
   }
 };
-const textInputs = ref<Record<string, string>>({});
+
+// Formatação de CPF
+function formatCpf(value: string): string {
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 11)
+    .replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, (_, a, b, c, d) =>
+      d ? `${a}.${b}.${c}-${d}` : `${a}.${b}.${c}`
+    )
+}
+
+// Atualização de inputs
 const updateInput = (id: string, newValue: string) => {
-  textInputs.value[id] = newValue;
-};
+  textInputs.value[id] = newValue
+}
 
-const textarea = ref({ ObservacoesGerais: '', vacinas: '' })
+// Limpar formulário
+function resetFormCustom() {
+  Object.keys(textInputs.value).forEach(k => (textInputs.value[k] = ''))
+  textarea.value = { ObservacoesGerais: '', vacinas: '', ObservacoesGeraisTutor: '' }
+  origem.value = ''
+  especie.value = ''
+  porte.value = ''
+  sexo.value = ''
+  castrado.value = ''
+  vermifugado.value = ''
+  dataCastrado.value = ''
+  dataVermifugado.value = ''
+  phones.value = [{ number: '' }]
+}
 
-const submit = handleSubmit(values => {
-  alert(JSON.stringify({ ...values, phones: phones.value }, null, 2))
+async function submit() {
+  // validação dos obrigatórios
+  const obrigatoriosPreenchidos =
+    textInputs.value['input-nome'] &&
+    textInputs.value['input-data-nascimento-animal'] &&
+    textInputs.value['input-peso'] &&
+    textInputs.value['input-raca'] &&
+    textInputs.value['input-pelagem'] &&
+    especie.value &&
+    sexo.value
+
+  if (!obrigatoriosPreenchidos) {
+    showModalConfirmation.value = true
+    return
+  }
+
+  if (idTutor.value === 0) {
+    await salvaTutor();
+  }
+  await salvaPaciente();
+
+}
+
+const salvaPaciente = async () => {
+  try {
+    const clinica = Number(appStore.userData?.clinicas[0]?.id)
+    const dados = {
+      nome: textInputs.value['input-nome'],
+      tipo: origem.value,
+      especie: especie.value,
+      data_nascimento: textInputs.value['input-data-nascimento-animal'],
+      peso: replaceCommaWithDot(textInputs.value['input-peso']),
+      raca: textInputs.value['input-raca'],
+      pelagem: textInputs.value['input-pelagem'],
+      porte: porte.value,
+      sexo: sexo.value,
+      castrado: castrado.value === 'sim' ? true : false,
+      data_castracao: textInputs.value['input-data-castracao'],
+      observacao: textarea.value.ObservacoesGerais,
+      tutor: idTutor.value,
+      clinica
+    }
+    await salvarPaciente(dados)
+  } catch (error: any) {
+    if (error.tipo === 'VALIDATION' && error.errors) {
+      const firstKey = Object.keys(error.errors)[0]
+      alertMessage.value = error.errors[firstKey][0]
+    } else if (error.tipo === 'ERROR') {
+      alertMessage.value = error.msg
+    } else {
+      alertMessage.value = 'Ocorreu um erro inesperado ao salvar o paciente.'
+    }
+
+    alertType.value = 'error'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 5000)
+  }
+}
+
+const salvaTutor = async () => {
+  try {
+    const dados = {
+      pessoa: {
+        nome_completo: textInputs.value[`input-nome-tutor`],
+        cpf: textInputs.value['input-cpf'],
+        data_nascimento: textInputs.value['input-data-nascimento-tutor']
+      },
+      observacoes: textarea.value.ObservacoesGeraisTutor,
+      ativo: true
+    }
+
+    const response = await salvarTutor(dados);
+    alertMessage.value = 'Tutor cadastrado com sucesso!'
+    alertType.value = 'success'
+    showAlert.value = true
+
+    setTimeout(() => (showAlert.value = false), 5000)
+  } catch (error: any) {
+    if (error.tipo === 'VALIDATION' && error.errors) {
+      const firstKey = Object.keys(error.errors)[0]
+      alertMessage.value = error.errors[firstKey][0]
+    } else if (error.tipo === 'ERROR') {
+      alertMessage.value = error.msg
+    } else {
+      alertMessage.value = 'Ocorreu um erro inesperado ao salvar o tutor.'
+    }
+
+    alertType.value = 'error'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 5000)
+  }
+}
+
+// Fechar modal de vacina
+function handleModalClose() {
+  dialogVacina.value = false
+}
+
+// TUTORES
+const listTutores = ref<any[]>([])
+const searchTutor = ref('')
+const headersTutores = [
+  { title: 'id', key: 'id' },
+  { title: 'Nome', key: 'pessoa.nome_completo' },
+  { title: 'CPF', key: 'pessoa.cpf' },
+  { title: 'Data Nasc.', key: 'pessoa.data_nascimento' },
+  { title: 'Clínica', key: 'clinica' },
+  { title: 'Observações', key: 'observacoes' },
+  { title: 'Ação', key: 'acao', sortable: false }
+]
+
+const filteredTutores = computed(() => {
+  if (!searchTutor.value) return listTutores.value
+  const term = searchTutor.value.toLowerCase()
+  return listTutores.value.filter(
+    t =>
+      t.pessoa.nome_completo.toLowerCase().includes(term) ||
+      t.pessoa.cpf.toLowerCase().includes(term)
+  )
 })
 
+// Selecionar tutor e preencher campos
+function selecionarTutor(tutor: any) {
+  textInputs.value['input-nome-tutor'] = tutor.pessoa.nome_completo
+  textInputs.value['input-cpf'] = tutor.pessoa.cpf
+  textInputs.value['input-data-nascimento-tutor'] = tutor.pessoa.data_nascimento
+  textarea.value.ObservacoesGeraisTutor = tutor.observacoes
+  dialogTutores.value = false
+  idTutor.value = tutor.id
+}
+
+
+const loadComboTutores = async () => {
+  try {
+    const response = await recuperarTutores();
+    listTutores.value = response;
+  } finally {
+
+  }
+}
+
+onMounted(async () => {
+  isLoading.value = true;
+  await loadComboTutores()
+  isLoading.value = false;
+})
 </script>
+
 
 
 <style lang="scss">

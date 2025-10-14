@@ -1,71 +1,70 @@
 <template>
-    <v-row>
-      <v-col>
-        <span class="title-page">Pacientes</span>
-        <br />
-        <span class="breadcrumb">
-          Pacientes / <span class="page-active">Lista de Pacientes</span>
-        </span>
+  <v-alert v-if="showAlert" :type="alertType" class="mt-3" dismissible @click:close="showAlert = false">
+    {{ alertMessage }}
+  </v-alert>
 
-        <v-data-table :headers="headers" :items="paginatedPacientes" :items-per-page="-1" class="pt-15">
+  <v-row>
+    <v-col>
+      <span class="title-page">Pacientes</span><br />
+      <span class="breadcrumb">
+        Pacientes / <span class="page-active">Lista de Pacientes</span>
+      </span>
 
-          <!-- Colunas personalizadas -->
-          <template #item.nome="{ item }">
-            {{ item.nome }}
-          </template>
-          <template #item.inicioTratamento="{ item }">
-            {{ item.inicioTratamento }}
-          </template>
-          <template #item.tutor="{ item }">
-            {{ item.tutor }}
-          </template>
-          <template #item.status="{ item }">
-            {{ item.status }}
-          </template>
-          <template #item.actions="{ item }">
-            <v-btn icon @click="visualizar(item)" color="#434343" variant="text"
-              :to="{ name: 'PacienteVisualizar', params: { id: item.id } }">
-              <v-icon>mdi-eye</v-icon>
-            </v-btn>
-            <v-btn icon @click="editar(item)" color="#434343" variant="text">
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-          </template>
+      <v-data-table v-if="!isLoading" :headers="headers" :items="paginatedPacientes" :items-per-page="-1" class="pt-15">
+        <!-- Colunas -->
+        <template #item.nome="{ item }">{{ item.nome }}</template>
+        <template #item.inicioTratamento="{ item }">{{ item.inicioTratamento }}</template>
+        <template #item.tutor="{ item }">{{ item.tutor }}</template>
+        <template #item.status="{ item }">{{ item.status }}</template>
 
-          <!-- Rodapé customizado -->
-          <template #bottom>
-            <div class="custom-footer">
-              <!-- Contador -->
-              <span>
-                {{ startIndex }} - {{ endIndex }} de {{ pacientes.length }}
-              </span>
+        <!-- Botões de ação -->
+        <template #item.actions="{ item }">
+          <v-btn icon color="#434343" variant="text" @click="visualizar(item.id)">
+            <v-icon>mdi-eye</v-icon>
+          </v-btn>
 
-              <!-- Navegação manual -->
-              <div class="container-pagination">
-                <v-btn class="btn-pagination" icon @click="prevPage" :disabled="page <= 1">
-                  <v-icon>mdi-chevron-left</v-icon>
-                </v-btn>
-                <v-btn class="btn-pagination" icon @click="nextPage" :disabled="page >= pageCount">
-                  <v-icon>mdi-chevron-right</v-icon>
-                </v-btn>
-              </div>
+          <v-btn icon color="#434343" variant="text" @click="editar(item)">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+        </template>
 
+        <!-- Rodapé -->
+        <template #bottom>
+          <div class="custom-footer">
+            <span>{{ startIndex }} - {{ endIndex }} de {{ pacientes.length }}</span>
 
-              <!-- Itens por página -->
-              <v-select v-model="itemsPerPage" :items="[5, 10, 20]" label="Itens por página" density="compact"
-                hide-details variant="outlined" style="max-width: 90px" />
+            <div class="container-pagination">
+              <v-btn class="btn-pagination" icon @click="prevPage" :disabled="page <= 1">
+                <v-icon>mdi-chevron-left</v-icon>
+              </v-btn>
+              <v-btn class="btn-pagination" icon @click="nextPage" :disabled="page >= pageCount">
+                <v-icon>mdi-chevron-right</v-icon>
+              </v-btn>
             </div>
-          </template>
-        </v-data-table>
-      </v-col>
-    </v-row>
+
+            <v-select v-model="itemsPerPage" :items="[5, 10, 20]" label="Itens por página" density="compact"
+              hide-details variant="outlined" style="max-width: 90px" />
+          </div>
+        </template>
+      </v-data-table>
+    </v-col>
+  </v-row>
+
+  <!-- Spinner -->
+  <v-container v-if="isLoading" class="d-flex align-center justify-center">
+    <v-progress-circular indeterminate color="primary" size="40" width="5" />
+  </v-container>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { pacientesMock, type Paciente } from '../../mock/pacientesMock'
 
-const pacientes = ref<Paciente[]>([...pacientesMock])   // TODO
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from 'vue'
+import { type Paciente } from '../../mock/pacientesMock'
+import { recuperarPacientes } from '@/services/paciente'
+import { useRouter } from 'vue-router'
+
+// Estado reativo
+const pacientes = ref<Paciente[]>([])
 
 defineOptions({
   name: 'PacientesList',
@@ -79,24 +78,18 @@ const headers = ref([
   { title: 'Ações', key: 'actions', sortable: false },
 ])
 
-// const pacientes = ref([
-//   { nome: 'Juju', inicioTratamento: '15/03/2025', tutor: 'Natália Bernini', status: 'Concluído' },
-//   { nome: 'Mel', inicioTratamento: '03/07/2025', tutor: 'Maria Malta', status: 'Em andamento' },
-//   { nome: 'Luck', inicioTratamento: '01/01/2025', tutor: 'Rodrigo de Souza', status: 'Em espera' },
-//   { nome: 'Remi', inicioTratamento: '02/02/2025', tutor: 'Rodrigo de Souza', status: 'Concluído' },
-//   { nome: 'Lua', inicioTratamento: '03/03/2025', tutor: 'Camila Reis', status: 'Cancelado' },
-//   { nome: 'Toby', inicioTratamento: '04/04/2025', tutor: 'José Silva', status: 'Em andamento' },
-//   { nome: 'Bolt', inicioTratamento: '05/05/2025', tutor: 'Ana Lima', status: 'Em espera' },
-//   { nome: 'Luna', inicioTratamento: '06/06/2025', tutor: 'Ricardo Mello', status: 'Concluído' },
-//   { nome: 'Thor', inicioTratamento: '07/07/2025', tutor: 'Fernanda Souza', status: 'Cancelado' },
-//   { nome: 'Bella', inicioTratamento: '08/08/2025', tutor: 'João Pedro', status: 'Em andamento' },
-//   { nome: 'Rex', inicioTratamento: '09/09/2025', tutor: 'Rita Silva', status: 'Concluído' },
-//   { nome: 'Nina', inicioTratamento: '10/10/2025', tutor: 'Carlos Braga', status: 'Em espera' },
-//   { nome: 'Max', inicioTratamento: '11/11/2025', tutor: 'Juliana Ramos', status: 'Cancelado' },
-// ])
+// Controle de alertas e mensagens
+const showAlert = ref(false)
+const alertMessage = ref('')
+const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error')
+
+const isLoading = ref(false)
 
 const page = ref(1)
 const itemsPerPage = ref(5)
+
+
+const router = useRouter()
 
 // Quando itemsPerPage muda, resetar a página para 1
 watch(itemsPerPage, () => {
@@ -133,17 +126,43 @@ function prevPage() {
   }
 }
 
-function visualizar(item: any) {
-  console.log('Visualizar:', item)
+function visualizar(id: number) {
+  router.push({ name: 'PacienteVisualizar', params: { id } })
 }
 
 function editar(item: any) {
   console.log('Editar:', item)
 }
+
+const loadPacientes = async () => {
+  try {
+    const response = await recuperarPacientes();
+    // garante que veio um array
+    pacientes.value = Array.isArray(response) ? response : []
+  } catch (error: any) {
+    if (error.tipo === 'VALIDATION' && error.errors) {
+      const firstKey = Object.keys(error.errors)[0]
+      alertMessage.value = error.errors[firstKey][0]
+    } else if (error.tipo === 'ERROR') {
+      alertMessage.value = error.msg
+    } else {
+      alertMessage.value = 'Ocorreu um erro inesperado carregar os pacientes.'
+    }
+
+    alertType.value = 'error'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 5000)
+  }
+}
+
+onMounted(async () => {
+  isLoading.value = true;
+  await loadPacientes()
+  isLoading.value = false;
+})
 </script>
 
 <style lang="scss">
-
 .v-btn {
   transition: none !important;
 
@@ -160,6 +179,4 @@ function editar(item: any) {
 .v-icon {
   color: #676767;
 }
-
-
 </style>
