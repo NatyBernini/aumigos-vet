@@ -356,22 +356,5 @@ onMounted(async () => {
         gap: 30px;
     }
 
-    .info-box {
-        background: #fafafa;
-        border-radius: 12px;
-        padding: 20px;
-        min-width: 300px;
-        max-width: 725px;
-
-        .input-text-container {
-            margin-bottom: 35px !important;
-        }
-
-        .span-info-box {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-    }
 }
 </style>

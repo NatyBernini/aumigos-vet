@@ -71,7 +71,7 @@
               <v-list-item-content>
                 <v-list-item-title class="mb-3"><strong>Nome:</strong> {{ appStore.userData?.pessoa?.nome_completo ||
                   '-'
-                  }}</v-list-item-title>
+                }}</v-list-item-title>
                 <v-list-item-subtitle class="mb-2"><strong>Email:</strong> {{ appStore.userData?.email || '-'
                 }}</v-list-item-subtitle>
                 <v-list-item-subtitle class="mb-2"><strong>Cargo:</strong> {{ appStore.userData?.tipo_usuario || '-'
@@ -571,5 +571,24 @@ thead {
     display: none !important;
   }
 
+}
+
+
+.info-box {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 300px;
+  max-width: 725px;
+
+  .input-text-container {
+    margin-bottom: 35px !important;
+  }
+
+  .span-info-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 </style>

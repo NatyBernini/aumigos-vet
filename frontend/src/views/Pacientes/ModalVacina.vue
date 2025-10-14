@@ -121,7 +121,7 @@ const cadastrarVacina = async () => {
 
     try {
         isLoading.value = true;
-        const response = await salvarVacinas(props.id_animal, dados);
+        // const response = await salvarVacinas(props.id_animal, dados);
         emit('vacinaCadastrado');
         alertMessage.value = 'Vacina cadastrada com sucesso!';
         alertType.value = 'success';

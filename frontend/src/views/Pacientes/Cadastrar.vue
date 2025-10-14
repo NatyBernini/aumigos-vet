@@ -130,19 +130,20 @@
                 label="Observações/Detalhamento" class="wrap-textarea" :maxLength="300"
                 placeholder="Detalhe algum ponto extra sobre o tutor..." />
             </v-col>
-  <!-- Contatos -->
+            <!-- Contatos -->
             <p>Informações para Contato</p>
             <v-col>
               <v-row class="row-info-basicas" v-for="(item, index) in phones" :key="index">
-                <inputText label="Telefone*" classe="input-locador" type="text" required @input="onPhoneInput(index, $event)"
-                  v-model:valueInput="item.number" :id="'input-telefone-' + index" :maxLength="0"/>
+                <inputText label="Telefone*" classe="input-locador" type="text" required
+                  @input="onPhoneInput(index, $event)" v-model:valueInput="item.number" :id="'input-telefone-' + index"
+                  :maxLength="0" />
 
                 <!-- Botões de adicionar / remover só no modo edição -->
-             
+
                 <v-btn icon class="btn-padrao btn-plus-phone" @click="removePhone(index)" v-if="phones.length > 1">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
-                   <v-btn icon class="btn-padrao btn-plus-phone" @click="addPhone" v-if="index === phones.length - 1">
+                <v-btn icon class="btn-padrao btn-plus-phone" @click="addPhone" v-if="index === phones.length - 1">
                   <v-icon>mdi-plus</v-icon>
                 </v-btn>
               </v-row>
@@ -191,19 +192,23 @@
         <v-tabs-window-item value="protocolo" class="pt-5">
           <v-form ref="form">
             <p class="mb-3">Informações Básicas</p>
-            <p>Vermifugado?*</p>
-            <div class="row-info-radios">
-              <v-radio-group v-model="vermifugado" inline max-width="150px">
-                <v-radio label="Sim" value="vermifugadoS" />
-                <v-radio label="Não" value="vermifugadoN" />
-              </v-radio-group>
-
-              <v-text-field v-if="vermifugado === 'vermifugadoS'" v-model="dataVermifugado" label="Data*" type="date"
-                max-width="150px" />
+            <div class="info-box" v-if="!isLoading">
+              <span class="span-info-box">Vermífugos
+                <v-btn color="accent" large @click.stop="dialogVermifugo = true" class="btn-padrao">
+                  Adicionar Vermífugo
+                  <v-icon class="icon-close ml-3">mdi-format-align-left</v-icon>
+                </v-btn>
+              </span>
             </div>
 
-            <p>Vacinas</p>
-            <v-btn class="btn-padrao" @click="dialogVacina = true">Adicionar Vacina</v-btn>
+            <div class="info-box mt-5" v-if="!isLoading">
+              <span class="span-info-box">Vacinas
+                <v-btn color="accent" large @click.stop="dialogVacina = true" class="btn-padrao">
+                  Adicionar Vacina
+                  <v-icon class="icon-close ml-3">mdi-hospital</v-icon>
+                </v-btn>
+              </span>
+            </div>
 
           </v-form>
         </v-tabs-window-item>
@@ -255,6 +260,8 @@
 
   <ModalVacina :isOpen="dialogVacina" @vacinaCadastrado="handleModalClose" @update:isOpen="dialogVacina = $event"
     :id_animal="0" />
+  <ModalVermifugo :isOpen="dialogVermifugo" @vermifugoCadastrado="handleModalVermifugoClose"
+    @update:isOpen="dialogVermifugo = $event" :id_animal="0" />
   <modalCamposObrigatorios v-if="!isLoading" :isOpen="showModalConfirmation"
     @update:isOpen="showModalConfirmation = $event" />
 </template>
@@ -266,6 +273,7 @@ import { useAppStore } from '@/modules/commons/store'
 import inputText from '@/components/inputText.vue'
 import TextArea from '@/components/textArea.vue'
 import ModalVacina from './ModalVacina.vue'
+import ModalVermifugo from './ModalVermifugo.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 
 // SERVICES
@@ -281,6 +289,7 @@ defineOptions({ name: 'PacienteCadastro' })
 // Estado geral
 const tab = ref('paciente')
 const dialogVacina = ref(false)
+const dialogVermifugo = ref(false)
 const isLoading = ref(false)
 const dialogTutores = ref(false)
 const showModalConfirmation = ref(false)
@@ -499,6 +508,10 @@ const salvaTutor = async () => {
 // Fechar modal de vacina
 function handleModalClose() {
   dialogVacina.value = false
+}
+
+function handleModalVermifugoClose() {
+  dialogVermifugo.value = false
 }
 
 // TUTORES
