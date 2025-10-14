@@ -39,16 +39,28 @@
           <div class="hora-linha diaria">
             <div class="hora">{{ hora }}</div>
             <div class="consultas">
-              <div v-for="consulta in consultasPorHora(hora)" :key="consulta.id" class="consulta">
-                <p class="mb-1"><strong>{{ consulta.paciente }}</strong></p>
-                <small>Veterinário: {{ consulta.veterinario }}</small><br />
-                <small>Horário: {{ consulta.horario }}</small> <br>
-                <v-btn text=" Realizar consulta" class="btn-padrao"
-                  :to="{ name: 'Consultar', params: { id: consulta.id } }" variant="text">
+              <!-- Caso haja consultas -->
+              <div v-if="consultasPorHora(hora).length > 0">
+                <div v-for="consulta in consultasPorHora(hora)" :key="consulta.id" class="consulta">
+                  <p class="mb-1"><strong>{{ consulta.paciente }}</strong></p>
+                  <small>Veterinário: {{ consulta.veterinario }}</small><br />
+                  <small>Horário: {{ consulta.horario }}</small><br>
+                  <v-btn text="Realizar consulta" class="btn-padrao"
+                    :to="{ name: 'Consultar', params: { id: consulta.id } }" variant="text" />
+                </div>
+              </div>
+
+              <!-- Caso esteja disponível -->
+              <div v-else class="disponivel">
+                <v-btn  size="small" class="btn-padrao" @click.stop="selecionarHorario(hora)">
+                  <v-icon left>mdi-calendar-plus</v-icon>
+                  Agendar
                 </v-btn>
               </div>
             </div>
           </div>
+
+
         </v-col>
       </v-row>
     </v-sheet>
@@ -112,8 +124,9 @@
     </v-sheet>
 
   </v-container>
-  <ModalAgendar :isOpen="showScheduleForm" 
-        @update:isOpen="showScheduleForm = $event" />
+  <ModalAgendar :isOpen="showScheduleForm" @update:isOpen="showScheduleForm = $event" :dataSelecionada="diaSelecionado"
+    :horaSelecionada="horarioSelecionado" />
+
 </template>
 
 
@@ -151,6 +164,8 @@ const modosAgenda = ['diario', 'semanal', 'mensal'];
 
 
 const modo = ref<'diario' | 'semanal' | 'mensal'>('diario')
+const horarioSelecionado = ref<string | null>(null)
+const diaSelecionado = ref<Date | null>(null)
 
 const dataFormatada = computed(() => {
   if (modo.value === 'diario') {
@@ -240,6 +255,19 @@ function avancar() {
     novaData.setMonth(novaData.getMonth() + 1)
   }
   dataAtual.value = novaData
+}
+
+function selecionarHorario(hora: string) {
+  // Verifica se o horário já está ocupado
+  const ocupado = consultasPorHora(hora).length > 0
+  if (ocupado) return
+
+  // Define o horário e data atuais
+  horarioSelecionado.value = hora
+  diaSelecionado.value = new Date(anoAtual.value, mesAtual.value, diaAtual.value)
+
+  // Abre o modal de agendamento
+  showScheduleForm.value = true
 }
 
 
@@ -439,6 +467,23 @@ const diasDoMes = computed(() => getDiasDoMes(mesAtual.value, anoAtual.value))
   height: 100px;
   background-color: transparent;
 }
+.disponivel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f7f7f7;
+  border: 1px dashed #ff9800;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #777;
+  font-style: italic;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #fff4e0;
+  }
+}
+
 
 .container-header-agenda {
   display: flex;
