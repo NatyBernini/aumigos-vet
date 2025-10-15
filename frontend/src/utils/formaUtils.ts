@@ -182,3 +182,10 @@ export const formatCurrency = (valor: number): string => {
 //     }
 //   }
 // };
+
+export function formatDateNoTimezone(dateString: string): string {
+  if (!dateString) return '-'
+  const [year, month, day] = dateString.split('-').map(Number)
+  const date = new Date(year, month - 1, day) // monta sem UTC
+  return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+}

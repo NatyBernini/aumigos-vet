@@ -191,21 +191,43 @@
         <!-- ======================= ABA PROTOCOLO ======================= -->
         <v-tabs-window-item value="protocolo" class="pt-5">
           <v-form ref="form">
-            <p class="mb-3">Informações Básicas</p>
             <div class="info-box" v-if="!isLoading">
               <span class="span-info-box">Vermífugos
                 <v-btn color="accent" large @click.stop="dialogVermifugo = true" class="btn-padrao">
                   Adicionar Vermífugo
-                  <v-icon class="icon-close ml-3">mdi-format-align-left</v-icon>
+                  <v-icon class="icon-close ml-3">mdi-pill</v-icon>
                 </v-btn>
               </span>
+
             </div>
+            <!-- Tabela de Vermífugos -->
+            <v-data-table v-if="vermifugos.length" :headers="headers" :items="vermifugos"
+              class="elevation-1 table-protocolo mt-5" no-data-text="Nenhum vermífugo cadastrado.">
+              <template #item.dataAplicacao="{ item }">
+                {{ formatDateNoTimezone(item.dataAplicacao) }}
+
+              </template>
+              <template #item.dataProximaDose="{ item }">
+                {{ formatDateNoTimezone(item.dataProximaDose) }}
+              </template>
+              <!-- Ícone Excluir  -->
+              <template #item.acoes="{ item, index }">
+                <v-tooltip text="Deletar Vermífugo" location="bottom" open-delay="300">
+                  <template #activator="{ props }">
+                    <v-btn v-bind="props" icon color="#434343" variant="text" @click="removerVermifugo(index)">
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                </v-tooltip>
+              </template>
+
+            </v-data-table>
 
             <div class="info-box mt-5" v-if="!isLoading">
               <span class="span-info-box">Vacinas
                 <v-btn color="accent" large @click.stop="dialogVacina = true" class="btn-padrao">
                   Adicionar Vacina
-                  <v-icon class="icon-close ml-3">mdi-hospital</v-icon>
+                  <v-icon class="icon-close ml-3">mdi-needle</v-icon>
                 </v-btn>
               </span>
             </div>
@@ -261,7 +283,7 @@
   <ModalVacina :isOpen="dialogVacina" @vacinaCadastrado="handleModalClose" @update:isOpen="dialogVacina = $event"
     :id_animal="0" />
   <ModalVermifugo :isOpen="dialogVermifugo" @vermifugoCadastrado="handleModalVermifugoClose"
-    @update:isOpen="dialogVermifugo = $event" :id_animal="0" />
+    @update:isOpen="dialogVermifugo = $event" />
   <modalCamposObrigatorios v-if="!isLoading" :isOpen="showModalConfirmation"
     @update:isOpen="showModalConfirmation = $event" />
 </template>
@@ -277,9 +299,9 @@ import ModalVermifugo from './ModalVermifugo.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 
 // SERVICES
-import { salvarPaciente } from '@/services/paciente'
+import { salvarPaciente, salvarVermifugos } from '@/services/paciente'
 import { salvarTutor, recuperarTutores } from '@/services/tutor'
-import { replaceCommaWithDot } from '@/utils/formaUtils'
+import { replaceCommaWithDot, formatDateNoTimezone } from '@/utils/formaUtils'
 
 
 const appStore = useAppStore()
@@ -306,6 +328,14 @@ const textarea = ref({
   vacinas: '',
   ObservacoesGeraisTutor: ''
 })
+const vermifugos = ref<any[]>([])
+
+const headers = [
+  { title: 'Nome', key: 'nome' },
+  { title: 'Data da Aplicação', key: 'dataAplicacao' },
+  { title: 'Data da Próxima Dose', key: 'dataProximaDose' },
+  { title: 'Ações', key: 'acoes', sortable: false }
+]
 
 const idTutor = ref<number>(0)
 
@@ -435,6 +465,7 @@ async function submit() {
 
 }
 
+const idPaciente = ref(0)
 const salvaPaciente = async () => {
   try {
     const clinica = Number(appStore.userData?.clinicas[0]?.id)
@@ -454,7 +485,10 @@ const salvaPaciente = async () => {
       tutor: idTutor.value,
       clinica
     }
-    await salvarPaciente(dados)
+    const response = await salvarPaciente(dados)
+    idPaciente.value = response.id;
+
+    await salvaVermifugo();
   } catch (error: any) {
     if (error.tipo === 'VALIDATION' && error.errors) {
       const firstKey = Object.keys(error.errors)[0]
@@ -505,14 +539,58 @@ const salvaTutor = async () => {
   }
 }
 
+
+const salvaVermifugo = async () => {
+  try {
+    for (const v of vermifugos.value) {
+      const dados = {
+        nome: v.nome,
+        data_aplicacao: v.dataAplicacao,
+        data_proxima_dose: v.dataProximaDose,
+        fabricante: v.fabricante,
+        lote: v.lote,
+        observacao: v.observacao || '',
+        dosagem: v.dosagem
+      }
+
+      await salvarVermifugos(idPaciente.value, dados)
+    }
+
+    alert('Vermífugos salvos com sucesso!')
+  } catch (error: any) {
+    console.error('Erro ao salvar vermífugos:', error)
+    alert('Erro ao salvar vermífugos.')
+  }
+}
+
 // Fechar modal de vacina
 function handleModalClose() {
   dialogVacina.value = false
 }
 
-function handleModalVermifugoClose() {
+function handleModalVermifugoClose(novoVermifugo?: any) {
   dialogVermifugo.value = false
+  alertMessage.value = 'Vermífugo cadastrado com sucesso!'
+  alertType.value = 'success'
+  showAlert.value = true
+  setTimeout(() => {
+      showAlert.value = false
+    }, 3000)
+  if (novoVermifugo) {
+    vermifugos.value.push({
+      nome: novoVermifugo.nome,
+      dosagem: novoVermifugo.dosagem,
+      dataAplicacao: novoVermifugo.data_aplicacao,
+      dataProximaDose: novoVermifugo.data_proxima_dose,
+      fabricante: novoVermifugo.fabricante,
+      lote: novoVermifugo.lote
+    })
+  }
 }
+function removerVermifugo(index: number) {
+  vermifugos.value.splice(index, 1)
+}
+
 
 // TUTORES
 const listTutores = ref<any[]>([])
@@ -605,5 +683,9 @@ onMounted(async () => {
   flex-wrap: wrap;
   flex-direction: row;
   margin-bottom: 20px;
+}
+
+.table-protocolo {
+  max-width: 725px;
 }
 </style>

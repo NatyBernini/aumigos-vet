@@ -6,7 +6,7 @@
         <span class="span-info-box">Administrar Funcionários
             <v-btn color="accent" large @click.stop="showScheduleForm = true" class="btn-padrao">
                 Cadastrar Novo Usuário
-                <v-icon class="icon-close ml-3">mdi-format-align-left</v-icon>
+                <v-icon class="icon-close ml-3">mdi-account-multiple-plus</v-icon>
             </v-btn>
         </span>
     </div>
@@ -44,7 +44,7 @@
             <v-tooltip text="Redefinir Senha" location="bottom" open-delay="300">
                 <template #activator="{ props }">
                     <v-btn v-bind="props" icon color="#434343" variant="text" @click="visualizar(item, 2)">
-                        <v-icon>mdi-circle-edit-outline</v-icon>
+                        <v-icon>mdi-shield-key</v-icon>
                     </v-btn>
                 </template>
             </v-tooltip>

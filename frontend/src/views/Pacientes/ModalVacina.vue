@@ -5,7 +5,7 @@
                 <v-btn id="btn-close-modal" @click="cancel">X</v-btn>
             </row>
             <v-card-title class="mb-5">
-                <v-icon color="#ff8200" class="mr-2">mdi-alert-circle</v-icon> Adicionar Vacina
+                <v-icon color="#ff8200" class="mr-2">mdi-needle</v-icon> Adicionar Vacina
             </v-card-title>
 
             <v-card-text class="w-100 d-flex flex-column flex-wrap ga-4">

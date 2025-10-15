@@ -6,7 +6,7 @@
             </row>
 
             <v-card-title class="mb-5">
-                <v-icon color="#ff8200" class="mr-2">mdi-account</v-icon>
+                <v-icon color="#ff8200" class="mr-2">mdi-folder-key-network-outline</v-icon>
                 Redefinir Senha de Acesso
             </v-card-title>
 

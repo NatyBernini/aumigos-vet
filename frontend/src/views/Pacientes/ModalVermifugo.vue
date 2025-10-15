@@ -29,21 +29,21 @@
         />
 
         <inputText
-          label="Fabricante*"
+          label="Fabricante"
           type="text"
           :ocultaContador="true"
           v-model:valueInput="textInputs['input-fabricante']"
         />
 
         <inputText
-          label="Lote*"
+          label="Lote"
           type="text"
           :ocultaContador="true"
           v-model:valueInput="textInputs['input-lote']"
         />
 
-            <inputText
-          label="Dosagem*"
+        <inputText
+          label="Dosagem"
           type="text"
           :ocultaContador="true"
           v-model:valueInput="textInputs['input-dosagem']"
@@ -104,17 +104,24 @@ import inputText from '@/components/inputText.vue'
 import TextArea from '@/components/textArea.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 
-// SERVICES
-import { salvarVermifugos } from '@/services/paciente'
-
 const props = defineProps<{
   isOpen: boolean
-  id_animal: number
 }>()
+
+// Interface completa que será emitida para o pai
+interface VermifugoPayload {
+  nome: string
+  fabricante: string
+  lote: string
+  dosagem: string
+  data_aplicacao: string
+  data_proxima_dose: string
+  observacao: string
+}
 
 const emit = defineEmits<{
   (e: 'update:isOpen', value: boolean): void
-  (e: 'vermifugoCadastrado'): void
+  (e: 'vermifugoCadastrado', dados: VermifugoPayload): void
 }>()
 
 const dialogVisible = ref(props.isOpen)
@@ -139,64 +146,51 @@ watch(dialogVisible, (val: boolean) => {
 })
 
 function cancel() {
-  Object.keys(textInputs.value).forEach((k) => (textInputs.value[k] = ''))
+  limparCampos()
   dialogVisible.value = false
+}
+
+function limparCampos() {
+  Object.keys(textInputs.value).forEach((k) => (textInputs.value[k] = ''))
+  textarea.value.vermifugos = ''
 }
 
 const cadastrarVermifugo = async () => {
   const obrigatoriosPreenchidos =
     textInputs.value['input-nome'] &&
     textInputs.value['input-data-aplicacao'] &&
-    textInputs.value['input-data-prox-dose'] &&
-    textInputs.value['input-fabricante'] &&
-    textInputs.value['input-lote'] &&
-    textInputs.value['input-dosagem']
- 
+    textInputs.value['input-data-prox-dose'] 
+  
+
   if (!obrigatoriosPreenchidos) {
     showModalConfirmation.value = true
     return
   }
 
-  const dados = {
+  const dados: VermifugoPayload = {
     nome: textInputs.value['input-nome'],
-    data_aplicacao: textInputs.value['input-data-aplicacao'],
-    data_proxima_dose: textInputs.value['input-data-prox-dose'],
     fabricante: textInputs.value['input-fabricante'],
     lote: textInputs.value['input-lote'],
     dosagem: textInputs.value['input-dosagem'],
+    data_aplicacao: textInputs.value['input-data-aplicacao'],
+    data_proxima_dose: textInputs.value['input-data-prox-dose'],
     observacao: textarea.value.vermifugos
   }
 
   try {
     isLoading.value = true
-    // await salvarVermifugos(props.id_animal, dados)
 
-    emit('vermifugoCadastrado')
-    alertMessage.value = 'Vermífugo cadastrado com sucesso!'
-    alertType.value = 'success'
-    showAlert.value = true
+    // Emite os dados para o componente pai
+    emit('vermifugoCadastrado', dados)
 
-    setTimeout(() => {
-      showAlert.value = false
-    }, 5000)
+    limparCampos()
+    dialogVisible.value = false
+
   } catch (error: any) {
-    if (error.tipo === 'VALIDATION' && error.errors) {
-      const firstKey = Object.keys(error.errors)[0]
-      alertMessage.value = error.errors[firstKey][0]
-    } else if (error.tipo === 'ERROR') {
-      alertMessage.value = error.msg
-    } else {
-      alertMessage.value = 'Ocorreu um erro inesperado'
-    }
-
+    alertMessage.value = 'Ocorreu um erro inesperado.'
     alertType.value = 'error'
     showAlert.value = true
-
-    setTimeout(() => {
-      showAlert.value = false
-    }, 5000)
-
-    throw error
+    setTimeout(() => (showAlert.value = false), 5000)
   } finally {
     isLoading.value = false
   }
@@ -236,24 +230,13 @@ const cadastrarVermifugo = async () => {
     font-weight: 700;
     font-size: 18px;
     line-height: 16px;
-    letter-spacing: 0%;
-    text-wrap: auto !important;
   }
 
   .v-card-text {
     font-weight: 400;
     font-size: 14px;
-    line-height: 16px;
-    letter-spacing: 0%;
-    text-align: center;
     color: #6c6c6c;
     padding: 0px;
-    text-wrap: auto !important;
-  }
-
-  button {
-    padding: 12px;
-    height: auto;
   }
 
   #btn-close-modal {
@@ -261,12 +244,8 @@ const cadastrarVermifugo = async () => {
     color: #6c6c6c;
     font-weight: 500;
     font-size: 13px;
-    line-height: 12.8px;
-    letter-spacing: 0%;
-    text-align: center;
     border-radius: 10px;
     text-transform: none;
-    transition: none;
 
     &:hover {
       background-color: #d9d9d9;
