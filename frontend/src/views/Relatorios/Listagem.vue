@@ -1,13 +1,13 @@
 <template>
     <v-col>
-      <span class="title-page">Relatórios e Documentos</span>
+      <span class="title-page">Relatórios</span>
       <br>
       <span class="breadcrumb">
         Relatórios / <span class="page-active">Listagem</span>
       </span>
       <br>
-      <p class="title-page mt-8">Relatórios</p>
-      <v-row class="row-cards mt-4">
+      <!-- <p class="title-page mt-8">Relatórios</p> -->
+      <v-row class="row-cards mt-6">
 
         <v-card class="pa-2">
           <v-card-title>Histórico do Animal</v-card-title>
@@ -41,8 +41,8 @@
           </v-card-actions>
         </v-card>
       </v-row>
-      <div class="d-flex flex-row flex-wrap mt-8"><p class="title-page mr-5">Documentos</p><ModalCadastroDocumento /></div>
-      <v-row class="row-cards mt-4 mb-4">
+      <!-- <div class="d-flex flex-row flex-wrap mt-8"><p class="title-page mr-5">Documentos</p><ModalCadastroDocumento /></div> -->
+      <!-- <v-row class="row-cards mt-4 mb-4">
         <v-card class="pa-2">
           <v-card-title>Receituário</v-card-title>
           <v-card-text>Prescrição oficial emitida pelo médico veterinário, contendo as orientações de uso de
@@ -69,7 +69,7 @@
           </v-card-actions>
         </v-card>
 
-      </v-row>
+      </v-row> -->
     </v-col>
 </template>
 

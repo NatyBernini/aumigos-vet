@@ -44,116 +44,99 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, watch, ref, onMounted } from 'vue';
+import { defineProps, defineEmits, watch, ref } from 'vue';
 
 // COMPONENTES
 import inputText from '@/components/inputText.vue';
 import TextArea from '@/components/textArea.vue';
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue';
 
-// SERVICES
-import { salvarVacinas } from '@/services/paciente';
-
 const props = defineProps<{
     isOpen: boolean;
-    id_animal: number
+    id_animal: number;
 }>();
-
 
 const dialogVisible = ref(props.isOpen);
 const showModalConfirmation = ref(false);
 const isLoading = ref(false);
-const textInputs = ref<Record<string, string>>({})
+const textInputs = ref<Record<string, string>>({});
+const textarea = ref({ vacinas: '' });
 const showAlert = ref(false);
 const alertMessage = ref('');
 const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error');
-const textarea = ref({ vacinas: '' })
 
 const emit = defineEmits<{
     (e: 'update:isOpen', value: boolean): void;
-    (e: 'vacinaCadastrado'): void;
+    (e: 'vacinaCadastrado', novaVacina: any): void; // <--- agora envia os dados
 }>();
 
-watch(
-    () => props.isOpen,
-    (val: any) => {
-        dialogVisible.value = val;
-    }
-);
-
+watch(() => props.isOpen, (val: boolean) => {
+    dialogVisible.value = val;
+});
 
 watch(dialogVisible, (val: boolean) => {
     emit('update:isOpen', val);
 });
 
-
 function cancel() {
-    textInputs.value['input-nome'] = '';
-
+    textInputs.value = {};
+    textarea.value.vacinas = '';
     dialogVisible.value = false;
 }
 
 const loading = ref(false);
 
-
 const cadastrarVacina = async () => {
-    // Verificar obrigatórios
+    // valida campos obrigatórios
     const obrigatoriosPreenchidos =
         textInputs.value['input-nome'] &&
         textInputs.value['input-data-aplicacao'] &&
         textInputs.value['input-data-prox-aplicacao'] &&
         textInputs.value['input-fabricante'] &&
-        textInputs.value['input-lote']
+        textInputs.value['input-lote'];
 
     if (!obrigatoriosPreenchidos) {
-        showModalConfirmation.value = true
-        return
+        showModalConfirmation.value = true;
+        return;
     }
 
+    // monta o objeto para enviar ao backend
     const dados = {
         nome: textInputs.value['input-nome'],
         data_aplicacao: textInputs.value['input-data-aplicacao'],
         data_proxima_dose: textInputs.value['input-data-prox-aplicacao'],
         fabricante: textInputs.value['input-fabricante'],
         lote: textInputs.value['input-lote'],
-        observacao: textarea.value.vacinas,
+        observacao: textarea.value.vacinas || '',
     };
 
     try {
         isLoading.value = true;
+
         // const response = await salvarVacinas(props.id_animal, dados);
-        emit('vacinaCadastrado');
+        // supondo sucesso:
+        emit('vacinaCadastrado', dados); // <--- envia para o componente pai
+
         alertMessage.value = 'Vacina cadastrada com sucesso!';
         alertType.value = 'success';
         showAlert.value = true;
 
+        // fecha modal automaticamente
         setTimeout(() => {
             showAlert.value = false;
-        }, 5000);
+            dialogVisible.value = false;
+        }, 2000);
     } catch (error: any) {
-        if (error.tipo === 'VALIDATION' && error.errors) {
-            const firstKey = Object.keys(error.errors)[0];
-            alertMessage.value = error.errors[firstKey][0];
-        } else if (error.tipo === 'ERROR') {
-            alertMessage.value = error.msg;
-        } else {
-            alertMessage.value = 'Ocorreu um erro inesperado';
-        }
-
+        alertMessage.value = error?.msg || 'Ocorreu um erro inesperado';
         alertType.value = 'error';
         showAlert.value = true;
-
-        setTimeout(() => {
-            showAlert.value = false;
-        }, 5000);
-
-        throw error;
+        setTimeout(() => (showAlert.value = false), 5000);
     } finally {
         isLoading.value = false;
     }
 };
-
 </script>
+
 <style lang="scss">
 .row-close-modal {
     display: flex;

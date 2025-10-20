@@ -223,6 +223,7 @@
 
             </v-data-table>
 
+
             <div class="info-box mt-5" v-if="!isLoading">
               <span class="span-info-box">Vacinas
                 <v-btn color="accent" large @click.stop="dialogVacina = true" class="btn-padrao">
@@ -231,6 +232,27 @@
                 </v-btn>
               </span>
             </div>
+            <!-- ======================= TABELA DE VACINAS ======================= -->
+            <v-data-table v-if="vacinas.length" :headers="headersVacina" :items="vacinas"
+              class="elevation-1 table-protocolo mt-5" no-data-text="Nenhuma vacina cadastrada.">
+              <template #item.dataAplicacao="{ item }">
+                {{ formatDateNoTimezone(item.dataAplicacao) }}
+              </template>
+              <template #item.dataProximaDose="{ item }">
+                {{ formatDateNoTimezone(item.dataProximaDose) }}
+              </template>
+              <!-- Ícone Excluir -->
+              <template #item.acoes="{ item, index }">
+                <v-tooltip text="Deletar Vacina" location="bottom" open-delay="300">
+                  <template #activator="{ props }">
+                    <v-btn v-bind="props" icon color="#434343" variant="text" @click="removerVacina(index)">
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                </v-tooltip>
+              </template>
+            </v-data-table>
+
 
           </v-form>
         </v-tabs-window-item>
@@ -280,8 +302,13 @@
     <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
   </v-container>
 
-  <ModalVacina :isOpen="dialogVacina" @vacinaCadastrado="handleModalClose" @update:isOpen="dialogVacina = $event"
-    :id_animal="0" />
+ <ModalVacina
+  :isOpen="dialogVacina"
+  @vacinaCadastrado="handleModalVacinaClose"
+  @update:isOpen="dialogVacina = $event"
+  :id_animal="0"
+/>
+
   <ModalVermifugo :isOpen="dialogVermifugo" @vermifugoCadastrado="handleModalVermifugoClose"
     @update:isOpen="dialogVermifugo = $event" />
   <modalCamposObrigatorios v-if="!isLoading" :isOpen="showModalConfirmation"
@@ -299,7 +326,7 @@ import ModalVermifugo from './ModalVermifugo.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 
 // SERVICES
-import { salvarPaciente, salvarVermifugos } from '@/services/paciente'
+import { salvarPaciente, salvarVermifugos, salvarVacinas } from '@/services/paciente'
 import { salvarTutor, recuperarTutores } from '@/services/tutor'
 import { replaceCommaWithDot, formatDateNoTimezone } from '@/utils/formaUtils'
 
@@ -329,8 +356,15 @@ const textarea = ref({
   ObservacoesGeraisTutor: ''
 })
 const vermifugos = ref<any[]>([])
+const vacinas = ref<any[]>([])
 
 const headers = [
+  { title: 'Nome', key: 'nome' },
+  { title: 'Data da Aplicação', key: 'dataAplicacao' },
+  { title: 'Data da Próxima Dose', key: 'dataProximaDose' },
+  { title: 'Ações', key: 'acoes', sortable: false }
+]
+const headersVacina = [
   { title: 'Nome', key: 'nome' },
   { title: 'Data da Aplicação', key: 'dataAplicacao' },
   { title: 'Data da Próxima Dose', key: 'dataProximaDose' },
@@ -489,6 +523,7 @@ const salvaPaciente = async () => {
     idPaciente.value = response.id;
 
     await salvaVermifugo();
+    await salvaVacina();
   } catch (error: any) {
     if (error.tipo === 'VALIDATION' && error.errors) {
       const firstKey = Object.keys(error.errors)[0]
@@ -563,10 +598,28 @@ const salvaVermifugo = async () => {
   }
 }
 
-// Fechar modal de vacina
-function handleModalClose() {
-  dialogVacina.value = false
+const salvaVacina = async () => {
+  try {
+    for (const v of vacinas.value) {
+      const dados = {
+        nome: v.nome,
+        data_aplicacao: v.dataAplicacao,
+        data_proxima_dose: v.dataProximaDose,
+        fabricante: v.fabricante,
+        lote: v.lote,
+        observacao: v.observacao || ''
+      }
+
+      await salvarVacinas(idPaciente.value, dados)
+    }
+
+    alert('Vacinas salvas com sucesso!')
+  } catch (error: any) {
+    console.error('Erro ao salvar vacinas:', error)
+    alert('Erro ao salvar vacinas.')
+  }
 }
+
 
 function handleModalVermifugoClose(novoVermifugo?: any) {
   dialogVermifugo.value = false
@@ -574,8 +627,8 @@ function handleModalVermifugoClose(novoVermifugo?: any) {
   alertType.value = 'success'
   showAlert.value = true
   setTimeout(() => {
-      showAlert.value = false
-    }, 3000)
+    showAlert.value = false
+  }, 3000)
   if (novoVermifugo) {
     vermifugos.value.push({
       nome: novoVermifugo.nome,
@@ -587,6 +640,29 @@ function handleModalVermifugoClose(novoVermifugo?: any) {
     })
   }
 }
+
+function removerVacina(index: number) {
+  vacinas.value.splice(index, 1)
+}
+
+function handleModalVacinaClose(novaVacina?: any) {
+  dialogVacina.value = false
+  alertMessage.value = 'Vacina cadastrada com sucesso!'
+  alertType.value = 'success'
+  showAlert.value = true
+  setTimeout(() => (showAlert.value = false), 3000)
+
+  if (novaVacina) {
+    vacinas.value.push({
+      nome: novaVacina.nome,
+      dataAplicacao: novaVacina.data_aplicacao,
+      dataProximaDose: novaVacina.data_proxima_dose,
+      fabricante: novaVacina.fabricante,
+      lote: novaVacina.lote
+    })
+  }
+}
+
 function removerVermifugo(index: number) {
   vermifugos.value.splice(index, 1)
 }

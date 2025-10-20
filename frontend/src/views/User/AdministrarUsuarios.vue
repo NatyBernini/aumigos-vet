@@ -32,7 +32,7 @@
 
         <template #item.actions="{ item }">
             <!-- Ícone Visualizar -->
-            <v-tooltip text="Visualizar detalhes" location="bottom" open-delay="300">
+            <v-tooltip text="Visualizar Detalhes" location="bottom" open-delay="300">
                 <template #activator="{ props }">
                     <v-btn v-bind="props" icon color="#434343" variant="text" @click="visualizar(item, 1)">
                         <v-icon>mdi-eye</v-icon>
