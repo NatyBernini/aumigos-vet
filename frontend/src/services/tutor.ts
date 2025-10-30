@@ -1,13 +1,30 @@
 import { API } from "@/modules/commons/services";
 
-export interface Pessoa {
-    nome_completo: string;
-    cpf: string;
-    data_nascimento: string
+export interface Contato {
+    email: string
+    telefones: { numero: string }[]
 }
 
-export interface Tutor {
-    pessoa: Pessoa;
+export interface Enderecos {
+    cep: string
+    estado: string
+    cidade: string
+    bairro: string
+    rua: string
+    numero: string
+    complemento: string
+}
+
+export interface Pessoa {
+    nome_completo: string
+    cpf: string
+    data_nascimento: string
+    enderecos: Enderecos[]
+    contatos: Contato[]
+}
+
+
+export interface Tutor extends Pessoa {
     observacoes: string;
     ativo: boolean
 }

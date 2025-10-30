@@ -13,7 +13,7 @@ export interface Paciente {
     castrado: boolean;
     data_castracao: string;
     observacao: string;
-    tutor: number;
+    tutor_id: number;
     clinica: number
 }
 

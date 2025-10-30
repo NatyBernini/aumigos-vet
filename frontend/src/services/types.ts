@@ -11,7 +11,7 @@ export interface Contato {
 }
 
 export interface Pessoa {
-  id: number
+  id?: number
   nome_completo: string
   cpf: string
   data_nascimento: string

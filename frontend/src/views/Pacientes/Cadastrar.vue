@@ -35,12 +35,12 @@
             <p>Espécie*</p>
             <div class="row-info-radios">
               <v-radio-group v-model="especie" inline max-width="300px">
-                <v-radio label="Canina" value="especieCan" />
-                <v-radio label="Felina" value="especieFel" />
-                <v-radio label="Outra" value="especieOutra" />
+                <v-radio label="Canina" value="Canina" />
+                <v-radio label="Felina" value="Felina" />
+                <v-radio label="Outra" value="Outra" />
               </v-radio-group>
 
-              <inputText v-if="especie === 'especieOutra'" label="Especificar Outra Espécie*" type="text" required
+              <inputText v-if="especie === 'Outra'" label="Especificar Outra Espécie*" type="text" required
                 v-model:valueInput="textInputs['input-especificar-outra-especie']"
                 id="input-especificar-outra-especie" />
             </div>
@@ -87,11 +87,11 @@
             <p>Castrado?*</p>
             <div class="row-info-radios">
               <v-radio-group v-model="castrado" inline max-width="150px">
-                <v-radio label="Sim" value="castradoS" />
-                <v-radio label="Não" value="castradoN" />
+                <v-radio label="Sim" value="sim" />
+                <v-radio label="Não" value="nao" />
               </v-radio-group>
 
-              <inputText v-if="castrado === 'castradoS'" label="Data*" type="date" :ocultaContador="true"
+              <inputText v-if="castrado === 'sim'" label="Data*" type="date" :ocultaContador="true"
                 v-model:valueInput="textInputs['input-data-castracao']" />
             </div>
 
@@ -159,6 +159,8 @@
             <p>Informações de Endereço</p>
             <v-col>
               <v-row class="row-info-basicas">
+                <inputText label="CEP*" classe="input-locador" type="text" required
+                  v-model:valueInput="textInputs[`input-cep`]" id="input-cep" />
                 <inputText label="Estado*" classe="input-locador" type="text" required
                   v-model:valueInput="textInputs[`input-estado`]" id="input-estado" />
 
@@ -203,12 +205,12 @@
             <!-- Tabela de Vermífugos -->
             <v-data-table v-if="vermifugos.length" :headers="headers" :items="vermifugos"
               class="elevation-1 table-protocolo mt-5" no-data-text="Nenhum vermífugo cadastrado.">
-              <template #item.dataAplicacao="{ item }">
-                {{ formatDateNoTimezone(item.dataAplicacao) }}
+              <template #item.data_aplicacao="{ item }">
+                {{ formatDateNoTimezone(item.data_aplicacao) }}
 
               </template>
-              <template #item.dataProximaDose="{ item }">
-                {{ formatDateNoTimezone(item.dataProximaDose) }}
+              <template #item.data_proxima_dose="{ item }">
+                {{ formatDateNoTimezone(item.data_proxima_dose) }}
               </template>
               <!-- Ícone Excluir  -->
               <template #item.acoes="{ item, index }">
@@ -235,11 +237,11 @@
             <!-- ======================= TABELA DE VACINAS ======================= -->
             <v-data-table v-if="vacinas.length" :headers="headersVacina" :items="vacinas"
               class="elevation-1 table-protocolo mt-5" no-data-text="Nenhuma vacina cadastrada.">
-              <template #item.dataAplicacao="{ item }">
-                {{ formatDateNoTimezone(item.dataAplicacao) }}
+              <template #item.data_aplicacao="{ item }">
+                {{ formatDateNoTimezone(item.data_aplicacao) }}
               </template>
-              <template #item.dataProximaDose="{ item }">
-                {{ formatDateNoTimezone(item.dataProximaDose) }}
+              <template #item.data_proxima_dose="{ item }">
+                {{ formatDateNoTimezone(item.data_proxima_dose) }}
               </template>
               <!-- Ícone Excluir -->
               <template #item.acoes="{ item, index }">
@@ -302,12 +304,8 @@
     <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
   </v-container>
 
- <ModalVacina
-  :isOpen="dialogVacina"
-  @vacinaCadastrado="handleModalVacinaClose"
-  @update:isOpen="dialogVacina = $event"
-  :id_animal="0"
-/>
+  <ModalVacina :isOpen="dialogVacina" @vacinaCadastrado="handleModalVacinaClose" @update:isOpen="dialogVacina = $event"
+    :id_animal="0" />
 
   <ModalVermifugo :isOpen="dialogVermifugo" @vermifugoCadastrado="handleModalVermifugoClose"
     @update:isOpen="dialogVermifugo = $event" />
@@ -316,6 +314,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router' // <-- ✅ importa o useRoute
 import { useAppStore } from '@/modules/commons/store'
 
 // COMPONENTES
@@ -326,14 +325,16 @@ import ModalVermifugo from './ModalVermifugo.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 
 // SERVICES
-import { salvarPaciente, salvarVermifugos, salvarVacinas } from '@/services/paciente'
+import { salvarPaciente, salvarVermifugos, salvarVacinas, recuperarPaciente } from '@/services/paciente'
 import { salvarTutor, recuperarTutores } from '@/services/tutor'
 import { replaceCommaWithDot, formatDateNoTimezone } from '@/utils/formaUtils'
 
-
 const appStore = useAppStore()
-
 defineOptions({ name: 'PacienteCadastro' })
+
+// ✅ Agora usamos a rota para pegar o ID
+const route = useRoute()
+const idPacienteRota = Number(route.params.id) || 0
 
 // Estado geral
 const tab = ref('paciente')
@@ -360,14 +361,14 @@ const vacinas = ref<any[]>([])
 
 const headers = [
   { title: 'Nome', key: 'nome' },
-  { title: 'Data da Aplicação', key: 'dataAplicacao' },
-  { title: 'Data da Próxima Dose', key: 'dataProximaDose' },
+  { title: 'Data da Aplicação', key: 'data_aplicacao' },
+  { title: 'Data da Próxima Dose', key: 'data_proxima_dose' },
   { title: 'Ações', key: 'acoes', sortable: false }
 ]
 const headersVacina = [
   { title: 'Nome', key: 'nome' },
-  { title: 'Data da Aplicação', key: 'dataAplicacao' },
-  { title: 'Data da Próxima Dose', key: 'dataProximaDose' },
+  { title: 'Data da Aplicação', key: 'data_aplicacao' },
+  { title: 'Data da Próxima Dose', key: 'data_proxima_dose' },
   { title: 'Ações', key: 'acoes', sortable: false }
 ]
 
@@ -410,41 +411,29 @@ function onPhoneInput(index: number, event: Event) {
   const digits = input.value.replace(/\D/g, '').slice(0, 11)
   phones.value[index].number = formatPhoneNumberRaw(digits)
 }
+
 // Validação para números com até 2 casas decimais
 const validateDecimalInput = (event: Event) => {
-  const inputElement = event.target as HTMLInputElement;
-
-  // 1. Só dígitos
-  let digits = inputElement.value.replace(/\D/g, '');
-
-  // 2. Remove zeros à esquerda,
-  //    mas garante pelo menos “0” para não ficar string vazia
-  digits = digits.replace(/^0+/, '');
-  if (digits === '') digits = '0';
-
-  // 3. Limita a 8 dígitos (6 + 2)
-  if (digits.length > 8) digits = digits.slice(0, 8);
-
-  // 4. Monta o valor com vírgula
-  let formatted: string;
+  const inputElement = event.target as HTMLInputElement
+  let digits = inputElement.value.replace(/\D/g, '')
+  digits = digits.replace(/^0+/, '')
+  if (digits === '') digits = '0'
+  if (digits.length > 8) digits = digits.slice(0, 8)
+  let formatted: string
   if (digits.length <= 2) {
-    // até 2 dígitos → centavos
-    formatted = '0,' + digits.padStart(2, '0');
+    formatted = '0,' + digits.padStart(2, '0')
   } else {
-    const before = digits.slice(0, -2).slice(-6); // máximo 6
-    const after = digits.slice(-2);
-    formatted = `${before},${after}`;
+    const before = digits.slice(0, -2).slice(-6)
+    const after = digits.slice(-2)
+    formatted = `${before},${after}`
   }
-
-  // 5. Atualiza input / v‑model só se mudou
   if (inputElement.value !== formatted) {
-    inputElement.value = formatted;
-    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-
-    const id = inputElement.id;
-    if (textInputs.value && id) textInputs.value[id] = formatted;
+    inputElement.value = formatted
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+    const id = inputElement.id
+    if (textInputs.value && id) textInputs.value[id] = formatted
   }
-};
+}
 
 // Formatação de CPF
 function formatCpf(value: string): string {
@@ -477,7 +466,6 @@ function resetFormCustom() {
 }
 
 async function submit() {
-  // validação dos obrigatórios
   const obrigatoriosPreenchidos =
     textInputs.value['input-nome'] &&
     textInputs.value['input-data-nascimento-animal'] &&
@@ -493,10 +481,9 @@ async function submit() {
   }
 
   if (idTutor.value === 0) {
-    await salvaTutor();
+    await salvaTutor()
   }
-  await salvaPaciente();
-
+  await salvaPaciente()
 }
 
 const idPaciente = ref(0)
@@ -506,7 +493,7 @@ const salvaPaciente = async () => {
     const dados = {
       nome: textInputs.value['input-nome'],
       tipo: origem.value,
-      especie: especie.value,
+      especie: especie.value === 'Outra' ? textInputs.value['input-especificar-outra-especie'] : especie.value,
       data_nascimento: textInputs.value['input-data-nascimento-animal'],
       peso: replaceCommaWithDot(textInputs.value['input-peso']),
       raca: textInputs.value['input-raca'],
@@ -516,14 +503,14 @@ const salvaPaciente = async () => {
       castrado: castrado.value === 'sim' ? true : false,
       data_castracao: textInputs.value['input-data-castracao'],
       observacao: textarea.value.ObservacoesGerais,
-      tutor: idTutor.value,
+      tutor_id: idTutor.value,
       clinica
     }
     const response = await salvarPaciente(dados)
-    idPaciente.value = response.id;
+    idPaciente.value = response.id
 
-    await salvaVermifugo();
-    await salvaVacina();
+    await salvaVermifugo()
+    await salvaVacina()
   } catch (error: any) {
     if (error.tipo === 'VALIDATION' && error.errors) {
       const firstKey = Object.keys(error.errors)[0]
@@ -533,7 +520,6 @@ const salvaPaciente = async () => {
     } else {
       alertMessage.value = 'Ocorreu um erro inesperado ao salvar o paciente.'
     }
-
     alertType.value = 'error'
     showAlert.value = true
     setTimeout(() => (showAlert.value = false), 5000)
@@ -543,20 +529,34 @@ const salvaPaciente = async () => {
 const salvaTutor = async () => {
   try {
     const dados = {
-      pessoa: {
-        nome_completo: textInputs.value[`input-nome-tutor`],
-        cpf: textInputs.value['input-cpf'],
-        data_nascimento: textInputs.value['input-data-nascimento-tutor']
-      },
+      nome_completo: textInputs.value['input-nome-tutor'],
+      cpf: textInputs.value['input-cpf'],
+      data_nascimento: textInputs.value['input-data-nascimento-tutor'],
       observacoes: textarea.value.ObservacoesGeraisTutor,
-      ativo: true
+      ativo: true,
+      enderecos: [
+        {
+          cep: textInputs.value['input-cep'],
+          estado: textInputs.value['input-estado'],
+          cidade: textInputs.value['input-cidade'],
+          bairro: textInputs.value['input-bairro'],
+          rua: textInputs.value['input-rua'],
+          numero: textInputs.value['input-numero-endereco'],
+          complemento: textInputs.value['input-complemento']
+        }
+      ],
+      contatos: [
+        {
+          email: textInputs.value['input-email'],
+          telefones: phones.value.map(p => ({ numero: p.number }))
+        }
+      ]
     }
-
-    const response = await salvarTutor(dados);
+    const response = await salvarTutor(dados)
+    idTutor.value = response.id
     alertMessage.value = 'Tutor cadastrado com sucesso!'
     alertType.value = 'success'
     showAlert.value = true
-
     setTimeout(() => (showAlert.value = false), 5000)
   } catch (error: any) {
     if (error.tipo === 'VALIDATION' && error.errors) {
@@ -567,13 +567,62 @@ const salvaTutor = async () => {
     } else {
       alertMessage.value = 'Ocorreu um erro inesperado ao salvar o tutor.'
     }
-
     alertType.value = 'error'
     showAlert.value = true
     setTimeout(() => (showAlert.value = false), 5000)
   }
 }
 
+// Função para carregar paciente existente e preencher o formulário
+async function carregarPaciente(id: number) {
+  try {
+    isLoading.value = true
+    const response = await recuperarPaciente(id)
+
+    origem.value = response.tipo
+    especie.value = response.especie
+    textInputs.value['input-nome'] = response.nome
+    textInputs.value['input-data-nascimento-animal'] = response.data_nascimento
+    textInputs.value['input-peso'] = response.peso.replace('.', ',')
+    textInputs.value['input-raca'] = response.raca
+    textInputs.value['input-pelagem'] = response.pelagem
+    porte.value = response.porte
+    sexo.value = response.sexo
+    castrado.value = response.castrado ? 'sim' : 'nao'
+    textInputs.value['input-data-castracao'] = response.data_castracao || ''
+    textarea.value.ObservacoesGerais = response.observacao || ''
+
+    const tutor = response.tutor
+    idTutor.value = tutor.id
+    textInputs.value['input-nome-tutor'] = tutor.nome_completo
+    textInputs.value['input-cpf'] = tutor.cpf
+    textInputs.value['input-data-nascimento-tutor'] = tutor.data_nascimento
+    textarea.value.ObservacoesGeraisTutor = tutor.observacoes || ''
+
+    const endereco = tutor.enderecos?.[0] || {}
+    textInputs.value['input-cep'] = endereco.cep || ''
+    textInputs.value['input-estado'] = endereco.estado || ''
+    textInputs.value['input-cidade'] = endereco.cidade || ''
+    textInputs.value['input-bairro'] = endereco.bairro || ''
+    textInputs.value['input-rua'] = endereco.rua || ''
+    textInputs.value['input-numero-endereco'] = endereco.numero || ''
+    textInputs.value['input-complemento'] = endereco.complemento || ''
+
+    const contato = tutor.contatos?.[0] || {}
+    textInputs.value['input-email'] = contato.email || ''
+    phones.value = contato.telefones?.map((t: any) => ({ number: t.numero })) || [{ number: '' }]
+
+    vacinas.value = response.vacinas || []
+    vermifugos.value = response.vermifugos || []
+  } catch (error) {
+    console.error('Erro ao carregar paciente:', error)
+    alertMessage.value = 'Erro ao carregar dados do paciente.'
+    alertType.value = 'error'
+    showAlert.value = true
+  } finally {
+    isLoading.value = false
+  }
+}
 
 const salvaVermifugo = async () => {
   try {
@@ -587,10 +636,8 @@ const salvaVermifugo = async () => {
         observacao: v.observacao || '',
         dosagem: v.dosagem
       }
-
       await salvarVermifugos(idPaciente.value, dados)
     }
-
     alert('Vermífugos salvos com sucesso!')
   } catch (error: any) {
     console.error('Erro ao salvar vermífugos:', error)
@@ -609,17 +656,14 @@ const salvaVacina = async () => {
         lote: v.lote,
         observacao: v.observacao || ''
       }
-
       await salvarVacinas(idPaciente.value, dados)
     }
-
     alert('Vacinas salvas com sucesso!')
   } catch (error: any) {
     console.error('Erro ao salvar vacinas:', error)
     alert('Erro ao salvar vacinas.')
   }
 }
-
 
 function handleModalVermifugoClose(novoVermifugo?: any) {
   dialogVermifugo.value = false
@@ -667,15 +711,14 @@ function removerVermifugo(index: number) {
   vermifugos.value.splice(index, 1)
 }
 
-
 // TUTORES
 const listTutores = ref<any[]>([])
 const searchTutor = ref('')
 const headersTutores = [
   { title: 'id', key: 'id' },
-  { title: 'Nome', key: 'pessoa.nome_completo' },
-  { title: 'CPF', key: 'pessoa.cpf' },
-  { title: 'Data Nasc.', key: 'pessoa.data_nascimento' },
+  { title: 'Nome', key: 'nome_completo' },
+  { title: 'CPF', key: 'cpf' },
+  { title: 'Data Nasc.', key: 'data_nascimento' },
   { title: 'Clínica', key: 'clinica' },
   { title: 'Observações', key: 'observacoes' },
   { title: 'Ação', key: 'acao', sortable: false }
@@ -686,37 +729,38 @@ const filteredTutores = computed(() => {
   const term = searchTutor.value.toLowerCase()
   return listTutores.value.filter(
     t =>
-      t.pessoa.nome_completo.toLowerCase().includes(term) ||
-      t.pessoa.cpf.toLowerCase().includes(term)
+      t.nome_completo.toLowerCase().includes(term) ||
+      t.cpf.toLowerCase().includes(term)
   )
 })
 
 // Selecionar tutor e preencher campos
 function selecionarTutor(tutor: any) {
-  textInputs.value['input-nome-tutor'] = tutor.pessoa.nome_completo
-  textInputs.value['input-cpf'] = tutor.pessoa.cpf
-  textInputs.value['input-data-nascimento-tutor'] = tutor.pessoa.data_nascimento
+  textInputs.value['input-nome-tutor'] = tutor.nome_completo
+  textInputs.value['input-cpf'] = tutor.cpf
+  textInputs.value['input-data-nascimento-tutor'] = tutor.data_nascimento
   textarea.value.ObservacoesGeraisTutor = tutor.observacoes
   dialogTutores.value = false
   idTutor.value = tutor.id
 }
 
-
 const loadComboTutores = async () => {
   try {
-    const response = await recuperarTutores();
-    listTutores.value = response;
-  } finally {
-
-  }
+    const response = await recuperarTutores()
+    listTutores.value = response
+  } finally {}
 }
 
 onMounted(async () => {
-  isLoading.value = true;
+  isLoading.value = true
   await loadComboTutores()
-  isLoading.value = false;
+  if (idPacienteRota && idPacienteRota > 0) {
+    await carregarPaciente(idPacienteRota)
+  }
+  isLoading.value = false
 })
 </script>
+
 
 
 
