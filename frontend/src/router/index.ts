@@ -54,7 +54,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       // Pacientes
       { path: 'pacientes', name: 'Home', component: PacientesList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
-      { path: 'pacientes/cadastrar/:id', name: 'PacienteCadastrar', component: PacienteCadastro, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
+      { path: 'pacientes/cadastrar/:id?', name: 'PacienteCadastrar', component: PacienteCadastro, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
       { path: 'pacientes/visualizar/:id', name: 'PacienteVisualizar', component: PacienteVisualizar, props: true, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
 
       // Veterinários

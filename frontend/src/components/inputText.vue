@@ -1,11 +1,15 @@
 <template>
-  <div class="input-text-container mb-4">
-    <v-text-field :label="label" :type="type" :model-value="valueInput" class="inputPadrao"
+  <div class="input-text-container">
+    <v-text-field :label="label" :type="type" :model-value="valueInput"
       @update:model-value="handleInput" 
-      :class="{
-        'filled-class': valueInput,
-        'error-field': showError
-      }" 
+      :class="[
+        'inputPadrao', 
+        classe,
+        { 
+          'filled-class': valueInput,
+          'error-field': showError
+        }
+      ]"
       :id="id" 
       :suffix="suffix" 
       :prefix="prefix" 
@@ -167,10 +171,19 @@ export default {
 
 <style lang="scss">
 .inputPadrao {
-  min-width: 100px;
   max-width: 540px;
   border: none !important;
   border-radius: 10px !important;
+
+  &.grande {
+    min-width: 300px;
+  }
+  &.pequeno {
+    min-width: 100px;
+  }
+   &.medio {
+    min-width: 200px;
+  }
 
   .v-input__details {
     position: absolute;
@@ -237,6 +250,12 @@ export default {
   .v-field--variant-outlined.v-field--focused .v-field__outline {
     --v-field-border-width: 1px;
     color: var(--cinza-escuro, #797979);
+  }
+   .v-field.v-field--active.v-field--center-affix.v-field--disabled.v-field--dirty.v-field--variant-outlined.v-theme--light.v-locale--is-ltr .v-field__outline {
+    color: var(--cinza-escuro, #a5a5a572)!important;
+    label.v-label.v-field-label.v-field-label--floating {
+        color: var(--cinza-escuro, #a5a5a572)!important;
+    }
   }
 
   .v-field--variant-outlined .v-label.v-field-label--floating {
