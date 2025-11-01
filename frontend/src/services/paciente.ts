@@ -47,11 +47,11 @@ async function recuperarPaciente(id: number) {
     return await API.get(`/pacientes/animais/${id}`);
 }
 
-async function salvarVacinas(id: number, payload: Protocolo) {
+async function salvarVacinas(id?: number, payload?: Protocolo) {
     return await API.post(`/pacientes/animais/${id}/vacinas/`, payload);
 }
 
-async function editarVacinas(id: number, payload: Protocolo) {
+async function editarVacinas(id?: number, payload?: Protocolo) {
     return await API.put(`/pacientes/vacinas/${id}/`, payload);
 }
 

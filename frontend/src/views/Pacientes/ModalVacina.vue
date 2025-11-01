@@ -44,17 +44,20 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, watch, ref } from 'vue';
+import { defineProps, defineEmits, watch, ref, onMounted } from 'vue';
+import { salvarVacinas, editarVacinas } from '@/services/paciente';
 
 // COMPONENTES
 import inputText from '@/components/inputText.vue';
 import TextArea from '@/components/textArea.vue';
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue';
 
-const props = defineProps<{
-    isOpen: boolean;
-    id_animal: number;
-}>();
+const props = defineProps({
+    modoEdicao: Boolean,
+    vacinaSelecionada: Object,
+    isOpen: Boolean,
+    id_animal: Number
+})
 
 const dialogVisible = ref(props.isOpen);
 const showModalConfirmation = ref(false);
@@ -64,13 +67,23 @@ const textarea = ref({ vacinas: '' });
 const showAlert = ref(false);
 const alertMessage = ref('');
 const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error');
+const idVacinaSeleciona = ref()
 
 const emit = defineEmits<{
     (e: 'update:isOpen', value: boolean): void;
-    (e: 'vacinaCadastrado', novaVacina: any): void; // <--- agora envia os dados
+    (e: 'vacinaCadastrado', novaVacina: any): void; 
 }>();
 
 watch(() => props.isOpen, (val: boolean) => {
+    if (props.modoEdicao && props.vacinaSelecionada) {
+        textInputs.value['input-nome'] = props.vacinaSelecionada.nome || '';
+        textInputs.value['input-fabricante'] = props.vacinaSelecionada.fabricante || '';
+        textInputs.value['input-lote'] = props.vacinaSelecionada.lote || '';
+        textInputs.value['input-data-aplicacao'] = props.vacinaSelecionada.data_aplicacao || '';
+        textInputs.value['input-data-prox-aplicacao'] = props.vacinaSelecionada.data_proxima_dose || '';
+        textarea.value.vacinas = props.vacinaSelecionada.observacao || '';
+        idVacinaSeleciona.value = props.vacinaSelecionada.id;
+    }
     dialogVisible.value = val;
 });
 
@@ -100,8 +113,7 @@ const cadastrarVacina = async () => {
         return;
     }
 
-    // monta o objeto para enviar ao backend
-    const dados = {
+    const dados: any = {
         nome: textInputs.value['input-nome'],
         data_aplicacao: textInputs.value['input-data-aplicacao'],
         data_proxima_dose: textInputs.value['input-data-prox-aplicacao'],
@@ -113,15 +125,25 @@ const cadastrarVacina = async () => {
     try {
         isLoading.value = true;
 
-        // const response = await salvarVacinas(props.id_animal, dados);
-        // supondo sucesso:
-        emit('vacinaCadastrado', dados); // <--- envia para o componente pai
+        if (props.modoEdicao && !props.vacinaSelecionada) {
+            const response = await salvarVacinas(props.id_animal, dados);
+            dados.id = response.id;
+        }
+
+        if(props.modoEdicao && props.vacinaSelecionada){
+            await editarVacinas(idVacinaSeleciona.value, dados)
+        }
+
+        if (!props.vacinaSelecionada){
+            emit('vacinaCadastrado', dados);
+        } else {
+            cancel();
+        }
 
         alertMessage.value = 'Vacina cadastrada com sucesso!';
         alertType.value = 'success';
         showAlert.value = true;
 
-        // fecha modal automaticamente
         setTimeout(() => {
             showAlert.value = false;
             dialogVisible.value = false;
@@ -135,6 +157,7 @@ const cadastrarVacina = async () => {
         isLoading.value = false;
     }
 };
+
 </script>
 
 <style lang="scss">

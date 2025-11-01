@@ -40,8 +40,8 @@
                 <v-radio label="Outra" value="Outra" />
               </v-radio-group>
 
-              <inputText v-if="especie === 'Outra'" label="Especificar Outra Espécie*" type="text" required :ocultaContador="true"
-                v-model:valueInput="textInputs['input-especificar-outra-especie']"
+              <inputText v-if="especie === 'Outra'" label="Especificar Outra Espécie*" type="text" required
+                :ocultaContador="true" v-model:valueInput="textInputs['input-especificar-outra-especie']"
                 id="input-especificar-outra-especie" />
             </div>
 
@@ -49,21 +49,21 @@
             <v-col>
               <v-row class="row-info-basicas">
                 <inputText label="Nome*" type="text" required v-model:valueInput="textInputs['input-nome']"
-                  id="input-nome" @update:valueInput="(value: any) => updateInput('input-nome', value)" :ocultaContador="true"/>
+                  id="input-nome" @update:valueInput="(value: any) => updateInput('input-nome', value)"
+                  :ocultaContador="true" />
                 <inputText label="Data de Nascimento*" type="date" :ocultaContador="true"
                   v-model:valueInput="textInputs['input-data-nascimento-animal']" />
               </v-row>
 
               <v-row class="row-info-basicas">
-                <inputText label="Peso*" type="text" required suffix="Kg"
-                  v-model:valueInput="textInputs['input-peso']" :id="'input-peso'" @input="validateDecimalInput($event)"
-                  :maxLength="0" :ocultaContador="true" />
+                <inputText label="Peso*" type="text" required suffix="Kg" v-model:valueInput="textInputs['input-peso']"
+                  :id="'input-peso'" @input="validateDecimalInput($event)" :maxLength="0" :ocultaContador="true" />
 
-                <inputText label="Raça*" type="text" required
-                  v-model:valueInput="textInputs['input-raca']" id="input-raca" :ocultaContador="true" />
+                <inputText label="Raça*" type="text" required v-model:valueInput="textInputs['input-raca']"
+                  id="input-raca" :ocultaContador="true" />
 
-                <inputText label="Pelagem*" type="text" required
-                  v-model:valueInput="textInputs['input-pelagem']" id="input-pelagem" :ocultaContador="true"/>
+                <inputText label="Pelagem*" type="text" required v-model:valueInput="textInputs['input-pelagem']"
+                  id="input-pelagem" :ocultaContador="true" />
               </v-row>
             </v-col>
 
@@ -122,37 +122,42 @@
             <v-col>
               <v-row class="row-info-basicas">
                 <inputText label="Nome do Responsável*" :classe="'grande'" type="text" required :ocultaContador="true"
-                  v-model:valueInput="textInputs['input-nome-tutor']" id="input-nome-tutor" :disabled="bloquearEdicaoTutor" />
+                  v-model:valueInput="textInputs['input-nome-tutor']" id="input-nome-tutor"
+                  :disabled="bloquearEdicaoTutor" />
               </v-row>
 
               <v-row class="row-info-basicas">
                 <inputText label="CPF*" type="text" v-model:valueInput="textInputs['input-cpf']" id="input-cpf"
-                  :maxLength="14" required :ocultaContador="true"  :disabled="bloquearEdicaoTutor"  />
+                  :maxLength="14" required :ocultaContador="true" :disabled="bloquearEdicaoTutor" />
                 <inputText label="Data de Nascimento*" type="date" :ocultaContador="true"
-                  v-model:valueInput="textInputs['input-data-nascimento-tutor']"  :classe="'medio'" :disabled="bloquearEdicaoTutor"  />
+                  v-model:valueInput="textInputs['input-data-nascimento-tutor']" :classe="'medio'"
+                  :disabled="bloquearEdicaoTutor" />
               </v-row>
             </v-col>
             <!-- Contatos -->
             <p>Informações para Contato</p>
             <v-col>
               <v-row class="row-info-basicas" v-for="(item, index) in phones" :key="index">
-                <inputText  :disabled="bloquearEdicaoTutor"  label="Telefone*" type="text" required
+                <inputText :disabled="bloquearEdicaoTutor" label="Telefone*" type="text" required
                   @input="onPhoneInput(index, $event)" v-model:valueInput="item.number" :id="'input-telefone-' + index"
                   :maxLength="0" :ocultaContador="true" />
 
                 <!-- Botões de adicionar / remover só no modo edição -->
 
-                <v-btn  :disabled="bloquearEdicaoTutor"  icon class="btn-padrao btn-plus-phone" @click="removePhone(index)" v-if="phones.length > 1">
+                <v-btn :disabled="bloquearEdicaoTutor" icon class="btn-padrao btn-plus-phone"
+                  @click="removePhone(index)" v-if="phones.length > 1">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
-                <v-btn  :disabled="bloquearEdicaoTutor"  icon class="btn-padrao btn-plus-phone" @click="addPhone" v-if="index === phones.length - 1">
+                <v-btn :disabled="bloquearEdicaoTutor" icon class="btn-padrao btn-plus-phone" @click="addPhone"
+                  v-if="index === phones.length - 1">
                   <v-icon>mdi-plus</v-icon>
                 </v-btn>
               </v-row>
 
               <v-row class="row-info-basicas">
-                <inputText label="E-mail*"  :classe="'grande'" type="text" required
-                  v-model:valueInput="textInputs[`input-email`]" id="input-email"  :disabled="bloquearEdicaoTutor" :ocultaContador="true" />
+                <inputText label="E-mail*" :classe="'grande'" type="text" required
+                  v-model:valueInput="textInputs[`input-email`]" id="input-email" :disabled="bloquearEdicaoTutor"
+                  :ocultaContador="true" />
               </v-row>
             </v-col>
 
@@ -161,39 +166,39 @@
             <p>Informações de Endereço</p>
             <v-col>
               <v-row class="row-info-basicas">
-                <inputText  :disabled="bloquearEdicaoTutor"  label="CEP*" type="text" required
-                  v-model:valueInput="textInputs[`input-cep`]" id="input-cep"  :ocultaContador="true"/>
-                <inputText  :disabled="bloquearEdicaoTutor"  label="Estado*" type="text" required
+                <inputText :disabled="bloquearEdicaoTutor" label="CEP*" type="text" required
+                  v-model:valueInput="textInputs[`input-cep`]" id="input-cep" :ocultaContador="true" />
+                <inputText :disabled="bloquearEdicaoTutor" label="Estado*" type="text" required
                   v-model:valueInput="textInputs[`input-estado`]" id="input-estado" :ocultaContador="true" />
 
-                <inputText  :disabled="bloquearEdicaoTutor"  label="Cidade*" type="text" required
+                <inputText :disabled="bloquearEdicaoTutor" label="Cidade*" type="text" required
                   v-model:valueInput="textInputs[`input-cidade`]" id="input-cidade" :ocultaContador="true" />
 
               </v-row>
 
               <v-row class="row-info-basicas">
-                <inputText  :disabled="bloquearEdicaoTutor"  label="Bairro*" type="text" required
-                  v-model:valueInput="textInputs[`input-bairro`]" id="input-bairro" :ocultaContador="true"/>
+                <inputText :disabled="bloquearEdicaoTutor" label="Bairro*" type="text" required
+                  v-model:valueInput="textInputs[`input-bairro`]" id="input-bairro" :ocultaContador="true" />
 
-                <inputText  :disabled="bloquearEdicaoTutor"  :classe="'grande'"  label="Rua*"  type="text" required
+                <inputText :disabled="bloquearEdicaoTutor" :classe="'grande'" label="Rua*" type="text" required
                   v-model:valueInput="textInputs[`input-rua`]" id="input-rua" :ocultaContador="true" />
 
               </v-row>
 
               <v-row class="row-info-basicas">
-                <inputText  :disabled="bloquearEdicaoTutor"  label="Número"  type="text" required
-                  v-model:valueInput="textInputs[`input-numero-endereco`]" id="input-numero-endereco" :ocultaContador="true"/>
+                <inputText :disabled="bloquearEdicaoTutor" label="Número" type="text" required
+                  v-model:valueInput="textInputs[`input-numero-endereco`]" id="input-numero-endereco"
+                  :ocultaContador="true" />
 
-                <inputText  :disabled="bloquearEdicaoTutor"  label="Complemento"  type="text" required
+                <inputText :disabled="bloquearEdicaoTutor" label="Complemento" type="text" required
                   v-model:valueInput="textInputs[`input-complemento`]" id="input-complemento" :ocultaContador="true" />
 
               </v-row>
-          
+
             </v-col>
-                <TextArea :modelValue="textarea.ObservacoesGeraisTutor"  :disabled="bloquearEdicaoTutor" 
-                @update:modelValue="(value: any) => (textarea.ObservacoesGeraisTutor = value)"
-                label="Observações" class="wrap-textarea" :maxLength="300"
-                placeholder="Detalhe algum ponto extra sobre o tutor..." />
+            <TextArea :modelValue="textarea.ObservacoesGeraisTutor" :disabled="bloquearEdicaoTutor"
+              @update:modelValue="(value: any) => (textarea.ObservacoesGeraisTutor = value)" label="Observações"
+              class="wrap-textarea" :maxLength="300" placeholder="Detalhe algum ponto extra sobre o tutor..." />
           </v-form>
         </v-tabs-window-item>
 
@@ -250,16 +255,26 @@
               <template #item.data_proxima_dose="{ item }">
                 {{ formatDateNoTimezone(item.data_proxima_dose) }}
               </template>
-              <!-- Ícone Excluir -->
+              <!-- Ícones de Ações -->
               <template #item.acoes="{ item, index }">
                 <v-tooltip text="Deletar Vacina" location="bottom" open-delay="300">
                   <template #activator="{ props }">
-                    <v-btn v-bind="props" icon color="#434343" variant="text" @click="removerVacina(index)">
+                    <v-btn v-bind="props" icon color="#434343" variant="text" @click="removerVacina(item.id, index)">
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
                   </template>
                 </v-tooltip>
+
+                <!-- Exibir ícone de edição apenas se estiver em modo edição -->
+                <v-tooltip v-if="modoEdicao" text="Editar Vacina" location="bottom" open-delay="300">
+                  <template #activator="{ props }">
+                    <v-btn v-bind="props" icon color="#1976D2" variant="text" @click="editarVacina(item)">
+                      <v-icon>mdi-pencil</v-icon>
+                    </v-btn>
+                  </template>
+                </v-tooltip>
               </template>
+
             </v-data-table>
 
 
@@ -311,8 +326,8 @@
     <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
   </v-container>
 
-  <ModalVacina :isOpen="dialogVacina" @vacinaCadastrado="handleModalVacinaClose" @update:isOpen="dialogVacina = $event"
-    :id_animal="0" />
+  <ModalVacina :modoEdicao="modoEdicao" :vacinaSelecionada="vacinaSelecionada" :isOpen="dialogVacina"
+    @vacinaCadastrado="handleModalVacinaClose" @update:isOpen="dialogVacina = $event" :id_animal="idPacienteRota" />
 
   <ModalVermifugo :isOpen="dialogVermifugo" @vermifugoCadastrado="handleModalVermifugoClose"
     @update:isOpen="dialogVermifugo = $event" />
@@ -321,7 +336,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router' // <-- ✅ importa o useRoute
+import { useRoute } from 'vue-router'
 import { useAppStore } from '@/modules/commons/store'
 
 // COMPONENTES
@@ -332,7 +347,7 @@ import ModalVermifugo from './ModalVermifugo.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 
 // SERVICES
-import { salvarPaciente, editarPaciente, salvarVermifugos, salvarVacinas, recuperarPaciente } from '@/services/paciente'
+import { salvarPaciente, editarPaciente, salvarVermifugos, salvarVacinas, deletarVacinas, recuperarPaciente } from '@/services/paciente'
 import { salvarTutor, editarTutor, recuperarTutores } from '@/services/tutor'
 import { replaceCommaWithDot, formatDateNoTimezone, formatCpf } from '@/utils/formaUtils'
 
@@ -350,6 +365,7 @@ const isLoading = ref(false)
 const dialogTutores = ref(false)
 const showModalConfirmation = ref(false)
 const bloquearEdicaoTutor = ref(false)
+const modoEdicao = ref(false)
 
 // Controle de alertas e mensagens
 const showAlert = ref(false)
@@ -710,9 +726,28 @@ function handleModalVermifugoClose(novoVermifugo?: any) {
   }
 }
 
-function removerVacina(index: number) {
-  vacinas.value.splice(index, 1)
+const removerVacina = async (item: any, index: number) => {
+  try {
+    if (modoEdicao.value) {
+      await deletarVacinas(item)
+    }
+    vacinas.value.splice(index, 1)
+  } catch (error: any) {
+    alertMessage.value = error?.msg || 'Ocorreu um erro inesperado';
+    alertType.value = 'error';
+    showAlert.value = true;
+    setTimeout(() => (showAlert.value = false), 5000);
+  }
 }
+const vacinaSelecionada = ref<any | null>(null)
+
+const editarVacina = (vacina: any) => {
+  // Define os dados da vacina selecionada no modal
+  vacinaSelecionada.value = vacina
+  modoEdicao.value = true
+  dialogVacina.value = true
+}
+
 
 function handleModalVacinaClose(novaVacina?: any) {
   dialogVacina.value = false
@@ -724,10 +759,11 @@ function handleModalVacinaClose(novaVacina?: any) {
   if (novaVacina) {
     vacinas.value.push({
       nome: novaVacina.nome,
-      dataAplicacao: novaVacina.data_aplicacao,
-      dataProximaDose: novaVacina.data_proxima_dose,
+      data_aplicacao: novaVacina.data_aplicacao,
+      data_proxima_dose: novaVacina.data_proxima_dose,
       fabricante: novaVacina.fabricante,
-      lote: novaVacina.lote
+      lote: novaVacina.lote,
+      id: novaVacina.id
     })
   }
 }
@@ -781,6 +817,8 @@ onMounted(async () => {
   isLoading.value = true
   await loadComboTutores()
   if (idPacienteRota && idPacienteRota > 0) {
+    console.log("aqui")
+    modoEdicao.value = true
     bloquearEdicaoTutor.value = true
     await carregarPaciente(idPacienteRota)
   }
