@@ -83,6 +83,8 @@ watch(() => props.isOpen, (val: boolean) => {
         textInputs.value['input-data-prox-aplicacao'] = props.vacinaSelecionada.data_proxima_dose || '';
         textarea.value.vacinas = props.vacinaSelecionada.observacao || '';
         idVacinaSeleciona.value = props.vacinaSelecionada.id;
+    } else {
+        limparCampos()
     }
     dialogVisible.value = val;
 });
@@ -91,9 +93,14 @@ watch(dialogVisible, (val: boolean) => {
     emit('update:isOpen', val);
 });
 
+function limparCampos() {
+  Object.keys(textInputs.value).forEach((key) => (textInputs.value[key] = ''))
+  textarea.value.vacinas = ''
+  idVacinaSeleciona.value = undefined
+}
+
 function cancel() {
-    textInputs.value = {};
-    textarea.value.vacinas = '';
+    limparCampos()
     dialogVisible.value = false;
 }
 
@@ -132,22 +139,11 @@ const cadastrarVacina = async () => {
 
         if(props.modoEdicao && props.vacinaSelecionada){
             await editarVacinas(idVacinaSeleciona.value, dados)
+            dados.id = idVacinaSeleciona.value
         }
 
-        if (!props.vacinaSelecionada){
-            emit('vacinaCadastrado', dados);
-        } else {
-            cancel();
-        }
+        emit('vacinaCadastrado', dados);
 
-        alertMessage.value = 'Vacina cadastrada com sucesso!';
-        alertType.value = 'success';
-        showAlert.value = true;
-
-        setTimeout(() => {
-            showAlert.value = false;
-            dialogVisible.value = false;
-        }, 2000);
     } catch (error: any) {
         alertMessage.value = error?.msg || 'Ocorreu um erro inesperado';
         alertType.value = 'error';

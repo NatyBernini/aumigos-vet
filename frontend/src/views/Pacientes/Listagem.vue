@@ -53,10 +53,6 @@
           <v-btn icon color="#434343" variant="text" @click="visualizar(item.id)">
             <v-icon>mdi-eye</v-icon>
           </v-btn>
-
-          <v-btn icon color="#434343" variant="text" @click="editar(item)">
-            <v-icon>mdi-pencil</v-icon>
-          </v-btn>
         </template>
 
         <!-- Rodapé -->
@@ -183,9 +179,7 @@ function visualizar(id: number) {
   router.push({ name: 'PacienteCadastrar', params: { id } })
 }
 
-function editar(item: any) {
-  console.log('Editar:', item)
-}
+
 
 // 🔹 Carregar pacientes
 const loadPacientes = async () => {

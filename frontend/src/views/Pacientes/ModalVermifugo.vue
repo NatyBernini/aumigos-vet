@@ -11,66 +11,29 @@
       </v-card-title>
 
       <v-card-text class="w-100 d-flex flex-column flex-wrap ga-4">
-        <v-alert
-          v-if="showAlert"
-          :type="alertType"
-          class="mt-3"
-          dismissible
-          @click:close="showAlert = false"
-        >
+        <v-alert v-if="showAlert" :type="alertType" class="mt-3" dismissible @click:close="showAlert = false">
           {{ alertMessage }}
         </v-alert>
 
-        <inputText
-          label="Nome do Vermífugo*"
-          type="text"
-          :ocultaContador="true"
-          v-model:valueInput="textInputs['input-nome']"
-        />
+        <inputText label="Nome do Vermífugo*" type="text" :ocultaContador="true"
+          v-model:valueInput="textInputs['input-nome']" />
 
-        <inputText
-          label="Fabricante"
-          type="text"
-          :ocultaContador="true"
-          v-model:valueInput="textInputs['input-fabricante']"
-        />
+        <inputText label="Fabricante*" type="text" :ocultaContador="true"
+          v-model:valueInput="textInputs['input-fabricante']" />
 
-        <inputText
-          label="Lote"
-          type="text"
-          :ocultaContador="true"
-          v-model:valueInput="textInputs['input-lote']"
-        />
+        <inputText label="Lote*" type="text" :ocultaContador="true" v-model:valueInput="textInputs['input-lote']" />
 
-        <inputText
-          label="Dosagem"
-          type="text"
-          :ocultaContador="true"
-          v-model:valueInput="textInputs['input-dosagem']"
-        />
+        <inputText label="Dosagem" type="text" :ocultaContador="true"
+          v-model:valueInput="textInputs['input-dosagem']" />
 
-        <inputText
-          label="Data de Aplicação*"
-          type="date"
-          :ocultaContador="true"
-          v-model:valueInput="textInputs['input-data-aplicacao']"
-        />
+        <inputText label="Data de Aplicação*" type="date" :ocultaContador="true"
+          v-model:valueInput="textInputs['input-data-aplicacao']" />
 
-        <inputText
-          label="Data da Próxima Dose*"
-          type="date"
-          :ocultaContador="true"
-          v-model:valueInput="textInputs['input-data-prox-dose']"
-        />
+        <inputText label="Data da Próxima Dose*" type="date" :ocultaContador="true"
+          v-model:valueInput="textInputs['input-data-prox-dose']" />
 
-        <TextArea
-          :modelValue="textarea.vermifugos"
-          @update:modelValue="(value: any) => (textarea.vermifugos = value)"
-          label="Observações"
-          class="wrap-textarea"
-          :maxLength="300"
-          placeholder="Observações..."
-        />
+        <TextArea :modelValue="textarea.vermifugos" @update:modelValue="(value: any) => (textarea.vermifugos = value)"
+          label="Observações" class="wrap-textarea" :maxLength="300" placeholder="Observações..." />
 
         <div class="container-btn mt-5">
           <p class="msg-auxiliar">Campos obrigatórios*</p>
@@ -89,59 +52,63 @@
     </v-container>
   </v-dialog>
 
-  <modalCamposObrigatorios
-    v-if="!isLoading"
-    :isOpen="showModalConfirmation"
-    @update:isOpen="showModalConfirmation = $event"
-  />
+  <modalCamposObrigatorios v-if="!isLoading" :isOpen="showModalConfirmation"
+    @update:isOpen="showModalConfirmation = $event" />
 </template>
 
 <script setup lang="ts">
 import { defineProps, defineEmits, watch, ref } from 'vue'
+import { salvarVermifugos, editarVermifugos } from '@/services/paciente'
 
 // COMPONENTES
 import inputText from '@/components/inputText.vue'
 import TextArea from '@/components/textArea.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 
-const props = defineProps<{
-  isOpen: boolean
-}>()
-
-// Interface completa que será emitida para o pai
-interface VermifugoPayload {
-  nome: string
-  fabricante: string
-  lote: string
-  dosagem: string
-  data_aplicacao: string
-  data_proxima_dose: string
-  observacao: string
-}
+const props = defineProps({
+  modoEdicao: Boolean,
+  vermifugoSelecionado: Object,
+  isOpen: Boolean,
+  id_animal: Number
+})
 
 const emit = defineEmits<{
   (e: 'update:isOpen', value: boolean): void
-  (e: 'vermifugoCadastrado', dados: VermifugoPayload): void
+  (e: 'vermifugoCadastrado', dados: any): void
 }>()
 
 const dialogVisible = ref(props.isOpen)
 const showModalConfirmation = ref(false)
 const isLoading = ref(false)
+const loading = ref(false)
 const textInputs = ref<Record<string, string>>({})
+const textarea = ref({ vermifugos: '' })
 const showAlert = ref(false)
 const alertMessage = ref('')
 const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error')
-const textarea = ref({ vermifugos: '' })
-const loading = ref(false)
+const idVermifugoSelecionado = ref<number>()
 
-watch(
-  () => props.isOpen,
-  (val: boolean) => {
-    dialogVisible.value = val
+watch(() => props.isOpen, (val: boolean) => {
+  console.log(props.vermifugoSelecionado)
+  if (props.modoEdicao && props.vermifugoSelecionado) {
+    const v = props.vermifugoSelecionado
+    textInputs.value['input-nome'] = v.nome || ''
+    textInputs.value['input-fabricante'] = v.fabricante || ''
+    textInputs.value['input-lote'] = v.lote || ''
+    textInputs.value['input-dosagem'] = v.dosagem || ''
+    textInputs.value['input-data-aplicacao'] = v.data_aplicacao || ''
+    textInputs.value['input-data-prox-dose'] = v.data_proxima_dose || ''
+    textarea.value.vermifugos = v.observacao || ''
+    idVermifugoSelecionado.value = v.id
+  } else {
+    limparCampos()
   }
-)
+  dialogVisible.value = val
+})
 
 watch(dialogVisible, (val: boolean) => {
+  console.log("Teste", val)
+  if (val===false) limparCampos()
   emit('update:isOpen', val)
 })
 
@@ -153,41 +120,48 @@ function cancel() {
 function limparCampos() {
   Object.keys(textInputs.value).forEach((k) => (textInputs.value[k] = ''))
   textarea.value.vermifugos = ''
+  idVermifugoSelecionado.value = undefined
 }
 
 const cadastrarVermifugo = async () => {
   const obrigatoriosPreenchidos =
     textInputs.value['input-nome'] &&
+    textInputs.value['input-fabricante'] &&
+    textInputs.value['input-lote'] &&
     textInputs.value['input-data-aplicacao'] &&
-    textInputs.value['input-data-prox-dose'] 
-  
+    textInputs.value['input-data-prox-dose']
 
   if (!obrigatoriosPreenchidos) {
     showModalConfirmation.value = true
     return
   }
 
-  const dados: VermifugoPayload = {
+  const dados: any = {
     nome: textInputs.value['input-nome'],
     fabricante: textInputs.value['input-fabricante'],
     lote: textInputs.value['input-lote'],
     dosagem: textInputs.value['input-dosagem'],
     data_aplicacao: textInputs.value['input-data-aplicacao'],
     data_proxima_dose: textInputs.value['input-data-prox-dose'],
-    observacao: textarea.value.vermifugos
+    observacao: textarea.value.vermifugos || ''
   }
 
   try {
     isLoading.value = true
 
-    // Emite os dados para o componente pai
-    emit('vermifugoCadastrado', dados)
+    if (props.modoEdicao && props.vermifugoSelecionado) {
+      await editarVermifugos(idVermifugoSelecionado.value, dados)
+      dados.id = idVermifugoSelecionado.value
+    }
+    if (props.modoEdicao && !props.vermifugoSelecionado) {
+      const response = await salvarVermifugos(props.id_animal, dados)
+      dados.id = response.id
+    }
 
-    limparCampos()
-    dialogVisible.value = false
+    emit('vermifugoCadastrado', dados);
 
   } catch (error: any) {
-    alertMessage.value = 'Ocorreu um erro inesperado.'
+    alertMessage.value = error?.msg || 'Ocorreu um erro inesperado.'
     alertType.value = 'error'
     showAlert.value = true
     setTimeout(() => (showAlert.value = false), 5000)
@@ -212,7 +186,7 @@ const cadastrarVermifugo = async () => {
     color: #b0b0b0 !important;
     font-size: 18px !important;
 
-    &:hover > .v-btn__overlay {
+    &:hover>.v-btn__overlay {
       opacity: 0 !important;
     }
   }

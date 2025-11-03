@@ -207,15 +207,17 @@
           <v-form ref="form">
             <div class="info-box" v-if="!isLoading">
               <span class="span-info-box">Vermífugos
-                <v-btn color="accent" large @click.stop="dialogVermifugo = true" class="btn-padrao">
+                <v-btn color="accent" large class="btn-padrao" @click.stop="abrirModalNovoVermifugo">
                   Adicionar Vermífugo
                   <v-icon class="icon-close ml-3">mdi-pill</v-icon>
                 </v-btn>
+
               </span>
 
             </div>
             <!-- Tabela de Vermífugos -->
             <v-data-table v-if="vermifugos.length" :headers="headers" :items="vermifugos"
+              :hide-default-footer="vermifugos.length <= 5" :items-per-page="5" :items-per-page-options="[5, 10, 20]"
               class="elevation-1 table-protocolo mt-5" no-data-text="Nenhum vermífugo cadastrado.">
               <template #item.data_aplicacao="{ item }">
                 {{ formatDateNoTimezone(item.data_aplicacao) }}
@@ -228,8 +230,17 @@
               <template #item.acoes="{ item, index }">
                 <v-tooltip text="Deletar Vermífugo" location="bottom" open-delay="300">
                   <template #activator="{ props }">
-                    <v-btn v-bind="props" icon color="#434343" variant="text" @click="removerVermifugo(index)">
+                    <v-btn v-bind="props" icon color="#434343" variant="text" @click="removerVermifugo(item.id, index)">
                       <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                </v-tooltip>
+
+                <!-- Exibir ícone de edição apenas se estiver em modo edição -->
+                <v-tooltip v-if="modoEdicao" text="Editar Vermífugo" location="bottom" open-delay="300">
+                  <template #activator="{ props }">
+                    <v-btn v-bind="props" icon color="#1976D2" variant="text" @click="editarVermifugo(item)">
+                      <v-icon>mdi-pencil</v-icon>
                     </v-btn>
                   </template>
                 </v-tooltip>
@@ -240,14 +251,15 @@
 
             <div class="info-box mt-5" v-if="!isLoading">
               <span class="span-info-box">Vacinas
-                <v-btn color="accent" large @click.stop="dialogVacina = true" class="btn-padrao">
+                <v-btn color="accent" large @click.stop="abrirModalNovaVacina" class="btn-padrao">
                   Adicionar Vacina
                   <v-icon class="icon-close ml-3">mdi-needle</v-icon>
                 </v-btn>
               </span>
             </div>
             <!-- ======================= TABELA DE VACINAS ======================= -->
-            <v-data-table v-if="vacinas.length" :headers="headersVacina" :items="vacinas"
+            <v-data-table v-if="vacinas.length" :headers="headersVacina" :items="vacinas" :items-per-page="5"
+              :items-per-page-options="[5, 10, 20]" :hide-default-footer="vacinas.length <= 5"
               class="elevation-1 table-protocolo mt-5" no-data-text="Nenhuma vacina cadastrada.">
               <template #item.data_aplicacao="{ item }">
                 {{ formatDateNoTimezone(item.data_aplicacao) }}
@@ -329,13 +341,15 @@
   <ModalVacina :modoEdicao="modoEdicao" :vacinaSelecionada="vacinaSelecionada" :isOpen="dialogVacina"
     @vacinaCadastrado="handleModalVacinaClose" @update:isOpen="dialogVacina = $event" :id_animal="idPacienteRota" />
 
-  <ModalVermifugo :isOpen="dialogVermifugo" @vermifugoCadastrado="handleModalVermifugoClose"
-    @update:isOpen="dialogVermifugo = $event" />
+  <ModalVermifugo :modoEdicao="modoEdicao" :vermifugoSelecionado="vermifugoSelecionada" :isOpen="dialogVermifugo"
+    @vermifugoCadastrado="handleModalVermifugoClose" @update:isOpen="dialogVermifugo = $event"
+    :id_animal="idPacienteRota" />
+
   <modalCamposObrigatorios v-if="!isLoading" :isOpen="showModalConfirmation"
     @update:isOpen="showModalConfirmation = $event" />
 </template>
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/modules/commons/store'
 
@@ -347,7 +361,7 @@ import ModalVermifugo from './ModalVermifugo.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 
 // SERVICES
-import { salvarPaciente, editarPaciente, salvarVermifugos, salvarVacinas, deletarVacinas, recuperarPaciente } from '@/services/paciente'
+import { salvarPaciente, editarPaciente, salvarVermifugos, salvarVacinas, deletarVacinas, recuperarPaciente, deletarVermifugo } from '@/services/paciente'
 import { salvarTutor, editarTutor, recuperarTutores } from '@/services/tutor'
 import { replaceCommaWithDot, formatDateNoTimezone, formatCpf } from '@/utils/formaUtils'
 
@@ -665,6 +679,20 @@ async function carregarPaciente(id: number) {
   }
 }
 
+function abrirModalNovoVermifugo() {
+  vermifugoSelecionada.value = null
+  nextTick(() => {
+    dialogVermifugo.value = true
+  })
+}
+
+function abrirModalNovaVacina() {
+  vacinaSelecionada.value = null
+  nextTick(() => {
+    dialogVacina.value = true
+  })
+}
+
 const salvaVermifugo = async () => {
   try {
     for (const v of vermifugos.value) {
@@ -708,23 +736,56 @@ const salvaVacina = async () => {
 
 function handleModalVermifugoClose(novoVermifugo?: any) {
   dialogVermifugo.value = false
-  alertMessage.value = 'Vermífugo cadastrado com sucesso!'
+  alertMessage.value = 'Vermífugo salvo com sucesso!'
   alertType.value = 'success'
   showAlert.value = true
+
   setTimeout(() => {
     showAlert.value = false
   }, 3000)
-  if (novoVermifugo) {
+
+  if (novoVermifugo.id !== undefined) {
+    const index = vermifugos.value.findIndex(v => v.id === novoVermifugo.id)
+    if (index !== -1) {
+      vermifugos.value[index] = {
+        ...vermifugos.value[index],
+        nome: novoVermifugo.nome,
+        dosagem: novoVermifugo.dosagem,
+        data_aplicacao: novoVermifugo.data_aplicacao,
+        data_proxima_dose: novoVermifugo.data_proxima_dose,
+        fabricante: novoVermifugo.fabricante,
+        lote: novoVermifugo.lote,
+        observacao: novoVermifugo.observacao
+      }
+    } else {
+      vermifugos.value.push({
+        id: novoVermifugo.id,
+        nome: novoVermifugo.nome,
+        dosagem: novoVermifugo.dosagem,
+        data_aplicacao: novoVermifugo.data_aplicacao,
+        data_proxima_dose: novoVermifugo.data_proxima_dose,
+        fabricante: novoVermifugo.fabricante,
+        lote: novoVermifugo.lote,
+        observacao: novoVermifugo.observacao
+      })
+    }
+  } else {
     vermifugos.value.push({
+      id: novoVermifugo.id,
       nome: novoVermifugo.nome,
       dosagem: novoVermifugo.dosagem,
-      dataAplicacao: novoVermifugo.data_aplicacao,
-      dataProximaDose: novoVermifugo.data_proxima_dose,
+      data_aplicacao: novoVermifugo.data_aplicacao,
+      data_proxima_dose: novoVermifugo.data_proxima_dose,
       fabricante: novoVermifugo.fabricante,
-      lote: novoVermifugo.lote
+      lote: novoVermifugo.lote,
+      observacao: novoVermifugo.observacao
     })
   }
+
+
+  vermifugoSelecionada.value = null;
 }
+
 
 const removerVacina = async (item: any, index: number) => {
   try {
@@ -740,36 +801,83 @@ const removerVacina = async (item: any, index: number) => {
   }
 }
 const vacinaSelecionada = ref<any | null>(null)
+const vermifugoSelecionada = ref<any | null>(null)
 
 const editarVacina = (vacina: any) => {
-  // Define os dados da vacina selecionada no modal
   vacinaSelecionada.value = vacina
   modoEdicao.value = true
   dialogVacina.value = true
 }
 
+const editarVermifugo = (vermifugo: any) => {
+  vermifugoSelecionada.value = vermifugo
+  modoEdicao.value = true
+  dialogVermifugo.value = true
+}
 
 function handleModalVacinaClose(novaVacina?: any) {
   dialogVacina.value = false
-  alertMessage.value = 'Vacina cadastrada com sucesso!'
+  alertMessage.value = 'Vacina salva com sucesso!'
   alertType.value = 'success'
   showAlert.value = true
-  setTimeout(() => (showAlert.value = false), 3000)
 
-  if (novaVacina) {
+  setTimeout(() => {
+    showAlert.value = false
+  }, 3000)
+
+  if (novaVacina.id !== undefined) {
+    const index = vacinas.value.findIndex(v => v.id === novaVacina.id)
+
+    if (index !== -1) {
+      // Atualiza a vacina existente
+      vacinas.value[index] = {
+        ...vacinas.value[index],
+        nome: novaVacina.nome,
+        data_aplicacao: novaVacina.data_aplicacao,
+        data_proxima_dose: novaVacina.data_proxima_dose,
+        fabricante: novaVacina.fabricante,
+        lote: novaVacina.lote
+      }
+    } else {
+      // Adiciona nova vacina (modo edição)
+      vacinas.value.push({
+        id: novaVacina.id,
+        nome: novaVacina.nome,
+        data_aplicacao: novaVacina.data_aplicacao,
+        data_proxima_dose: novaVacina.data_proxima_dose,
+        fabricante: novaVacina.fabricante,
+        lote: novaVacina.lote
+      })
+    }
+  } else {
+    // Adiciona nova vacina (modo novo cadastro)
     vacinas.value.push({
+      id: novaVacina.id,
       nome: novaVacina.nome,
       data_aplicacao: novaVacina.data_aplicacao,
       data_proxima_dose: novaVacina.data_proxima_dose,
       fabricante: novaVacina.fabricante,
-      lote: novaVacina.lote,
-      id: novaVacina.id
+      lote: novaVacina.lote
     })
   }
+  vacinaSelecionada.value = null
 }
 
-function removerVermifugo(index: number) {
-  vermifugos.value.splice(index, 1)
+
+
+
+const removerVermifugo = async (item: any, index: number) => {
+  try {
+    if (modoEdicao.value) {
+      await deletarVermifugo(item)
+    }
+    vermifugos.value.splice(index, 1)
+  } catch (error: any) {
+    alertMessage.value = error?.msg || 'Ocorreu um erro inesperado';
+    alertType.value = 'error';
+    showAlert.value = true;
+    setTimeout(() => (showAlert.value = false), 5000);
+  }
 }
 
 // TUTORES

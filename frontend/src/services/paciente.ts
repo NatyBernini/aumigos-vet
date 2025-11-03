@@ -67,7 +67,7 @@ async function recuperarVacina(id: number) {
     return await API.get(`/pacientes/vacinas/${id}/`);
 }
 
-async function salvarVermifugos(id: number, payload: Protocolo) {
+async function salvarVermifugos(id?: number, payload?: Protocolo) {
     return await API.post(`/pacientes/animais/${id}/vermifugos/`, payload);
 }
 
@@ -79,7 +79,7 @@ async function recuperarVermifugo(id: number) {
     return await API.get(`/pacientes/vermifugos/${id}/`);
 }
 
-async function editarVermifugos(id: number, payload: Protocolo) {
+async function editarVermifugos(id?: number, payload?: Protocolo) {
     return await API.put(`/pacientes/vermifugos/${id}/`, payload);
 }
 
