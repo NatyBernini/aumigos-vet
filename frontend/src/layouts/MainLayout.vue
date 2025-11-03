@@ -108,7 +108,6 @@ import { ref, onMounted, computed } from 'vue'
 
 import iconePacientes from '../assets/icons/iconePacientes.png'
 import iconListagemPaciente from '../assets/icons/iconeLista.png'
-import iconAgenda from '../assets/icons/agendamento.png'
 import iconCadastrarPaciente from '../assets/icons/iconeCadastro.png'
 
 import iconeVeterinarios from '../assets/icons/iconeVeterinarios.png'
@@ -118,8 +117,7 @@ import iconeServices from '../assets/icons/iconServicesProducts.png'
 import iconCaixa from '../assets/icons/iconCaixa.png'
 import FotoPerfil from '../assets/icons/avatar-do-usuario.png'
 
-import { useAppStore, usePersistentStore } from '@/modules/commons/store';
-import { useRouter } from 'vue-router';
+import { useAppStore } from '@/modules/commons/store';
 
 const appStore = useAppStore();
 

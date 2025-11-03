@@ -335,7 +335,7 @@
 
   <!-- Spinner de Carregamento -->
   <v-container v-if="isLoading" class="d-flex align-center justify-center">
-    <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
+    <v-progress-circular indeterminate color="#ff8200" size="40" width="5"></v-progress-circular>
   </v-container>
 
   <ModalVacina :modoEdicao="modoEdicao" :vacinaSelecionada="vacinaSelecionada" :isOpen="dialogVacina"

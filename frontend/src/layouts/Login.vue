@@ -25,7 +25,7 @@
                                 <h2 class="mb-6">Login</h2>
 
                                 <v-form class="formulario-autenticacao" @submit.prevent>
-                                    <inputText label="E-mail*" classe="input-locador" type="text"
+                                    <inputText label="E-mail*" classe="input-locador mb-5" type="text"
                                         v-model:valueInput="textInputs[`input-email-login`]" id="input-email"
                                         :maxLength="0" />
 
@@ -77,22 +77,21 @@
                                     <inputText label="Nome Completo*" type="text" required
                                         v-model:valueInput="textInputs['input-nome']" id="input-nome"
                                         @update:valueInput="(value: any) => updateInput('input-nome', value)"
-                                        :maxLength="0" />
-                                    <inputText label="Telefone*" classe="input-locador" type="text" required
+                                        :maxLength="0" class="mb-5"/>
+                                    <inputText label="Telefone*" class="mb-5" type="text" required
                                         @input="onPhoneInput($event)" v-model:valueInput="textInputs['input-telefone']"
                                         :maxLength="0" />
-                                    <inputText label="E-mail*" classe="input-locador" type="email" required
+                                    <inputText label="E-mail*" class="mb-5" type="email" required
                                         v-model:valueInput="textInputs[`input-email`]" id="input-email"
                                         :maxLength="0" />
 
-                                    <!-- Adicione os novos campos de CPF e data de nascimento no formulário -->
-                                    <inputText label="CPF*" classe="input-locador" type="text" required
+                                    <inputText label="CPF*" class="mb-5" type="text" required :ocultaContador="true"
                                         v-model:valueInput="textInputs['input-cpf']" id="input-cpf" />
 
-                                    <inputText label="Data de Nascimento*" classe="input-locador" type="date" required
+                                    <inputText label="Data de Nascimento*" class="mb-5" type="date" required :ocultaContador="true"
                                         v-model:valueInput="textInputs['input-nascimento']" id="input-nascimento" />
 
-                                    <inputText label="Senha*" classe="input-locador"
+                                    <inputText label="Senha*" class="mb-5"
                                         v-model:valueInput="textInputs[`input-senha`]" id="input-senha"
                                         :type="showPasswordCadastro ? 'text' : 'password'"
                                         :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
@@ -132,7 +131,7 @@
     </div>
     <!-- Spinner de Carregamento -->
     <v-container v-if="isLoading" class="d-flex align-center justify-center">
-        <v-progress-circular indeterminate color="primary" size="40" width="5"></v-progress-circular>
+        <v-progress-circular indeterminate color="#ff8200" size="40" width="5"></v-progress-circular>
     </v-container>
     <modalCamposObrigatorios v-if="!isLoading" :isOpen="showModalConfirmation"
         @update:isOpen="showModalConfirmation = $event" acao="Autenticar"/>

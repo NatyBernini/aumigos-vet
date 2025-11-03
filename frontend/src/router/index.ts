@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import PacientesList from '../views/Pacientes/Listagem.vue'
 import PacienteCadastro from '../views/Pacientes/Cadastrar.vue'
-import PacienteVisualizar from '../views/Pacientes/Visualizar.vue'
 import VeterinariosList from '../views/Veterinarios/Listagem.vue'
 import VeterinarioCadastro from '../views/Veterinarios/Cadastrar.vue'
 import ConsultaList from '../views/Consultas/Listagem.vue'
@@ -55,8 +54,7 @@ const routes: RouteRecordRaw[] = [
       // Pacientes
       { path: 'pacientes', name: 'Home', component: PacientesList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
       { path: 'pacientes/cadastrar/:id?', name: 'PacienteCadastrar', component: PacienteCadastro, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
-      { path: 'pacientes/visualizar/:id', name: 'PacienteVisualizar', component: PacienteVisualizar, props: true, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
-
+ 
       // Veterinários
       { path: 'veterinarios', component: VeterinariosList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
       { path: 'veterinarios/cadastrar', component: VeterinarioCadastro, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
