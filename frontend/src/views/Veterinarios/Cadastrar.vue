@@ -14,9 +14,10 @@
     <v-tabs v-model="tab">
       <v-tab value="informacoes-basicas">Informações do Veterinário</v-tab>
       <v-tab value="horarios-atendimento">Horários de Atendimento</v-tab>
+      <v-tab v-if="modoEdicao" value="gerenciar-veterinario">Gerenciar Veterinário</v-tab>
     </v-tabs>
 
-    <v-card-text>
+    <v-card-text v-if="!isLoading">
       <v-tabs-window v-model="tab">
         <v-tabs-window-item value="informacoes-basicas" class="pt-5">
 
@@ -85,10 +86,9 @@
                   id="input-numero" @update:valueInput="(value: any) => updateInput('input-numero', value)"
                   :ocultaContador="true" />
 
-                <inputText label="Complemento" type="text"
-                  v-model:valueInput="textInputs['input-complemento']" id="input-complemento"
-                  @update:valueInput="(value: any) => updateInput('input-complemento', value)" style="width: 300px;"
-                  :ocultaContador="true" />
+                <inputText label="Complemento" type="text" v-model:valueInput="textInputs['input-complemento']"
+                  id="input-complemento" @update:valueInput="(value: any) => updateInput('input-complemento', value)"
+                  style="width: 300px;" :ocultaContador="true" />
               </v-row>
             </v-col>
 
@@ -126,6 +126,10 @@
 
           </v-form>
 
+          <div class="container-btn mt-5 justify-end">
+            <v-btn class="me-4 btn-padrao" @click="salvar()">Salvar</v-btn>
+          </div>
+
         </v-tabs-window-item>
         <v-tabs-window-item value="horarios-atendimento" class="pt-5">
           <v-card class="card-informativo mb-7"><v-icon class="mr-2">mdi-alert-circle</v-icon>Nesta aba, você, como
@@ -152,20 +156,73 @@
             </div>
           </v-form>
 
+          <div class="container-btn mt-5 justify-end">
+            <v-btn class="me-4 btn-padrao" @click="salvar()">Salvar</v-btn>
+          </div>
+
+        </v-tabs-window-item>
+        <v-tabs-window-item v-if="modoEdicao" value="gerenciar-veterinario" class="pt-5">
+          <v-row class="row-cards ma-0"> <v-card class="pa-2 gerenciar">
+              <v-card-title>Excluir veterinário</v-card-title>
+              <v-card-text>Nesta aba, você, como administrador, pode excluir o cadastro do veterinário selecionado. Essa
+                ação é permanente e removerá todas as informações associadas a este profissional.
+              </v-card-text>
+
+              <v-card-actions>
+                <v-btn class="btn-padrao" @click="showModalConfirmation = true">Excluir veterinário</v-btn>
+              </v-card-actions>
+            </v-card>
+
+            <v-card class="pa-2 gerenciar">
+              <v-card-title>
+                {{ ativo ? 'Desativar veterinário' : 'Ativar veterinário' }}
+              </v-card-title>
+
+              <v-card-text>
+                <template v-if="ativo">
+                  Nesta aba, você, como administrador, pode <strong>desativar</strong> o veterinário selecionado.
+                  Essa ação impedirá que o profissional acesse o sistema ou realize atendimentos,
+                  sem excluir suas informações do histórico. A qualquer momento, o veterinário
+                  poderá ser reativado pelo administrador.
+                </template>
+                <template v-else>
+                  Nesta aba, você, como administrador, pode <strong>reativar</strong> o veterinário selecionado.
+                  Essa ação permitirá que o profissional volte a acessar o sistema e realize atendimentos normalmente.
+                </template>
+              </v-card-text>
+
+              <v-card-actions>
+                <v-btn class="btn-padrao" :color="ativo ? 'error' : 'success'"  @click="ativo ? showModalConfirmationDesativar = true : showModalConfirmationAtivar = true"
+  >
+                  {{ ativo ? 'Desativar veterinário' : 'Ativar veterinário' }}
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-row>
+
         </v-tabs-window-item>
 
-
-        <div class="container-btn mt-5 justify-end">
-          <v-btn class="me-4 btn-padrao" @click="salvar()">Salvar</v-btn>
-        </div>
       </v-tabs-window>
     </v-card-text>
   </v-card>
+  <!-- Spinner de Carregamento -->
+  <v-container v-if="isLoading" class="d-flex align-center justify-center">
+    <v-progress-circular indeterminate color="#ff8200" size="40" width="5"></v-progress-circular>
+  </v-container>
+
+  <modalConfirmacao v-if="!isLoading" :isOpen="showModalConfirmation" @update:isOpen="showModalConfirmation = $event"
+    @confirm="deletarUsuario()" acao="o usuário será deletado permanentemente" />
+  <modalConfirmacao v-if="!isLoading" :isOpen="showModalConfirmationDesativar"
+    @update:isOpen="showModalConfirmationDesativar = $event" @confirm="desativarUsuario()"
+    acao="o usuário será desativado" />
+  <modalConfirmacao v-if="!isLoading" :isOpen="showModalConfirmationAtivar"
+    @update:isOpen="showModalConfirmationAtivar = $event" @confirm="ativarUsuario()"
+    acao="o usuário será desativado" />
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { formatCep, limparCep, buscarEnderecoViaCep } from '../../utils/cepUtils'
 import { formatCpf, formatRg, formatPhoneNumber } from '../../utils/formaUtils'
 import { useAppStore } from '@/modules/commons/store'
@@ -174,10 +231,11 @@ import { useAppStore } from '@/modules/commons/store'
 import inputText from '@/components/inputText.vue'
 import multipleCombobox from '@/components/select.vue'
 import TextArea from '@/components/textArea.vue'
+import modalConfirmacao from '@/components/modalConfirmacao.vue'
 
 // SERVICES
 import { getCidadesPorEstado, getEstados } from '../../services/ibge'
-import { salvarVeterinario, editarVeterinario, recuperarVeterinario } from '@/services/veterinario'
+import { salvarVeterinario, editarVeterinario, recuperarVeterinario, deletarVeterinario } from '@/services/veterinario'
 
 defineOptions({ name: 'VeterinarioCadastro' })
 
@@ -186,6 +244,12 @@ const readOnly = ref(false)
 const formRef = ref()
 const appStore = useAppStore()
 const route = useRoute()
+const isLoading = ref(false)
+const showModalConfirmation = ref(false)
+const showModalConfirmationAtivar = ref(false)
+const showModalConfirmationDesativar = ref(false)
+const router = useRouter()
+const ativo = ref(true)
 
 // ID vindo da rota (0 = novo cadastro)
 const idVeterinarioRota = Number(route.params.id) || 0
@@ -266,7 +330,6 @@ async function onInputCep(e: Event) {
   }
 }
 
-// --- FUNÇÕES DE CARREGAMENTO ---
 async function carregarEstados() {
   const resposta = await getEstados()
   listEstados.value = resposta.map((e: any) => `${e.nome} (${e.sigla})`)
@@ -275,6 +338,7 @@ async function carregarEstados() {
     descricao: `${e.nome} (${e.sigla})`
   }))
 }
+
 async function carregarCidades() {
   if (!estadoSelecionado.value) return
   const estadoEncontrado = estados.value.find(
@@ -353,7 +417,6 @@ const validation = () => {
   return true
 }
 
-// --- SALVAR OU EDITAR ---
 const salvar = async () => {
   // --- VALIDAÇÃO ---
   if (!validation()) return
@@ -379,7 +442,7 @@ const salvar = async () => {
       dias_atendimento: diasAtendimentoFormatado,
       clinica: appStore.userData?.clinicas[0]?.id,
       observacao: textarea.value.ObservacoesGerais,
-      ativo: true,
+      ativo: ativo.value,
       enderecos: [{
         cep: textInputs.value['input-cep'],
         estado: estadoSelecionado.value || '',
@@ -403,6 +466,7 @@ const salvar = async () => {
     } else {
       await salvarVeterinario(dados)
       alertMessage.value = 'Veterinário salvo com sucesso!'
+      router.push({ path: '/veterinarios' })
     }
 
     alertType.value = 'success'
@@ -435,7 +499,7 @@ const salvar = async () => {
           else if (typeof valor === 'object' && valor !== null) {
             parseErros(valor, `${prefix}${campo} - `)
           }
-          
+
           else if (typeof valor === 'string') {
             mensagens.push(`${prefix}${campo.toUpperCase()}: ${valor}`)
           }
@@ -456,7 +520,6 @@ const salvar = async () => {
   }
 }
 
-// --- RECUPERAÇÃO DE DADOS PARA EDIÇÃO ---
 const carregarVeterinario = async () => {
   if (!modoEdicao.value) return
   try {
@@ -467,6 +530,7 @@ const carregarVeterinario = async () => {
     textInputs.value['input-crmv'] = vet.crmv
     textInputs.value['input-especialidade'] = vet.especialidade
     textarea.value.ObservacoesGerais = vet.observacao || ''
+    ativo.value = vet.ativo
 
     // Telefones
     if (vet.contatos?.length) {
@@ -507,6 +571,33 @@ const carregarVeterinario = async () => {
   }
 }
 
+const deletarUsuario = async () => {
+
+  try {
+    await deletarVeterinario(idVeterinarioRota)
+    alertMessage.value = 'Veterinário deletado com sucesso.'
+    alertType.value = 'success'
+    showAlert.value = true
+    router.push({ path: '/veterinarios' })
+    setTimeout(() => (showAlert.value = false), 3000)
+
+  } catch (err) {
+    alertMessage.value = 'Erro ao deletar veterinário.'
+    alertType.value = 'error'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 5000)
+  }
+}
+
+const desativarUsuario = async () => {
+  ativo.value = false
+  await salvar()
+}
+
+const ativarUsuario = async () => {
+  ativo.value = true
+  await salvar()
+}
 // --- WATCHERS ---
 watch(estadoSelecionado, () => carregarCidades())
 watch(phones, newPhones => {
@@ -517,17 +608,39 @@ watch(phones, newPhones => {
 }, { deep: true })
 
 onMounted(async () => {
+  isLoading.value = true
   await carregarEstados()
   if (modoEdicao.value) await carregarVeterinario()
+  isLoading.value = false
 })
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .row-atendimento {
   gap: 1rem;
 
   .check-horario-atendimento {
     min-width: 200px;
+  }
+}
+
+.row-cards {
+  gap: 40px;
+}
+
+.v-card.gerenciar {
+  border: 2px solid #ffc38b;
+  border-radius: 10px;
+  max-width: 400px;
+
+  .v-card-title {
+    color: #2e2e2e !important;
+    font-size: 14px !important;
+    font-weight: 600;
+  }
+
+  .v-card-actions {
+    justify-content: flex-end;
   }
 }
 </style>
