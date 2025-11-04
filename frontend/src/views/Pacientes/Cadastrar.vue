@@ -204,6 +204,9 @@
 
         <!-- ======================= ABA PROTOCOLO ======================= -->
         <v-tabs-window-item value="protocolo" class="pt-5">
+          <v-card class="card-informativo mb-7"><v-icon class="mr-2">mdi-alert-circle</v-icon>Nesta aba, você, como
+            veterinário, pode cadastrar e gerenciar as vacinas e vermífugos aplicados no paciente.
+          </v-card>
           <v-form ref="form">
             <div class="info-box" v-if="!isLoading">
               <span class="span-info-box">Vermífugos
@@ -888,8 +891,6 @@ const headersTutores = [
   { title: 'Nome', key: 'nome_completo' },
   { title: 'CPF', key: 'cpf' },
   { title: 'Data Nasc.', key: 'data_nascimento' },
-  { title: 'Clínica', key: 'clinica' },
-  { title: 'Observações', key: 'observacoes' },
   { title: 'Ação', key: 'acao', sortable: false }
 ]
 

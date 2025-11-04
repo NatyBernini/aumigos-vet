@@ -1,4 +1,7 @@
 <template>
+   <v-alert v-if="showAlert" :type="alertType" class="mt-3" dismissible @click:close="showAlert = false">
+    {{ alertMessage }}
+  </v-alert>
   <v-card>
     <p class="title-page">Cadastro do Veterinário
       <img src="/./src/assets/icons/iconLapisCadastro.png" alt="Ícone" class="menu-title-icon" />
@@ -9,12 +12,13 @@
     </p>
 
     <v-tabs v-model="tab">
-      <v-tab value="one">Informações do Veterinário</v-tab>
+      <v-tab value="informacoes-basicas">Informações do Veterinário</v-tab>
+      <v-tab value="horarios-atendimento">Horários de Atendimento</v-tab>
     </v-tabs>
 
     <v-card-text>
       <v-tabs-window v-model="tab">
-        <v-tabs-window-item value="one" class="pt-5">
+        <v-tabs-window-item value="informacoes-basicas" class="pt-5">
 
           <v-form ref="formRef" @submit.prevent="submit">
             <p>Informações Básicas</p>
@@ -110,20 +114,53 @@
               </v-row>
             </v-col>
 
-            <textArea :modelValue="textarea.ObservacoesGerais" @update:modelValue="(value: any) => (textarea = value)"
-              :label="'Observação'" class="wrap-textarea" :maxLength="300" placeholder="Observação...">
-</textArea>
+
+            <TextArea :modelValue="textarea.ObservacoesGerais"
+              @update:modelValue="(value: any) => (textarea.ObservacoesGerais = value)" label="Observações"
+              class="wrap-textarea" :maxLength="300" placeholder="Detalhe algum ponto extra sobre o veterinário..." />
+
 
             <div class="container-btn mt-5">
               <p class="msg-auxiliar">Campos Obrigatórios*</p>
             </div>
 
             <div class="container-btn mt-5">
-              <v-btn class="me-4 btn-padrao" type="submit">Salvar</v-btn>
+              <v-btn class="me-4 btn-padrao" @click="salvar()">Salvar</v-btn>
             </div>
           </v-form>
 
         </v-tabs-window-item>
+        <v-tabs-window-item value="horarios-atendimento" class="pt-5">
+          <v-card class="card-informativo mb-7"><v-icon class="mr-2">mdi-alert-circle</v-icon>Nesta aba, você, como
+            administrador, pode definir e gerenciar os horários de atendimento de cada veterinário, informando o horário
+            de início e término para cada dia da semana.
+          </v-card>
+          <v-form>
+            <div class="d-flex flex-column ga-4">
+              <v-row v-for="(dia, index) in diasAtendimento" :key="index" align="center" class="mt-2 row-atendimento">
+                <!-- Nome do dia -->
+                <div class="check-horario-atendimento">
+                  <v-checkbox v-model="dia.ativo" :label="dia.nome" hide-details density="compact" />
+                </div>
+
+                <!-- Horário de início -->
+                <inputText label="Horário de Início" class="mr-5" type="time" :disabled="!dia.ativo"
+                  v-model:valueInput="dia.horarioInicio" :ocultaContador="true" />
+
+                <!-- Horário de fim -->
+                <inputText label="Horário de Fim" type="time" :disabled="!dia.ativo" v-model:valueInput="dia.horarioFim"
+                  :ocultaContador="true" />
+
+              </v-row>
+            </div>
+          </v-form>
+
+        </v-tabs-window-item>
+
+
+        <div class="container-btn mt-5">
+          <v-btn class="me-4 btn-padrao" @click="salvar()">Salvar</v-btn>
+        </div>
       </v-tabs-window>
     </v-card-text>
   </v-card>
@@ -131,25 +168,25 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick } from 'vue'
-import { getCidadesPorEstado, getEstados, getEnderecoPorCep } from '../../services/ibge'
 import { formatCep, limparCep, buscarEnderecoViaCep } from '../../utils/cepUtils'
 import { formatCpf, formatRg, formatPhoneNumber } from '../../utils/formaUtils'
+import { useAppStore } from '@/modules/commons/store'
 
 // COMPONENTES
 import inputText from '@/components/inputText.vue'
 import multipleCombobox from '@/components/select.vue'
-import textArea from '@/components/textArea.vue'
+import TextArea from '@/components/textArea.vue'
+
+// SERVICES
+import { getCidadesPorEstado, getEstados, getEnderecoPorCep } from '../../services/ibge'
+import { salvarVeterinario, editarVeterinario, recuperarVeterinario, recuperarVeterinarios, deletarVeterinario } from '@/services/veterinario'
 
 defineOptions({ name: 'VeterinarioCadastro' })
 
 const tab = ref(null)
 const readOnly = ref(false)
 const formRef = ref()
-
-// Regras
-const required = [(v: string) => !!v || 'Campo obrigatório']
-const obsRules = [(v: string) => v.length <= 300 || 'Máximo 300 caracteres']
-
+const appStore = useAppStore()
 
 const estados = ref<Array<any>>([])
 const listEstados = ref<string[]>([])
@@ -164,17 +201,32 @@ const updateInput = (id: string, newValue: string) => {
   textInputs.value[id] = newValue;
 };
 
+// Controle de alertas e mensagens
+const showAlert = ref(false)
+const alertMessage = ref('')
+const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error')
+
 
 // Agora selecionados guardam o objeto, não string
 const estadoSelecionado = ref<string | undefined>(undefined)
 const cidadeSelecionada = ref<string | undefined>(undefined)
 
+// Estrutura dos dias da semana com horários
+const diasAtendimento = ref([
+  { nome: 'Domingo', ativo: false, horarioInicio: '', horarioFim: '' },
+  { nome: 'Segunda-feira', ativo: false, horarioInicio: '', horarioFim: '' },
+  { nome: 'Terça-feira', ativo: false, horarioInicio: '', horarioFim: '' },
+  { nome: 'Quarta-feira', ativo: false, horarioInicio: '', horarioFim: '' },
+  { nome: 'Quinta-feira', ativo: false, horarioInicio: '', horarioFim: '' },
+  { nome: 'Sexta-feira', ativo: false, horarioInicio: '', horarioFim: '' },
+  { nome: 'Sábado', ativo: false, horarioInicio: '', horarioFim: '' }
+])
+
+
 async function submit() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 }
-
-
 
 function addPhone() {
   phones.value.push({ number: '' })
@@ -284,6 +336,110 @@ async function carregarCidades() {
   }
 }
 
+const salvar = async () => {
+  try {
+    // Monta o objeto dias_atendimento no formato esperado
+    const diasAtendimentoFormatado: Record<string, { inicio: string; fim: string }> = {}
+
+    diasAtendimento.value.forEach(dia => {
+      if (dia.ativo && dia.horarioInicio && dia.horarioFim) {
+        // Normaliza o nome do dia para minúsculas (sem acento, se quiser)
+        const nomeDia = dia.nome
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // remove acentos (ex: "terça-feira" -> "terca-feira")
+
+        diasAtendimentoFormatado[nomeDia] = {
+          inicio: dia.horarioInicio,
+          fim: dia.horarioFim
+        }
+      }
+    })
+
+    // Define o primeiro horário ativo como início/fim (se houver)
+    const primeiroHorario = diasAtendimento.value.find(d => d.ativo)
+    const horarioInicio = primeiroHorario ? `${primeiroHorario.horarioInicio}:00.000Z` : null
+    const horarioFim = primeiroHorario ? `${primeiroHorario.horarioFim}:00.000Z` : null
+
+    // Monta o payload conforme o endpoint
+    const dados = {
+      nome_completo: textInputs.value['input-nome'],
+      cpf: textInputs.value['input-cpf'],
+      rg: textInputs.value['input-rg'],
+      crmv: textInputs.value['input-crmv'],
+      especialidade: textInputs.value['input-especialidade'],
+      dias_atendimento: diasAtendimentoFormatado,
+      clinica: appStore.userData?.clinicas[0]?.id, 
+      observacao: textarea.value.ObservacoesGerais,
+      ativo: true,
+
+      // Endereço
+      enderecos: [
+        {
+          cep: textInputs.value['input-cep'],
+          estado: estadoSelecionado.value || '',
+          cidade: cidadeSelecionada.value || '',
+          bairro: textInputs.value['input-bairro'],
+          rua: textInputs.value['input-rua'],
+          numero: textInputs.value['input-numero'],
+          complemento: textInputs.value['input-complemento'],
+        },
+      ],
+
+      // Contato
+      contatos: [
+        {
+          email: textInputs.value['input-email'],
+          telefones: phones.value
+            .filter(t => t.number.trim() !== '')
+            .map(t => ({ numero: t.number })),
+        },
+      ],
+    }
+
+    console.log('Payload enviado:', dados)
+
+    const response = await salvarVeterinario(dados);
+
+    alertMessage.value = 'Veterinário salvo com sucesso!'
+    alertType.value = 'success'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 3000)
+  } catch (error: any) {
+    if (error.tipo === 'VALIDATION' && error.errors) {
+      const firstKey = Object.keys(error.errors)[0]
+      alertMessage.value = error.errors[firstKey][0]
+    } else if (error.tipo === 'ERROR') {
+      alertMessage.value = error.msg
+    } else {
+      alertMessage.value = 'Ocorreu um erro inesperado ao salvar o veterinário.'
+    }
+
+    alertType.value = 'error'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 5000)
+  }
+}
+
+
+const recuperaVeterinario = async () => {
+  try {
+    const response = await recuperarVeterinario(0);
+  } catch (error: any) {
+    if (error.tipo === 'VALIDATION' && error.errors) {
+      const firstKey = Object.keys(error.errors)[0]
+      alertMessage.value = error.errors[firstKey][0]
+    } else if (error.tipo === 'ERROR') {
+      alertMessage.value = error.msg
+    } else {
+      alertMessage.value = 'Ocorreu um erro inesperado ao salvar o paciente.'
+    }
+    alertType.value = 'error'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 5000)
+  }
+}
+
 watch(estadoSelecionado, () => {
   if (estadoSelecionado.value) {
     cidadeSelecionada.value = undefined
@@ -301,10 +457,19 @@ watch(phones, (newPhones) => {
 }, { deep: true })
 
 onMounted(async () => {
-  carregarEstados()
+  carregarEstados();
+  // recuperaVeterinario();
 })
 </script>
 
 
 
-<style lang="scss"></style>
+<style lang="scss">
+.row-atendimento {
+  gap: 1rem;
+
+  .check-horario-atendimento {
+    min-width: 200px;
+  }
+}
+</style>

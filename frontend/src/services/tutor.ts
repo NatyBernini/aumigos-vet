@@ -18,7 +18,8 @@ export interface Enderecos {
 export interface Pessoa {
     nome_completo: string
     cpf: string
-    data_nascimento: string
+    rg?: string
+    data_nascimento?: string
     enderecos: Enderecos[]
     contatos: Contato[]
 }
