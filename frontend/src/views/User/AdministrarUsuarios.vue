@@ -99,7 +99,7 @@
         @update:isOpen="showDialogRedefinirSenha = $event" @usuarioAtualizado="loadUsuarios" />
 
     <modalConfirmacao v-if="!isLoading" :isOpen="showModalConfirmation" @update:isOpen="showModalConfirmation = $event"
-        @confirm="deletarUsuario()" acao="o usuário será deletado permanentemente" />
+        @confirm="deletarUsuario()" acao="o usuário será deletado permanentemente, não sendo possível recuperar" />
 </template>
 
 <script setup lang="ts">

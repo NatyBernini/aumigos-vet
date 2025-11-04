@@ -211,13 +211,13 @@
   </v-container>
 
   <modalConfirmacao v-if="!isLoading" :isOpen="showModalConfirmation" @update:isOpen="showModalConfirmation = $event"
-    @confirm="deletarUsuario()" acao="o usuário será deletado permanentemente" />
+    @confirm="deletarUsuario()" acao="o usuário será deletado permanentemente, não sendo possível recuperar" />
   <modalConfirmacao v-if="!isLoading" :isOpen="showModalConfirmationDesativar"
     @update:isOpen="showModalConfirmationDesativar = $event" @confirm="desativarUsuario()"
     acao="o usuário será desativado" />
   <modalConfirmacao v-if="!isLoading" :isOpen="showModalConfirmationAtivar"
     @update:isOpen="showModalConfirmationAtivar = $event" @confirm="ativarUsuario()"
-    acao="o usuário será desativado" />
+    acao="o usuário será ativado" />
 </template>
 
 <script setup lang="ts">

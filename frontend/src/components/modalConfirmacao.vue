@@ -8,7 +8,7 @@
             </v-card-title>
 
             <v-card-text class="w-100">
-                Ao confirmar, <strong>{{ acao }}</strong>, não sendo possível recuperar.
+                Ao confirmar, <strong>{{ acao }}</strong>.
             </v-card-text>
 
             <v-card-actions class="mt-5 pa-0">
