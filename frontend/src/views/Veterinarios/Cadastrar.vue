@@ -1,5 +1,5 @@
 <template>
-   <v-alert v-if="showAlert" :type="alertType" class="mt-3" dismissible @click:close="showAlert = false">
+  <v-alert v-if="showAlert" :type="alertType" class="mt-3" dismissible @click:close="showAlert = false">
     {{ alertMessage }}
   </v-alert>
   <v-card>
@@ -20,30 +20,30 @@
       <v-tabs-window v-model="tab">
         <v-tabs-window-item value="informacoes-basicas" class="pt-5">
 
-          <v-form ref="formRef" @submit.prevent="submit">
+          <v-form ref="formRef">
             <p>Informações Básicas</p>
             <v-col>
               <v-row class="row-info-basicas">
                 <inputText label="Nome completo*" type="text" required v-model:valueInput="textInputs['input-nome']"
                   id="input-nome" @update:valueInput="(value: any) => updateInput('input-nome', value)"
-                  style="width: 300px;" :max-length="0" />
+                  style="width: 300px;" :ocultaContador="true" />
                 <inputText label="CPF*" type="text" required v-model:valueInput="textInputs['input-cpf']" id="input-cpf"
                   @update:valueInput="(value: any) => updateInput('input-cpf', value)" @input="onInputCpf"
-                  :max-length="0" />
+                  :ocultaContador="true" />
                 <inputText label="RG*" type="text" required v-model:valueInput="textInputs['input-rg']" id="input-rg"
                   @update:valueInput="(value: any) => updateInput('input-rg', value)" @input="onInputRg" maxlength="12"
-                  :max-length="0" />
+                  :ocultaContador="true" />
 
               </v-row>
               <v-row class="row-info-basicas">
                 <inputText label="Especialidade*" type="text" required
                   v-model:valueInput="textInputs['input-especialidade']" id="input-especialidade"
                   @update:valueInput="(value: any) => updateInput('input-especialidade', value)" style="width: 300px;"
-                  :max-length="0" />
+                  :ocultaContador="true" />
 
                 <inputText label="CRMV*" type="text" required v-model:valueInput="textInputs['input-crmv']"
                   id="input-crmv" @update:valueInput="(value: any) => updateInput('input-crmv', value)"
-                  :max-length="0" />
+                  :ocultaContador="true" />
 
               </v-row>
             </v-col>
@@ -68,27 +68,27 @@
                 <inputText label="CEP*" type="text" required v-model:valueInput="textInputs['input-cep']"
                   placeholder="00000-000" id="input-cep"
                   @update:valueInput="(value: any) => updateInput('input-cep', value)" @input="onInputCep"
-                  :max-length="0" />
+                  :ocultaContador="true" />
 
               </v-row>
               <v-row class="row-info-basicas">
                 <inputText label="Bairro*" type="text" required v-model:valueInput="textInputs['input-bairro']"
                   id="input-bairro" @update:valueInput="(value: any) => updateInput('input-bairro', value)"
-                  style="width: 300px;" :max-length="0" />
+                  style="width: 300px;" :ocultaContador="true" />
 
                 <inputText label="Rua*" type="text" required v-model:valueInput="textInputs['input-rua']" id="input-rua"
                   @update:valueInput="(value: any) => updateInput('input-rua', value)" style="width: 300px;"
-                  :max-length="0" />
+                  :ocultaContador="true" />
               </v-row>
               <v-row class="row-info-basicas">
                 <inputText label="N*" type="text" required v-model:valueInput="textInputs['input-numero']"
                   id="input-numero" @update:valueInput="(value: any) => updateInput('input-numero', value)"
-                  :max-length="0" />
+                  :ocultaContador="true" />
 
-                <inputText label="Complemento*" type="text" required
+                <inputText label="Complemento" type="text"
                   v-model:valueInput="textInputs['input-complemento']" id="input-complemento"
                   @update:valueInput="(value: any) => updateInput('input-complemento', value)" style="width: 300px;"
-                  :max-length="0" />
+                  :ocultaContador="true" />
               </v-row>
             </v-col>
 
@@ -124,9 +124,6 @@
               <p class="msg-auxiliar">Campos Obrigatórios*</p>
             </div>
 
-            <div class="container-btn mt-5">
-              <v-btn class="me-4 btn-padrao" @click="salvar()">Salvar</v-btn>
-            </div>
           </v-form>
 
         </v-tabs-window-item>
@@ -158,7 +155,7 @@
         </v-tabs-window-item>
 
 
-        <div class="container-btn mt-5">
+        <div class="container-btn mt-5 justify-end">
           <v-btn class="me-4 btn-padrao" @click="salvar()">Salvar</v-btn>
         </div>
       </v-tabs-window>
@@ -168,6 +165,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { formatCep, limparCep, buscarEnderecoViaCep } from '../../utils/cepUtils'
 import { formatCpf, formatRg, formatPhoneNumber } from '../../utils/formaUtils'
 import { useAppStore } from '@/modules/commons/store'
@@ -178,8 +176,8 @@ import multipleCombobox from '@/components/select.vue'
 import TextArea from '@/components/textArea.vue'
 
 // SERVICES
-import { getCidadesPorEstado, getEstados, getEnderecoPorCep } from '../../services/ibge'
-import { salvarVeterinario, editarVeterinario, recuperarVeterinario, recuperarVeterinarios, deletarVeterinario } from '@/services/veterinario'
+import { getCidadesPorEstado, getEstados } from '../../services/ibge'
+import { salvarVeterinario, editarVeterinario, recuperarVeterinario } from '@/services/veterinario'
 
 defineOptions({ name: 'VeterinarioCadastro' })
 
@@ -187,6 +185,11 @@ const tab = ref(null)
 const readOnly = ref(false)
 const formRef = ref()
 const appStore = useAppStore()
+const route = useRoute()
+
+// ID vindo da rota (0 = novo cadastro)
+const idVeterinarioRota = Number(route.params.id) || 0
+const modoEdicao = ref(idVeterinarioRota > 0)
 
 const estados = ref<Array<any>>([])
 const listEstados = ref<string[]>([])
@@ -195,23 +198,20 @@ const listCidade = ref<string[]>([])
 
 const phones = ref([{ number: '' }])
 const textarea = ref({ ObservacoesGerais: '' })
+const textInputs = ref<Record<string, string>>({})
 
-const textInputs = ref<Record<string, string>>({});
 const updateInput = (id: string, newValue: string) => {
-  textInputs.value[id] = newValue;
-};
+  textInputs.value[id] = newValue
+}
 
-// Controle de alertas e mensagens
+// Alertas
 const showAlert = ref(false)
 const alertMessage = ref('')
 const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error')
 
-
-// Agora selecionados guardam o objeto, não string
 const estadoSelecionado = ref<string | undefined>(undefined)
 const cidadeSelecionada = ref<string | undefined>(undefined)
 
-// Estrutura dos dias da semana com horários
 const diasAtendimento = ref([
   { nome: 'Domingo', ativo: false, horarioInicio: '', horarioFim: '' },
   { nome: 'Segunda-feira', ativo: false, horarioInicio: '', horarioFim: '' },
@@ -222,133 +222,147 @@ const diasAtendimento = ref([
   { nome: 'Sábado', ativo: false, horarioInicio: '', horarioFim: '' }
 ])
 
-
-async function submit() {
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
-}
-
+// --- FUNÇÕES DE FORMATAÇÃO E CAMPOS ---
 function addPhone() {
   phones.value.push({ number: '' })
 }
-
 function removePhone(index: number) {
   phones.value.splice(index, 1)
 }
-
 function onInputCpf(e: Event) {
   const input = e.target as HTMLInputElement
   textInputs.value['input-cpf'] = formatCpf(input.value)
 }
-
 function onInputRg(e: Event) {
   const input = e.target as HTMLInputElement
   textInputs.value['input-rg'] = formatRg(input.value)
 }
-
 async function onInputCep(e: Event) {
   const input = e.target as HTMLInputElement
   const valorFormatado = formatCep(input.value)
-
   const cepLimpo = limparCep(valorFormatado)
+
   if (cepLimpo.length === 8) {
     try {
       const data = await buscarEnderecoViaCep(cepLimpo)
-
       textInputs.value['input-rua'] = data.logradouro || ''
       textInputs.value['input-bairro'] = data.bairro || ''
-
-      // Procura o estado na lista de estados
       const estadoEncontrado = estados.value.find(
         (estado: { id: string; descricao: string }) =>
-          estado.descricao === `${data.estado} (${data.uf})`
+          estado.descricao.includes(`(${data.uf})`)
       )
-
       if (estadoEncontrado) {
         estadoSelecionado.value = estadoEncontrado.descricao
-
-        // Espera o nextTick para garantir que o v-model do combobox atualize
         await nextTick()
-
-        // Carrega as cidades do estado encontrado
         const resposta = await getCidadesPorEstado(estadoEncontrado.id)
-        listCidade.value = resposta.map((cidade: any) => `${cidade.nome}`)
-        cidades.value = resposta.map((cidade: any) => ({
-          id: cidade.nome,
-          descricao: cidade.nome,
-        }))
-
-        // Seleciona a cidade retornada pelo CEP
-        const cidadeEncontrada = cidades.value.find(
-          (c: { id: string; descricao: string }) => c.descricao === data.localidade
-        )
-        cidadeSelecionada.value = cidadeEncontrada ? cidadeEncontrada.descricao : undefined
+        listCidade.value = resposta.map((c: any) => `${c.nome}`)
+        cidades.value = resposta.map((c: any) => ({ id: c.nome, descricao: c.nome }))
+        cidadeSelecionada.value = data.localidade
       }
     } catch {
-      textInputs.value['input-rua'] = ''
-      textInputs.value['input-bairro'] = ''
       estadoSelecionado.value = undefined
       cidadeSelecionada.value = undefined
     }
-  } else {
-    textInputs.value['input-rua'] = ''
-    textInputs.value['input-bairro'] = ''
-    estadoSelecionado.value = undefined
-    cidadeSelecionada.value = undefined
   }
 }
 
-
-// Carregar cidades com base no estado selecionado
+// --- FUNÇÕES DE CARREGAMENTO ---
 async function carregarEstados() {
   const resposta = await getEstados()
-  listEstados.value = resposta.map((estado: any) => (`${estado.nome} (${estado.sigla})`))
-  estados.value = resposta.map((estado: any) => ({
-    id: estado.sigla,
-    descricao: `${estado.nome} (${estado.sigla})`,
+  listEstados.value = resposta.map((e: any) => `${e.nome} (${e.sigla})`)
+  estados.value = resposta.map((e: any) => ({
+    id: e.sigla,
+    descricao: `${e.nome} (${e.sigla})`
   }))
 }
-
 async function carregarCidades() {
-  if (estadoSelecionado.value) {
-    // Procura o estado na lista de estados pelo campo descricao
-    const estadoEncontrado = estados.value.find(
-      (estado: { id: string; descricao: string }) => estado.descricao === estadoSelecionado.value
-    )
-
-    const estadoId = estadoEncontrado ? estadoEncontrado.id : null
-    console.log("Estado selecionado ID:", estadoId)
-
-    if (estadoId) {
-      const resposta = await getCidadesPorEstado(estadoId)
-      listCidade.value = resposta.map((cidade: any) => (`${cidade.nome}`))
-      cidades.value = resposta.map((cidade: any) => ({
-        id: cidade.id,
-        descricao: cidade.nome,
-      }))
-    } else {
-      cidades.value = []
-      cidadeSelecionada.value = undefined
-    }
-  } else {
-    cidades.value = []
-    cidadeSelecionada.value = undefined
+  if (!estadoSelecionado.value) return
+  const estadoEncontrado = estados.value.find(
+    (estado: { id: string; descricao: string }) =>
+      estado.descricao === estadoSelecionado.value
+  )
+  if (estadoEncontrado) {
+    const resposta = await getCidadesPorEstado(estadoEncontrado.id)
+    listCidade.value = resposta.map((c: any) => `${c.nome}`)
+    cidades.value = resposta.map((c: any) => ({ id: c.id, descricao: c.nome }))
   }
 }
 
-const salvar = async () => {
-  try {
-    // Monta o objeto dias_atendimento no formato esperado
-    const diasAtendimentoFormatado: Record<string, { inicio: string; fim: string }> = {}
+const validation = () => {
 
+  // Validação de campos obrigatórios do veterinário
+  const obrigatorios = {
+    'Nome completo': textInputs.value['input-nome'],
+    'CPF': textInputs.value['input-cpf'],
+    'RG': textInputs.value['input-rg'],
+    'CRMV': textInputs.value['input-crmv'],
+    'Especialidade': textInputs.value['input-especialidade'],
+    'E-mail': textInputs.value['input-email'],
+    'CEP': textInputs.value['input-cep'],
+    'Estado': estadoSelecionado.value,
+    'Cidade': cidadeSelecionada.value,
+    'Bairro': textInputs.value['input-bairro'],
+    'Rua': textInputs.value['input-rua'],
+    'Número': textInputs.value['input-numero']
+  }
+
+  for (const [campo, valor] of Object.entries(obrigatorios)) {
+    if (!valor || valor.trim() === '') {
+      alertMessage.value = `Por favor, preencha o campo obrigatório: ${campo}.`
+      alertType.value = 'warning'
+      showAlert.value = true
+      setTimeout(() => (showAlert.value = false), 3000)
+      return false
+    }
+  }
+
+  // Validação de telefones
+  const telefonesValidos = phones.value.filter(t => t.number.trim() !== '')
+  if (telefonesValidos.length === 0) {
+    alertMessage.value = 'Informe pelo menos um número de telefone.'
+    alertType.value = 'warning'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 3000)
+    return false
+  }
+
+  // Validação de dias e horários
+  const algumDiaAtivo = diasAtendimento.value.some(dia => dia.ativo)
+
+  if (!algumDiaAtivo) {
+    alertMessage.value = 'Por favor, selecione pelo menos um dia de atendimento.'
+    alertType.value = 'warning'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 3000)
+    return false
+  }
+
+  for (const dia of diasAtendimento.value) {
+    const inicio = dia.horarioInicio?.trim()
+    const fim = dia.horarioFim?.trim()
+
+    if (dia.ativo && (!inicio || !fim)) {
+      alertMessage.value = `Por favor, preencha o horário de início e fim para ${dia.nome}.`
+      alertType.value = 'warning'
+      showAlert.value = true
+      setTimeout(() => (showAlert.value = false), 3000)
+      return false
+    }
+  }
+
+  return true
+}
+
+// --- SALVAR OU EDITAR ---
+const salvar = async () => {
+  // --- VALIDAÇÃO ---
+  if (!validation()) return
+
+  try {
+    const diasAtendimentoFormatado: Record<string, { inicio: string; fim: string }> = {}
     diasAtendimento.value.forEach(dia => {
       if (dia.ativo && dia.horarioInicio && dia.horarioFim) {
-        // Normaliza o nome do dia para minúsculas (sem acento, se quiser)
-        const nomeDia = dia.nome
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '') // remove acentos (ex: "terça-feira" -> "terca-feira")
-
+        const nomeDia = dia.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         diasAtendimentoFormatado[nomeDia] = {
           inicio: dia.horarioInicio,
           fim: dia.horarioFim
@@ -356,12 +370,6 @@ const salvar = async () => {
       }
     })
 
-    // Define o primeiro horário ativo como início/fim (se houver)
-    const primeiroHorario = diasAtendimento.value.find(d => d.ativo)
-    const horarioInicio = primeiroHorario ? `${primeiroHorario.horarioInicio}:00.000Z` : null
-    const horarioFim = primeiroHorario ? `${primeiroHorario.horarioFim}:00.000Z` : null
-
-    // Monta o payload conforme o endpoint
     const dados = {
       nome_completo: textInputs.value['input-nome'],
       cpf: textInputs.value['input-cpf'],
@@ -369,87 +377,139 @@ const salvar = async () => {
       crmv: textInputs.value['input-crmv'],
       especialidade: textInputs.value['input-especialidade'],
       dias_atendimento: diasAtendimentoFormatado,
-      clinica: appStore.userData?.clinicas[0]?.id, 
+      clinica: appStore.userData?.clinicas[0]?.id,
       observacao: textarea.value.ObservacoesGerais,
       ativo: true,
-
-      // Endereço
-      enderecos: [
-        {
-          cep: textInputs.value['input-cep'],
-          estado: estadoSelecionado.value || '',
-          cidade: cidadeSelecionada.value || '',
-          bairro: textInputs.value['input-bairro'],
-          rua: textInputs.value['input-rua'],
-          numero: textInputs.value['input-numero'],
-          complemento: textInputs.value['input-complemento'],
-        },
-      ],
-
-      // Contato
-      contatos: [
-        {
-          email: textInputs.value['input-email'],
-          telefones: phones.value
-            .filter(t => t.number.trim() !== '')
-            .map(t => ({ numero: t.number })),
-        },
-      ],
+      enderecos: [{
+        cep: textInputs.value['input-cep'],
+        estado: estadoSelecionado.value || '',
+        cidade: cidadeSelecionada.value || '',
+        bairro: textInputs.value['input-bairro'],
+        rua: textInputs.value['input-rua'],
+        numero: textInputs.value['input-numero'],
+        complemento: textInputs.value['input-complemento']
+      }],
+      contatos: [{
+        email: textInputs.value['input-email'],
+        telefones: phones.value
+          .filter(t => t.number.trim() !== '')
+          .map(t => ({ numero: t.number }))
+      }]
     }
 
-    console.log('Payload enviado:', dados)
+    if (modoEdicao.value) {
+      await editarVeterinario(idVeterinarioRota, dados)
+      alertMessage.value = 'Veterinário atualizado com sucesso!'
+    } else {
+      await salvarVeterinario(dados)
+      alertMessage.value = 'Veterinário salvo com sucesso!'
+    }
 
-    const response = await salvarVeterinario(dados);
-
-    alertMessage.value = 'Veterinário salvo com sucesso!'
     alertType.value = 'success'
     showAlert.value = true
     setTimeout(() => (showAlert.value = false), 3000)
+
   } catch (error: any) {
-    if (error.tipo === 'VALIDATION' && error.errors) {
-      const firstKey = Object.keys(error.errors)[0]
-      alertMessage.value = error.errors[firstKey][0]
-    } else if (error.tipo === 'ERROR') {
-      alertMessage.value = error.msg
-    } else {
-      alertMessage.value = 'Ocorreu um erro inesperado ao salvar o veterinário.'
+    let mensagemErro = 'Erro ao salvar o veterinário.'
+    console.error("ERRO:", error)
+
+    const erros = error.errors || error.response?.data || error.data
+    if (erros && typeof erros === 'object') {
+      const mensagens: string[] = []
+
+      const parseErros = (obj: any, prefix = '') => {
+        Object.entries(obj).forEach(([campo, valor]) => {
+          if (Array.isArray(valor) && typeof valor[0] === 'string') {
+            mensagens.push(`${prefix}${campo.toUpperCase()}: ${valor.join(', ')}`)
+          }
+
+          // array de objetos (como contatos ou telefones)
+          else if (Array.isArray(valor) && typeof valor[0] === 'object') {
+            valor.forEach((subObj: any, idx: number) => {
+              const novoPrefix = `${prefix}${campo} ${idx + 1} - `
+              parseErros(subObj, novoPrefix)
+            })
+          }
+
+          // objeto aninhado (como "numero" dentro de "telefones")
+          else if (typeof valor === 'object' && valor !== null) {
+            parseErros(valor, `${prefix}${campo} - `)
+          }
+          
+          else if (typeof valor === 'string') {
+            mensagens.push(`${prefix}${campo.toUpperCase()}: ${valor}`)
+          }
+        })
+      }
+
+      parseErros(erros)
+
+      if (mensagens.length > 0) {
+        mensagemErro = mensagens.join('\n')
+      }
     }
 
+    alertMessage.value = mensagemErro
     alertType.value = 'error'
     showAlert.value = true
     setTimeout(() => (showAlert.value = false), 5000)
   }
 }
 
-
-const recuperaVeterinario = async () => {
+// --- RECUPERAÇÃO DE DADOS PARA EDIÇÃO ---
+const carregarVeterinario = async () => {
+  if (!modoEdicao.value) return
   try {
-    const response = await recuperarVeterinario(0);
-  } catch (error: any) {
-    if (error.tipo === 'VALIDATION' && error.errors) {
-      const firstKey = Object.keys(error.errors)[0]
-      alertMessage.value = error.errors[firstKey][0]
-    } else if (error.tipo === 'ERROR') {
-      alertMessage.value = error.msg
-    } else {
-      alertMessage.value = 'Ocorreu um erro inesperado ao salvar o paciente.'
+    const vet = await recuperarVeterinario(idVeterinarioRota)
+    textInputs.value['input-nome'] = vet.nome_completo
+    textInputs.value['input-cpf'] = formatCpf(vet.cpf)
+    textInputs.value['input-rg'] = vet.rg
+    textInputs.value['input-crmv'] = vet.crmv
+    textInputs.value['input-especialidade'] = vet.especialidade
+    textarea.value.ObservacoesGerais = vet.observacao || ''
+
+    // Telefones
+    if (vet.contatos?.length) {
+      const contato = vet.contatos[0]
+      textInputs.value['input-email'] = contato.email || ''
+      phones.value = contato.telefones?.map((t: any) => ({ number: formatPhoneNumber(t.numero) })) || [{ number: '' }]
     }
+
+    // Endereço
+    const end = vet.enderecos?.[0]
+    if (end) {
+      textInputs.value['input-cep'] = end.cep
+      textInputs.value['input-bairro'] = end.bairro
+      textInputs.value['input-rua'] = end.rua
+      textInputs.value['input-numero'] = end.numero
+      textInputs.value['input-complemento'] = end.complemento
+      estadoSelecionado.value = end.estado
+      await nextTick()
+      cidadeSelecionada.value = end.cidade
+    }
+
+    // Dias de atendimento
+    if (vet.dias_atendimento) {
+      diasAtendimento.value.forEach(dia => {
+        const key = dia.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        if (vet.dias_atendimento[key]) {
+          dia.ativo = true
+          dia.horarioInicio = vet.dias_atendimento[key].inicio
+          dia.horarioFim = vet.dias_atendimento[key].fim
+        }
+      })
+    }
+  } catch {
+    alertMessage.value = 'Erro ao carregar dados do veterinário.'
     alertType.value = 'error'
     showAlert.value = true
     setTimeout(() => (showAlert.value = false), 5000)
   }
 }
 
-watch(estadoSelecionado, () => {
-  if (estadoSelecionado.value) {
-    cidadeSelecionada.value = undefined
-    carregarCidades()
-  } else {
-    cidadeSelecionada.value = undefined
-  }
-})
-
-watch(phones, (newPhones) => {
+// --- WATCHERS ---
+watch(estadoSelecionado, () => carregarCidades())
+watch(phones, newPhones => {
   newPhones.forEach((item, index) => {
     const formatted = formatPhoneNumber(item.number)
     if (formatted !== item.number) phones.value[index].number = formatted
@@ -457,12 +517,10 @@ watch(phones, (newPhones) => {
 }, { deep: true })
 
 onMounted(async () => {
-  carregarEstados();
-  // recuperaVeterinario();
+  await carregarEstados()
+  if (modoEdicao.value) await carregarVeterinario()
 })
 </script>
-
-
 
 <style lang="scss">
 .row-atendimento {

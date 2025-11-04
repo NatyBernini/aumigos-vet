@@ -174,14 +174,11 @@ function definirStatus(paciente: any) {
   return { text: 'Em dia', color: 'green' }
 }
 
-// 🔹 Navegação
 function visualizar(id: number) {
   router.push({ name: 'PacienteCadastrar', params: { id } })
 }
 
-
-
-// 🔹 Carregar pacientes
+// Carregar pacientes
 const loadPacientes = async () => {
   try {
     const response = await recuperarPacientes()

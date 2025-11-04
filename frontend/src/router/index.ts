@@ -57,7 +57,7 @@ const routes: RouteRecordRaw[] = [
  
       // Veterinários
       { path: 'veterinarios', component: VeterinariosList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
-      { path: 'veterinarios/cadastrar', component: VeterinarioCadastro, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
+      { path: 'veterinarios/cadastrar/:id?', name: 'VeterinarioCadastrar', component: VeterinarioCadastro, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
 
       // Consultas
       { path: 'consultas', component: ConsultaList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },

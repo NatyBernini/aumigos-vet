@@ -677,6 +677,7 @@ async function carregarPaciente(id: number) {
     alertMessage.value = 'Erro ao carregar dados do paciente.'
     alertType.value = 'error'
     showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 5000)
   } finally {
     isLoading.value = false
   }
@@ -712,8 +713,11 @@ const salvaVermifugo = async () => {
     }
     alert('Vermífugos salvos com sucesso!')
   } catch (error: any) {
-    console.error('Erro ao salvar vermífugos:', error)
-    alert('Erro ao salvar vermífugos.')
+    console.error('Erro ao salvar vermífugos.', error)
+    alertMessage.value = 'Erro ao salvar vermífugos.'
+    alertType.value = 'error'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 5000)
   }
 }
 
@@ -732,8 +736,11 @@ const salvaVacina = async () => {
     }
     alert('Vacinas salvas com sucesso!')
   } catch (error: any) {
-    console.error('Erro ao salvar vacinas:', error)
-    alert('Erro ao salvar vacinas.')
+   console.error('Erro ao salvar vacinas.', error)
+    alertMessage.value = 'Erro ao salvar vacinas.'
+    alertType.value = 'error'
+    showAlert.value = true
+    setTimeout(() => (showAlert.value = false), 5000)
   }
 }
 
@@ -926,7 +933,6 @@ onMounted(async () => {
   isLoading.value = true
   await loadComboTutores()
   if (idPacienteRota && idPacienteRota > 0) {
-    console.log("aqui")
     modoEdicao.value = true
     bloquearEdicaoTutor.value = true
     await carregarPaciente(idPacienteRota)

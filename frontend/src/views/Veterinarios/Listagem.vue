@@ -49,11 +49,8 @@
 
         <!-- Ações -->
         <template #item.actions="{ item }">
-          <v-btn icon @click="visualizar(item)" color="#434343" variant="text">
+          <v-btn icon @click="visualizar(item.id)" color="#434343" variant="text">
             <v-icon>mdi-eye</v-icon>
-          </v-btn>
-          <v-btn icon @click="editar(item)" color="#434343" variant="text">
-            <v-icon>mdi-pencil</v-icon>
           </v-btn>
         </template>
 
@@ -91,6 +88,7 @@
 import { recuperarVeterinarios } from '@/services/veterinario'
 import { ref, computed, watch, onMounted } from 'vue'
 import { formatPhoneNumber } from '@/utils/formaUtils'
+import { useRouter } from 'vue-router'
 
 defineOptions({
   name: 'VeterinariosList',
@@ -114,6 +112,7 @@ const showAlert = ref(false)
 const alertMessage = ref('')
 const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error')
 const isLoading = ref(false)
+const router = useRouter()
 
 // Watch para resetar página
 watch(itemsPerPage, () => {
@@ -199,12 +198,8 @@ function estaAtendendo(vet: any): boolean {
 }
 
 
-function visualizar(item: any) {
-  console.log('Visualizar:', item)
-}
-
-function editar(item: any) {
-  console.log('Editar:', item)
+function visualizar(id: any) {  
+  router.push({ name: 'VeterinarioCadastrar', params: { id } })
 }
 
 const listagemVeterinarios = async () => {
