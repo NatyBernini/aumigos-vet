@@ -68,7 +68,7 @@ const routes: RouteRecordRaw[] = [
 
       // Serviços (Produtos/Financeiro)
       { path: 'servicos', component: ProdutoListagem, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
-      { path: 'servicos/cadastrar', component: ProdutoCadastrar, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
+      { path: 'servicos/cadastrar/:id?',name: 'ProdutoCadastrar', component: ProdutoCadastrar, meta: { requiresAuth: true, roles: ['admin_clinica'] } },
 
       // Caixa
       { path: 'caixa', component: CaixaListagem, meta: { requiresAuth: true, roles: ['admin_clinica', 'atendente'] } },

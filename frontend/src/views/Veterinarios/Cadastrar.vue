@@ -162,7 +162,8 @@
 
         </v-tabs-window-item>
         <v-tabs-window-item v-if="modoEdicao" value="gerenciar-veterinario" class="pt-5">
-          <v-row class="row-cards ma-0"> <v-card class="pa-2 gerenciar">
+          <v-row class="row-cards ma-0"> 
+            <v-card class="pa-2 gerenciar">
               <v-card-title>Excluir veterinário</v-card-title>
               <v-card-text>Nesta aba, você, como administrador, pode excluir o cadastro do veterinário selecionado. Essa
                 ação é permanente e removerá todas as informações associadas a este profissional.
