@@ -15,10 +15,8 @@
         </v-alert>
 
         <div class="d-flex ga-5 w-100 flex-wrap">
-          <inputText  label="Data*" type="date" :ocultaContador="true"
-            v-model:valueInput="textInputs['input-data']" />
-          <inputText  label="Hora*" type="time" :ocultaContador="true"
-            v-model:valueInput="textInputs['input-hora']" />
+          <inputText label="Data*" type="date" :ocultaContador="true" v-model:valueInput="textInputs['input-data']" />
+          <inputText label="Hora*" type="time" :ocultaContador="true" v-model:valueInput="textInputs['input-hora']" />
         </div>
         <!-- Botões de seleção -->
         <v-row>
@@ -53,23 +51,40 @@
           </v-col>
 
           <v-col cols="12" md="6">
-            <v-btn class="btn-padrao" block @click="dialogVeterinarios = true" v-if="!veterinarioSelecionado">
+            <v-btn class="btn-padrao" block @click="openVeterinarioDialog" v-if="!veterinarioSelecionado">
               Selecionar Veterinário
             </v-btn>
 
+
             <!-- Exibe veterinário selecionado -->
-            <v-card v-else class="pa-3 d-flex align-center justify-between" variant="outlined">
-              <div>
-                👨‍⚕️ <strong>{{ veterinarioSelecionado.nome }}</strong><br />
-                <small>CRMV: {{ veterinarioSelecionado.crmv }}</small>
+            <v-card v-else class="pa-3 card-pac-vet-selecionado">
+
+              <div class="d-flex">
+               <strong>{{ veterinarioSelecionado.nome_completo }}</strong><br />
               </div>
-              <div class="d-flex ga-2">
-                <v-btn size="small" icon="mdi-swap-horizontal" color="primary" variant="text"
-                  @click="dialogVeterinarios = true" :title="'Trocar Veterinário'"></v-btn>
-                <v-btn size="small" icon="mdi-delete" color="error" variant="text" @click="removerVeterinario"
-                  :title="'Remover Veterinário'"></v-btn>
+              <div class="d-flex">
+                
+                <p class="mr-2">CRMV:</p><strong>{{ veterinarioSelecionado.crmv }}</strong><br />
               </div>
+              <div class="d-flex ga-2 mt-3">
+
+                <v-tooltip text="Trocar Veterinário" location="bottom" open-delay="300">
+                  <template #activator="{ props }">
+                    <v-btn class="btn-padrao " v-bind="props" variant="text"
+                      @click="openVeterinarioDialog">Trocar</v-btn>
+                  </template>
+                </v-tooltip>
+
+                <v-tooltip text="Remover Veterinário" location="bottom" open-delay="300">
+                  <template #activator="{ props }">
+
+                    <v-btn class="btn-padrao" v-bind="props" variant="text" @click="removerVeterinario">Remover</v-btn>
+                  </template>
+                </v-tooltip>
+              </div>
+
             </v-card>
+
           </v-col>
         </v-row>
       </v-card-text>
@@ -147,10 +162,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted , watchEffect} from 'vue'
+import { ref, watch, computed, onMounted, watchEffect } from 'vue'
 import inputText from '@/components/inputText.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 import { recuperarPacientes } from '@/services/paciente'
+import { recuperarVeterinarios } from '@/services/veterinario'
 
 const props = defineProps<{
   isOpen: boolean
@@ -158,14 +174,14 @@ const props = defineProps<{
   horaSelecionada?: string | null
 }>()
 
-
 const emit = defineEmits<{ (e: 'update:isOpen', value: boolean): void }>()
 
+// CONTROLE DE MODAL PRINCIPAL
 const dialogVisible = ref(props.isOpen)
 watch(() => props.isOpen, (val) => (dialogVisible.value = val))
 watch(dialogVisible, (val) => emit('update:isOpen', val))
 
-// Estado
+// ESTADOS GERAIS
 const isLoading = ref(false)
 const loading = ref(false)
 const showAlert = ref(false)
@@ -174,23 +190,21 @@ const alertType = ref<'error' | 'success' | 'info' | 'warning'>('error')
 const textInputs = ref<Record<string, string>>({})
 const showModalConfirmation = ref(false)
 
-// Selecionados
+// SELECIONADOS
 const pacienteSelecionado = ref<any>(null)
 const veterinarioSelecionado = ref<any>(null)
 
-// Dialogs
+// DIALOGS INTERNOS
 const dialogPacientes = ref(false)
 const dialogVeterinarios = ref(false)
 
-// ==============================
-// 🔹 PACIENTES
-// ==============================
+// PACIENTES
 const listPacientes = ref<any[]>([])
 const searchPaciente = ref('')
 const headersPacientes = [
   { title: 'ID', key: 'id' },
   { title: 'Nome', key: 'nome' },
-  { title: 'Tutor', key: 'tutor' },
+  { title: 'Tutor', key: 'tutor.nome_completo' },
   { title: 'Espécie', key: 'especie' },
   { title: 'Ação', key: 'acao', sortable: false },
 ]
@@ -210,24 +224,113 @@ function removerPaciente() {
   pacienteSelecionado.value = null
 }
 
-// ==============================
-// 🔹 VETERINÁRIOS
-// ==============================
+// VETERINÁRIOS
 const listVeterinarios = ref<any[]>([])
+const filteredDisponiveis = ref<any[]>([])
 const searchVeterinario = ref('')
 const headersVeterinarios = [
   { title: 'ID', key: 'id' },
-  { title: 'Nome', key: 'nome' },
+  { title: 'Nome', key: 'nome_completo' },
   { title: 'CRMV', key: 'crmv' },
   { title: 'Clínica', key: 'clinica' },
   { title: 'Ação', key: 'acao', sortable: false },
 ]
 
+function timeToMinutes(t: string | null | undefined) {
+  if (!t) return null
+  const parts = t.split(':')
+  if (parts.length < 2) return null
+  const h = parseInt(parts[0], 10)
+  const m = parseInt(parts[1], 10)
+  if (Number.isNaN(h) || Number.isNaN(m)) return null
+  return h * 60 + m
+}
+
+function isTimeBetween(target: string, inicio: string | null | undefined, fim: string | null | undefined) {
+  const t = timeToMinutes(target)
+  const i = timeToMinutes(inicio)
+  const f = timeToMinutes(fim)
+  if (t === null || i === null || f === null) return false
+  return t >= i && t <= f
+}
+
+function aplicarFiltroPorDataHora() {
+  const data = textInputs.value['input-data']
+  const hora = textInputs.value['input-hora']
+  console.log("data", data)
+  console.log("hora: ", hora)
+
+  if (!data || !hora) {
+    filteredDisponiveis.value = []
+    return
+  }
+
+  // Corrige o fuso para garantir que a data é local (não UTC)
+  const [ano, mes, dia] = data.split('-').map(Number)
+  const dataLocal = new Date(ano, mes - 1, dia)
+
+  // Gera o nome do dia da semana com acento e hífen
+  const diaSemana = dataLocal
+    .toLocaleDateString('pt-BR', { weekday: 'long' })
+    .toLowerCase()
+    .trim()
+
+  console.log("dia da semana (corrigido): ", diaSemana)
+
+  filteredDisponiveis.value = listVeterinarios.value.filter((vet) => {
+    const diaInfo = vet.dias_atendimento?.[diaSemana]
+    console.log("diaInfo: ", diaInfo)
+    if (!diaInfo) return false
+
+    const inicio = diaInfo.inicio
+    const fim = diaInfo.fim
+
+    console.log("inicio: ", inicio)
+    console.log("fim: ", fim)
+    console.log("isTime: ", isTimeBetween(hora, inicio, fim))
+    return isTimeBetween(hora, inicio, fim)
+  })
+}
+
+
+
+// Ação ao clicar em "Selecionar Veterinário"
+function openVeterinarioDialog() {
+  console.log("abrindo modal")
+  const data = textInputs.value['input-data']
+  const hora = textInputs.value['input-hora']
+
+  if (!data || !hora) {
+    showAlert.value = true
+    alertType.value = 'warning'
+    alertMessage.value = 'Por favor selecione data e hora antes de escolher o veterinário.'
+    setTimeout(() => (showAlert.value = false), 3000)
+    return
+  }
+
+  aplicarFiltroPorDataHora()
+
+  if (filteredDisponiveis.value.length === 0) {
+    showAlert.value = true
+    alertType.value = 'warning'
+    alertMessage.value = 'Nenhum veterinário disponível neste dia e horário.'
+    setTimeout(() => (showAlert.value = false), 3000)
+    return
+  } else {
+    showAlert.value = false
+  }
+
+  dialogVeterinarios.value = true
+}
+
 const filteredVeterinarios = computed(() => {
-  if (!searchVeterinario.value) return listVeterinarios.value
+  const base = filteredDisponiveis.value
+  if (!searchVeterinario.value) return base
   const term = searchVeterinario.value.toLowerCase()
-  return listVeterinarios.value.filter(
-    (v) => v.nome.toLowerCase().includes(term) || v.crmv.toLowerCase().includes(term)
+  return base.filter(
+    (v) =>
+      (v.nome_completo && v.nome_completo.toLowerCase().includes(term)) ||
+      (v.crmv && v.crmv.toString().toLowerCase().includes(term))
   )
 })
 
@@ -240,25 +343,23 @@ function removerVeterinario() {
   veterinarioSelecionado.value = null
 }
 
-// ==============================
 async function loadPacientes() {
   const response = await recuperarPacientes()
   listPacientes.value = response
 }
 
 async function loadVeterinarios() {
-  listVeterinarios.value = []
+  const response = await recuperarVeterinarios()
+  listVeterinarios.value = response
 }
 
 watchEffect(() => {
   if (props.dataSelecionada) {
-    // Converte a data para formato ISO compatível com input type="date"
     const dataFormatada = new Date(props.dataSelecionada).toISOString().split('T')[0]
     textInputs.value['input-data'] = dataFormatada
   }
 
   if (props.horaSelecionada) {
-    // Preenche diretamente o campo de hora
     textInputs.value['input-hora'] = props.horaSelecionada
   }
 })
@@ -269,11 +370,14 @@ onMounted(async () => {
   isLoading.value = false
 })
 
+// CANCELAR MODAL
 function cancel() {
   textInputs.value = {}
   pacienteSelecionado.value = null
   veterinarioSelecionado.value = null
   dialogVisible.value = false
+  textInputs.value['input-hora'] = ''
+  textInputs.value['input-data'] = ''
 }
 </script>
 
@@ -324,6 +428,7 @@ function cancel() {
   }
 
   .card-pac-vet-selecionado {
+  min-height: 120px;
     border: 1px solid #ff8200;
     border-radius: 10px;
     justify-content: center;
