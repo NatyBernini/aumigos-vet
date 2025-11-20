@@ -225,7 +225,7 @@ onMounted(async () => {
 
 <style lang="scss">
 thead {
-  background: #FFE9E9;
+  background: #ffe9d2;
 
   th {
     height: 50px !important;

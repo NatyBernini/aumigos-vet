@@ -17,8 +17,9 @@
               label="Animal*" variant="outlined" id="animal" :isRequired="false"  :isMultipleSelect="false"
               class="container-combobox-padrao mt-4 mb-4" placeholder="Selecione o animal" />
 
-            <v-text-field v-model="dataInicio" label="Data início*" type="date" max-width="150px" />
-            <v-text-field v-model="dataFinal" label="Data final*" type="date" max-width="150px" />
+              
+            <inputText class="mb-4" label="Data início*" type="date" :ocultaContador="true" v-model:valueInput="dataInicio" />
+            <inputText label="Data final*" type="date" :ocultaContador="true" v-model:valueInput="dataFinal" />
             <p v-if="showMsgValidation"> {{ msgValidation }}</p>
           </v-card-text>
           <v-card-actions>
@@ -29,9 +30,8 @@
           <v-card-title>Histórico de Atendimentos</v-card-title>
           <v-card-text>Selecione o período para geração do histórico de todos os atendimentos realizados nesse
             tempo:
-            <v-text-field v-model="dataInicioAtendimento" label="Data início*" type="date" max-width="150px"
-              class="mt-2" />
-            <v-text-field v-model="dataFinalAtendimento" label="Data final*" type="date" max-width="150px" />
+            <inputText label="Data início*" class="mb-4 mt-4" type="date" :ocultaContador="true" v-model:valueInput="dataInicioAtendimento" />
+            <inputText label="Data final*" type="date" :ocultaContador="true" v-model:valueInput="dataFinalAtendimento" />
 
             <p v-if="showMsgValidationAtendimento"> {{ msgValidationAtendimento }}</p>
           </v-card-text>
@@ -78,6 +78,7 @@ import { ref } from 'vue'
 
 // COMPONENTES
 import multipleCombobox from '@/components/multipleCombobox.vue'
+import inputText from '@/components/inputText.vue'
 import ModalCadastroDocumento from './ModalCadastroDocumento.vue'
 
 
