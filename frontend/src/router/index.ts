@@ -61,7 +61,7 @@ const routes: RouteRecordRaw[] = [
 
       // Consultas
       { path: 'consultas', component: ConsultaList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
-      { path: 'consultas/consultar', name: 'Consultar', component: Consultar, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
+      { path: 'consultas/consultar/:id?', name: 'Consultar', component: Consultar, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },
 
       // Relatórios
       { path: 'relatorios', component: RelatorioList, meta: { requiresAuth: true, roles: ['admin_clinica', 'veterinario'] } },

@@ -44,7 +44,7 @@
                     <v-card-title>{{ doc.nome }}</v-card-title>
                     <v-card-text>{{ doc.descricao }}</v-card-text>
                     <v-card-actions>
-                        <v-btn class="btn-padrao" @click="verDocumento(doc)">Ver Documento</v-btn>
+                        <v-btn class="btn-padrao" @click="verDocumento(doc, props.consulta)">Ver Documento</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-row>
@@ -70,15 +70,29 @@
 
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted, computed } from "vue";
 import jsPDF from "jspdf";
 import logo from "@/assets/LogoAumigo.png";
+import { salvarDocumentos, recuperarDocumentos } from "@/services/consulta";
+import { recuperarPaciente } from "@/services/paciente";
+import { useAppStore } from '@/modules/commons/store'
 
 interface Documento {
-    nome: string;
-    descricao: string;
-    conteudo: string;
+    id?: number
+    nome: string
+    descricao: string
+    conteudo: string
 }
+
+
+const props = defineProps<{
+    consulta: Consulta,
+    veterinario: string
+}>()
+
+const consultaId = computed(() => props.consulta.id)
+
+const appStore = useAppStore()
 
 const dialog = ref(false);
 const pdfDialog = ref(false);
@@ -90,39 +104,81 @@ const form = ref<Documento>({
     conteudo: "",
 });
 
-const documentos = ref<Documento[]>([
-    {
-        nome: "Termo de Consentimento",
-        descricao: "Documento assinado pelo tutor autorizando procedimentos médicos ou cirúrgicos, após esclarecimento sobre riscos, benefícios e alternativas.",
-        conteudo: "Este é um conteúdo de teste do documento. Aqui você pode colocar informações sobre o animal ou observações gerais."
-    },
+const documentos = ref<Documento[]>([])
 
-    {
-        nome: "Receituário",
-        descricao: "Prescrição oficial emitida pelo médico veterinário, contendo as orientações de uso de medicamentos, dosagens, duração do tratamento e instruções adicionais para o tutor.",
-        conteudo:
-            "Este é um conteúdo de teste do documento.\n\n" +
-            "Aqui não gosta de humanos.\n" +
-            "Não gosta de ficar em casa, apenas em seu habitat natural.\n" +
-            "Mesmo tendo ração ainda no pote faz drama.\n\n" +
-            "Conclusão: Não há o que fazer, pois já vive dessa forma há 10 anos.\n" +
-            "Então o melhor a se fazer é dar muito amor e carinho para ver se um dia amolece o coração dela."
-    }
-]);
 
-function salvar() {
+async function salvar() {
     if (!form.value.nome || !form.value.descricao || !form.value.conteudo) {
-        alert("Preencha todos os campos obrigatórios.");
-        return;
+        alert("Preencha todos os campos obrigatórios.")
+        return
     }
 
-    documentos.value.push({ ...form.value });
+    try {
+        await salvarDocumentos(consultaId.value, {
+            titulo: form.value.nome,
+            descricao: form.value.descricao,
+            conteudo: form.value.conteudo
+        })
 
-    form.value = { nome: "", descricao: "", conteudo: "" };
-    dialog.value = false;
+        await loadDocumentos()
+
+        form.value = {
+            nome: "",
+            descricao: "",
+            conteudo: ""
+        }
+
+        dialog.value = false
+
+    } catch (error) {
+        console.error("Erro ao salvar documento:", error)
+        alert("Erro ao salvar o documento.")
+    }
 }
 
-async function verDocumento(doc: Documento) {
+async function loadDocumentos() {
+    try {
+        const response = await recuperarDocumentos(consultaId.value)
+
+        documentos.value = response.map((doc: any) => ({
+            id: doc.id,
+            nome: doc.titulo,
+            descricao: doc.descricao,
+            conteudo: doc.conteudo
+        }))
+    } catch (error) {
+        console.error("Erro ao carregar documentos:", error)
+    }
+}
+
+interface Consulta {
+    id: number
+    data_consulta: string
+    hora_consulta: string
+    animal: {
+        id: number
+        nome: string
+        especie: string
+    }
+    veterinario: {
+        id: number
+        nome: string | null
+    }
+    historico?: {
+        alimentacao?: string | null
+    }
+}
+const paciente = ref()
+
+async function carregarPaciente() {
+    try {
+        paciente.value = await recuperarPaciente(props.consulta.animal.id)
+    } catch (error) {
+        console.error("Erro ao carregar paciente:", error)
+    }
+}
+
+async function verDocumento(doc: Documento, consulta: Consulta) {
     const pdf = new jsPDF("p", "mm", "a4"); // formato A4
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
@@ -179,10 +235,17 @@ async function verDocumento(doc: Documento) {
         const textRightX = pageWidth - 15;
         pdf.setFontSize(10);
 
+        const endereco =
+        `${appStore.userData?.clinicas[0]?.rua ?? ""}, ` +
+        `${appStore.userData?.clinicas[0]?.bairro ?? ""}, `+
+        `${appStore.userData?.clinicas[0]?.numero ?? ""}, `+
+        `${appStore.userData?.clinicas[0]?.cidade ?? ""}, CEP `+
+        `${appStore.userData?.clinicas[0]?.cep ?? ""}`;
+
         const texts = [
-            "Clínica Veterinária Aumigos",
-            "Endereço: Rua Exemplo, 123, Barbacena, MG",
-            "Telefone: (11) 99999-9999"
+            appStore.userData?.clinicas[0]?.nome ?? "",
+            endereco,
+            appStore.userData?.clinicas[0]?.telefone ?? ""
         ];
 
         const lineHeightTxt = 4.5;
@@ -206,6 +269,9 @@ async function verDocumento(doc: Documento) {
         // 🔹 Resetar para normal logo após o cabeçalho
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(10);
+
+        pdf.setFontSize(9)
+
     };
 
     const desenharAnimal = (startY = 60) => {
@@ -221,22 +287,22 @@ async function verDocumento(doc: Documento) {
         const col2ValorX = pageWidth / 2 + 18;
 
         const col1 = [
-            { titulo: "Nome", valor: "Teddy Junior" },
-            { titulo: "Espécie", valor: "Felina" },
-            { titulo: "Raça", valor: "SRD" },
-            { titulo: "Pelagem", valor: "Preta" },
-            { titulo: "Responsável", valor: "Natália Beatriz Malta Bernini" }
-        ];
+            { titulo: "Nome", valor: consulta.animal.nome },
+            { titulo: "Espécie", valor: consulta.animal.especie },
+            { titulo: "Raça", valor: paciente.value.raca },
+            { titulo: "Pelagem", valor: paciente.value.pelagem },
+            { titulo: "Responsável", valor: paciente.value.tutor.nome_completo }
+        ]
 
         const col2 = [
-            { titulo: "Peso", valor: "4kg" },
-            { titulo: "Sexo", valor: "Fêmea" },
-            { titulo: "Idade", valor: "10 anos" },
-            { titulo: "Chip", valor: "123456789" },
-            { titulo: "CPF", valor: "111.222.333-44" }
+            { titulo: "Peso", valor: paciente.value.peso },
+            { titulo: "Sexo", valor: paciente.value.sexo },
+            { titulo: "Idade", valor: paciente.value.idade },
+            { titulo: "Porte", valor: paciente.value.porte },
+            { titulo: "CPF", valor: paciente.value.tutor.cpf }
         ];
 
-        const endereco = { titulo: "Endereço", valor: "Rua Professor Osvaldo Navarro, n 22, Campo, Barbacena, CEP 36200-604" };
+        const endereco = { titulo: "Endereço", valor: paciente.value.tutor.enderecos[0].rua + ',' + paciente.value.tutor.enderecos[0].numero + ',' + paciente.value.tutor.enderecos[0].bairro + ',' + paciente.value.tutor.enderecos[0].cidade + ', CEP ' + paciente.value.tutor.enderecos[0].cep };
 
         const maxWidthCol1 = pageWidth / 2 - col1ValorX - padding;
         const maxWidthCol2 = pageWidth - col2ValorX - padding;
@@ -297,17 +363,31 @@ async function verDocumento(doc: Documento) {
 
         return startY + alturaRetangulo + 5;
     };
+    const vetNome =
+        props.veterinario ?? "Veterinário não informado"
 
     const desenharRodape = () => {
-        const footerY = pageHeight - 40;
-        pdf.line(20, footerY + 10, 80, footerY + 10);
-        pdf.text("Assinatura", 50, footerY + 17, { align: "center" });
-        pdf.line(90, footerY + 10, 150, footerY + 10);
-        pdf.text("Carimbo", 120, footerY + 17, { align: "center" });
-        const hoje = new Date().toLocaleDateString("pt-BR");
-        pdf.line(160, footerY + 10, 200, footerY + 10);
-        pdf.text(`Data: ${hoje}`, 180, footerY + 17, { align: "center" });
-    };
+        const footerY = pageHeight - 40
+
+        // --- Assinatura ---
+        pdf.line(20, footerY + 10, 80, footerY + 10)
+        pdf.text("Assinatura", 50, footerY + 17, { align: "center" })
+
+        // ✅ Nome do veterinário abaixo da assinatura
+        pdf.setFontSize(9)
+        pdf.text(vetNome, 50, footerY + 22, { align: "center" })
+
+        // --- Carimbo ---
+        pdf.setFontSize(10)
+        pdf.line(90, footerY + 10, 150, footerY + 10)
+        pdf.text("Carimbo", 120, footerY + 17, { align: "center" })
+
+        // --- Data ---
+        const hoje = new Date().toLocaleDateString("pt-BR")
+        pdf.line(160, footerY + 10, 200, footerY + 10)
+        pdf.text(`Data: ${hoje}`, 180, footerY + 17, { align: "center" })
+    }
+
 
     // ===== Primeira página =====
     desenharCabecalho();
@@ -341,6 +421,10 @@ async function verDocumento(doc: Documento) {
     pdfDialog.value = true;
 }
 
+onMounted(async () => {
+    await loadDocumentos()
+    await carregarPaciente()
+})
 </script>
 
 <style scoped>

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="pa-0">
+  <v-container  class="pa-0">
     <p class="title-page">Agenda
       <img src="/./src/assets/icons/iconLapisCadastro.png" alt="Ícone" class="menu-title-icon" />
     </p>
@@ -7,11 +7,11 @@
     <p class="sub-page">Serviços / <span class="aba-atual">Caixa</span>
       <img src="/./src/assets/icons/iconeCadastro.png" alt="Ícone" class="menu-sub-icon" />
     </p>
-    <v-btn color="accent" @click.stop="showScheduleForm = true" large class="btn-padrao">
+    <v-btn v-if="!isLoading" color="accent" @click.stop="showScheduleForm = true" large class="btn-padrao">
       Agendar Consulta
       <v-icon class="icon-close ml-3">mdi-format-align-left</v-icon>
     </v-btn>
-    <div class="container-header-agenda" align="center">
+    <div v-if="!isLoading" class="container-header-agenda" align="center">
       <h2 class="text-h5 font-weight-bold">{{ dataFormatada }}</h2>
       <div class="container-header-agenda">
         <v-btn class="btn-padrao" icon @click="voltar">
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Visão Diário -->
-    <v-sheet class="pa-4 agenda-sheet" v-if="modo === 'diario'">
+    <v-sheet class="pa-4 agenda-sheet" v-if="modo === 'diario' && !isLoading">
       <v-row dense>
         <v-col v-for="hora in horarios" :key="hora" class="py-1" cols="12">
           <div class="hora-linha diaria">
@@ -45,14 +45,15 @@
                   <p class="mb-1"><strong>{{ consulta.paciente }}</strong></p>
                   <small>Veterinário: {{ consulta.veterinario }}</small><br />
                   <small>Horário: {{ consulta.horario }}</small><br>
-                  <v-btn text="Realizar consulta" class="btn-padrao"
-                    :to="{ name: 'Consultar', params: { id: consulta.id } }" variant="text" />
+                  <v-btn class="btn-padrao" variant="text" @click="realizarConsulta(consulta.id)">
+                    Realizar consulta
+                  </v-btn>
                 </div>
               </div>
 
               <!-- Caso esteja disponível -->
               <div v-else class="disponivel">
-                <v-btn  size="small" class="btn-padrao" @click.stop="selecionarHorario(hora)">
+                <v-btn size="small" class="btn-padrao" @click.stop="selecionarHorario(hora)">
                   <v-icon left>mdi-calendar-plus</v-icon>
                   Agendar
                 </v-btn>
@@ -65,7 +66,7 @@
       </v-row>
     </v-sheet>
     <!-- Visão Semanal -->
-    <v-sheet class="pa-4 agenda-sheet" v-else-if="modo === 'semanal'">
+    <v-sheet class="pa-4 agenda-sheet" v-else-if="modo === 'semanal' && !isLoading">
       <div class="agenda-semanal-grid">
         <!-- Coluna de horários -->
         <div class="hora-coluna">
@@ -91,7 +92,7 @@
     </v-sheet>
 
     <!-- Visão Mensal -->
-    <v-sheet v-else class="pa-4 agenda-sheet">
+    <v-sheet v-else class="pa-4 agenda-sheet" v-if="!isLoading">
       <div class="agenda-mensal-grid">
         <!-- Cabeçalho dias da semana -->
         <div class="dia-semana-cabecalho" v-for="(ds, i) in diasSemana" :key="i">
@@ -124,18 +125,30 @@
     </v-sheet>
 
   </v-container>
-  <ModalAgendar :isOpen="showScheduleForm" @update:isOpen="showScheduleForm = $event" :dataSelecionada="diaSelecionado"
-    :horaSelecionada="horarioSelecionado" />
+  <ModalAgendar v-if="!isLoading" :isOpen="showScheduleForm" @update:isOpen="(v) => {
+    showScheduleForm = v
+    if (!v) loadConsultas()
+  }" :dataSelecionada="diaSelecionado" :horaSelecionada="horarioSelecionado" />
 
+   <!-- Spinner -->
+    <v-container v-if="isLoading" class="d-flex align-center justify-center">
+      <v-progress-circular indeterminate color="#ff8200" size="40" width="5"></v-progress-circular>
+    </v-container>
 </template>
 
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 
 // COMPONENTES
 import combo from '@/components/select.vue'
 import ModalAgendar from './ModalAgendar.vue'
+
+import { recuperarConsultas } from '@/services/consulta'
+import { recuperarVeterinarios } from '@/services/veterinario'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 interface Consulta {
   id: number
@@ -166,6 +179,7 @@ const modosAgenda = ['diario', 'semanal', 'mensal'];
 const modo = ref<'diario' | 'semanal' | 'mensal'>('diario')
 const horarioSelecionado = ref<string | null>(null)
 const diaSelecionado = ref<Date | null>(null)
+const isLoading = ref(false)
 
 const dataFormatada = computed(() => {
   if (modo.value === 'diario') {
@@ -277,14 +291,7 @@ const horarios = [
   '16:00', '17:00'
 ]
 
-// TODO MOCK
-const consultas = ref<Consulta[]>([
-  { id: 1, paciente: 'Tobias', veterinario: 'Dr. João', horario: '09:00', dia: 5, mes: 7, ano: 2025 },
-  { id: 2, paciente: 'Luna', veterinario: 'Dra. Ana', horario: '10:00', dia: 5, mes: 7, ano: 2025 },
-  { id: 3, paciente: 'Max', veterinario: 'Dra. Ana', horario: '15:00', dia: 12, mes: 7, ano: 2025 },
-  { id: 4, paciente: 'Mingau', veterinario: 'Dr. João', horario: '14:00', dia: 22, mes: 7, ano: 2025 },
-  { id: 5, paciente: 'Pipoca', veterinario: 'Dra. Ana', horario: '13:00', dia: 5, mes: 7, ano: 2025 }
-])
+const consultas = ref<Consulta[]>([])
 
 function consultasPorHora(hora: string) {
   return consultas.value.filter(c =>
@@ -323,7 +330,68 @@ function getDiasDoMes(mes: number, ano: number): number[] {
   return Array.from({ length: ultimoDia }, (_, i) => i + 1)
 }
 
+const listVeterinarios = ref<any[]>([])
+
+async function loadVeterinarios() {
+  const response = await recuperarVeterinarios()
+  listVeterinarios.value = response
+}
+
+
 const diasDoMes = computed(() => getDiasDoMes(mesAtual.value, anoAtual.value))
+
+async function loadConsultas() {
+  try {
+    const response = await recuperarConsultas()
+
+    consultas.value = response.map((c: any) => {
+      const [ano, mes, dia] = c.data_consulta.split('-').map(Number)
+
+      const vet = listVeterinarios.value.find(
+        (v: any) => v.id === c.veterinario?.id
+      )
+
+      return {
+        id: c.id,
+        paciente: c.animal?.nome ?? 'Paciente não informado',
+        veterinario: vet?.nome_completo ?? 'Veterinário não informado',
+        horario: c.hora_consulta?.substring(0, 5),
+        dia,
+        mes: mes - 1,
+        ano
+      }
+    })
+
+
+    console.log("Consultas: ", consultas.value)
+
+  } catch (error) {
+    console.error('Erro ao carregar consultas:', error)
+  }
+}
+
+function realizarConsulta(consultaId: number) {
+  router.push({
+    name: 'Consultar',
+    params: {
+      id: consultaId
+    }
+  })
+}
+
+
+onMounted(async () => {
+  isLoading.value = true
+  await loadVeterinarios()
+  await loadConsultas()
+  isLoading.value = false
+})
+
+
+watch(dataAtual, () => {
+  loadConsultas()
+})
+
 
 
 </script>
@@ -467,6 +535,7 @@ const diasDoMes = computed(() => getDiasDoMes(mesAtual.value, anoAtual.value))
   height: 100px;
   background-color: transparent;
 }
+
 .disponivel {
   display: flex;
   align-items: center;

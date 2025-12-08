@@ -91,7 +91,7 @@
 
       <v-card-actions class="mt-5 pa-0 w-100 d-flex justify-end flex-row">
         <v-spacer />
-        <v-btn class="btn-padrao" :loading="loading">Agendar</v-btn>
+        <v-btn class="btn-padrao" :loading="loading" @click="salvar">Agendar</v-btn>
       </v-card-actions>
     </v-card>
 
@@ -167,12 +167,17 @@ import inputText from '@/components/inputText.vue'
 import modalCamposObrigatorios from '@/components/modalCamposObrigatorios.vue'
 import { recuperarPacientes } from '@/services/paciente'
 import { recuperarVeterinarios } from '@/services/veterinario'
+import { salvarClinica } from '@/services/clinica'
+import { useAppStore } from '@/modules/commons/store'
+import { salvarConsulta } from '@/services/consulta'
 
 const props = defineProps<{
   isOpen: boolean
   dataSelecionada?: Date | null
   horaSelecionada?: string | null
 }>()
+
+const appStore = useAppStore()
 
 const emit = defineEmits<{ (e: 'update:isOpen', value: boolean): void }>()
 
@@ -352,6 +357,82 @@ async function loadVeterinarios() {
   const response = await recuperarVeterinarios()
   listVeterinarios.value = response
 }
+
+function validation() {
+  if (
+    !textInputs.value['input-data'] ||
+    !textInputs.value['input-hora'] ||
+    !pacienteSelecionado.value ||
+    !veterinarioSelecionado.value
+  ) {
+    showModalConfirmation.value = true
+    return false
+  }
+  return true
+}
+
+const salvar = async () => {
+  if (!validation()) return
+
+  loading.value = true
+
+  try {
+    const dados = {
+      animal_id: pacienteSelecionado.value.id,
+      clinica: appStore.userData?.clinicas[0]?.id,
+      veterinario_id: veterinarioSelecionado.value.id,
+      data_consulta: textInputs.value['input-data'],
+      hora_consulta: textInputs.value['input-hora'],
+      queixa_principal: '-'
+    }
+
+    await salvarConsulta(dados)
+
+    alertType.value = 'success'
+    alertMessage.value = 'Agendamento realizado com sucesso!'
+    showAlert.value = true
+
+    setTimeout(() => {
+      showAlert.value = false
+      dialogVisible.value = false
+      cancel()
+    }, 2000)
+
+  } catch (error: any) {
+    console.error('ERRO AGENDAMENTO:', error)
+
+    let mensagemErro = 'Erro ao realizar o agendamento.'
+
+    const erros = error.response?.data || error.data
+    if (erros && typeof erros === 'object') {
+      const mensagens: string[] = []
+
+      const parseErros = (obj: any, prefix = '') => {
+        Object.entries(obj).forEach(([campo, valor]) => {
+          if (Array.isArray(valor)) {
+            mensagens.push(`${prefix}${campo.toUpperCase()}: ${valor.join(', ')}`)
+          } else if (typeof valor === 'object') {
+            parseErros(valor, `${prefix}${campo} - `)
+          } else {
+            mensagens.push(`${prefix}${campo.toUpperCase()}: ${valor}`)
+          }
+        })
+      }
+
+      parseErros(erros)
+      if (mensagens.length) mensagemErro = mensagens.join('\n')
+    }
+
+    alertType.value = 'error'
+    alertMessage.value = mensagemErro
+    showAlert.value = true
+
+    setTimeout(() => (showAlert.value = false), 5000)
+  } finally {
+    loading.value = false
+  }
+}
+
 
 watchEffect(() => {
   if (props.dataSelecionada) {
