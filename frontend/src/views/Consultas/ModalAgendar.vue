@@ -382,8 +382,7 @@ const salvar = async () => {
       clinica: appStore.userData?.clinicas[0]?.id,
       veterinario_id: veterinarioSelecionado.value.id,
       data_consulta: textInputs.value['input-data'],
-      hora_consulta: textInputs.value['input-hora'],
-      queixa_principal: '-'
+      hora_consulta: textInputs.value['input-hora']
     }
 
     await salvarConsulta(dados)

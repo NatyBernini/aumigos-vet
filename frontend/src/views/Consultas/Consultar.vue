@@ -242,7 +242,7 @@
         </v-tabs-window-item>
       </v-tabs-window>
 
-      <v-btn class="btn-padrao" :loading="isLoading!" @click="submit">Salvar</v-btn>
+      <v-btn class="btn-padrao mt-4" :loading="isLoading!" @click="submit">Salvar</v-btn>
     </v-card-text>
 
     <v-dialog v-model="dialog" max-width="900px">

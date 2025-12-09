@@ -114,6 +114,10 @@ async function salvarDocumentos(id: any, payload: Documento) {
 async function recuperarDocumentos(id: any) {
     return await API.get(`/consultas/consultas/${id}/documentos/`);
 }
+
+async function recuperarConsultaPorAnimal(id?: any) {
+    return await API.get(`/consultas/consultas/por-animal/${id}/`);
+}
 export {
     salvarConsulta,
     editarConsulta,
@@ -127,5 +131,6 @@ export {
     salvarProdutos,
     recuperarProdutos,
     salvarDocumentos,
-    recuperarDocumentos
+    recuperarDocumentos,
+    recuperarConsultaPorAnimal
 }
