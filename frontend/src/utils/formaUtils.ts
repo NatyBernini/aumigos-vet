@@ -37,6 +37,14 @@ export function formatPhoneNumber(value: string): string {
     : digits.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3')
 }
 
+    // Função para desenhar cabeçalho do relatório de atendimentos
+export function formatarDataLocal(dataStr: string) {
+      if (!dataStr) return "-"
+      const [ano, mes, dia] = dataStr.split("-").map(Number)
+      // new Date(ano, mes - 1, dia) -> cria data local sem alteração de fuso
+      return new Date(ano, mes - 1, dia).toLocaleDateString("pt-BR")
+    }
+
 /**
  * FUNÇÃO RESPONSÁVEL POR CONVERTER A VÍRGULA
  * EM PONTO PARA O ENVIO DOS VALORES AO ENDPOINT

@@ -1,5 +1,5 @@
 <template>
-    <v-card>
+    <v-card >
         <p class="title-page">Caixa - Faturamento
             <img src="/./src/assets/icons/iconLapisCadastro.png" alt="Ícone" class="menu-title-icon" />
         </p>
@@ -12,11 +12,11 @@
             <v-tab value="one">Atendimentos Pendentes</v-tab>
         </v-tabs>
 
-        <v-card-text>
+        <v-card-text v-if="!isLoading">
             <v-tabs-window v-model="tab">
                 <v-tabs-window-item value="one" class="pt-5">
                     <p class="subtitle-padrao mb-3">Informações do Paciente</p>
-                    <inputText label="Nome do Paciente" type="text" required
+                    <inputText class="mb-5" label="Nome do Paciente" type="text" required
                         v-model:valueInput="textInputs[`input-nome`]" id="input-nome" style="max-width: 350px;"
                         :max-length="0" :disabled="true" />
                     <inputText label="Nome do Responsável" type="text" required
@@ -26,7 +26,7 @@
                     <p class="subtitle-padrao mt-10 mb-3">Resumo da Consulta</p>
                     <v-card  class="card-resumo-consulta">
                         <v-card-text>
-                            <v-table>
+                            <v-table v-if="produtosConsulta.length > 0">
                                 <tbody>
                                     <tr v-for="(item, index) in produtosConsulta" :key="index">
                                         <td>{{ item.nome }}</td>
@@ -35,10 +35,12 @@
                                     </tr>
                                 </tbody>
                             </v-table>
+                            <p v-if="produtosConsulta.length == 0">
+                            Não foi utilizado nenhum produto</p>
                         </v-card-text>
                     </v-card>
 
-                    <p class="subtitle-padrao mt-10">Produtos Extras</p>
+                    <!-- <p class="subtitle-padrao mt-10">Produtos Extras</p>
                     <v-row class="ma-0 mt-5 mb-5 row-btn-produtos">
                         <v-btn class="btn-padrao" @click="dialog = true">
                             Adicionar Produto
@@ -46,7 +48,7 @@
                         <v-btn v-if="produtosExtras.length" class="btn-padrao" type="submit" @click=" produtosExtras = []">
                             Remover Todos os Produtos
                         </v-btn>
-                    </v-row>
+                    </v-row> -->
 
                     <v-card class="card-resumo-consulta" v-if="produtosExtras.length">
                         <v-card-text>
@@ -178,149 +180,171 @@
 </v-dialog>
 
     </v-card>
+      <v-container v-if="isLoading" class="d-flex align-center justify-center">
+    <v-progress-circular indeterminate color="#ff8200" size="40" width="5"></v-progress-circular>
+  </v-container>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, reactive, onMounted, watch } from "vue"
-import { formatCurrency } from "@/utils/formaUtils"
+import { ref, reactive, computed, onMounted } from "vue"
+import { useRoute } from "vue-router"
 
 // COMPONENTES
 import combobox from "@/components/select.vue"
 import inputText from "@/components/inputText.vue"
+
+// SERVICES
+import { formatCurrency } from "@/utils/formaUtils"
+import { recuperarConsulta, recuperarProdutos } from "@/services/consulta"
+import { recuperarPacientes } from '@/services/paciente'
+import { recuperarProduto } from "@/services/produtos"
+
+const route = useRoute()
+const consultaId = Number(route.params.id)
+const isLoading = ref(false)
 
 const tab = ref(null)
 const dialog = ref(false)
 const search = ref("")
 const snackbar = ref(false)
 
-// interface
+// Inputs do paciente
+const textInputs = ref<Record<string, string>>({})
+
+// Produtos da consulta
 interface ItemConsulta {
-    nome: string
-    qtd: number
-    total: number
-}
-interface Produto {
-    nome: string
-    categoria: string
-    preco: number
+  produto_id?: number
+  nome: string
+  qtd: number
+  total: number
+  valor_unitario?: number
 }
 
-const produtosConsulta = ref<ItemConsulta[]>([
-    { nome: "Vacina Antirrábica", qtd: 1, total: 80 },
-    { nome: "Vermífugo", qtd: 2, total: 60 },
-    { nome: "Exame de Sangue", qtd: 1, total: 120 },
-    { nome: "Consulta", qtd: 1, total: 120 },
-])
-
+const produtosConsulta = ref<ItemConsulta[]>([])
 const produtosExtras = ref<ItemConsulta[]>([])
 
-// Lista de produtos disponíveis
-const produtos = ref<Produto[]>([
-    { nome: "Ração Premium", categoria: "Alimento", preco: 200 },
-    { nome: "Coleira Anti-Pulgas", categoria: "Acessório", preco: 80 },
-    { nome: "Vacina Gripe Canina", categoria: "Vacina", preco: 100 },
-    { nome: "Sachê KelCat", categoria: "Alimento", preco: 2.89 },
-    { nome: "Banho e Tosa", categoria: "Serviço", preco: 50 },
-])
+// Produtos disponíveis para adicionar
+interface Produto {
+  id?: number
+  nome: string
+  categoria: string
+  preco: number
+}
+
+const produtos = ref<Produto[]>([])
 
 // Quantidades temporárias no modal
 const quantidades = reactive<Record<string, number>>({})
 
+// Pagamento
 const tiposPagamento = ["Crédito", "Débito", "Dinheiro", "Pix", "Parcelado"]
 const formaPagamento = ref<string[]>([])
 const parcelas = ref<string | undefined>()
-const textInputs = ref<Record<string, string>>({})
+
+// Total geral
+const totalGeral = computed(() => {
+  const totalConsulta = produtosConsulta.value.reduce((acc, item) => acc + item.total, 0)
+  const totalExtras = produtosExtras.value.reduce((acc, item) => acc + item.total, 0)
+  return totalConsulta + totalExtras
+})
+
+// Funções para modal de produtos
+const filteredProducts = computed(() => {
+  if (!search.value) return produtos.value
+  return produtos.value.filter(
+    (p) =>
+      p.nome.toLowerCase().includes(search.value.toLowerCase()) ||
+      p.categoria.toLowerCase().includes(search.value.toLowerCase())
+  )
+})
+
 const page = ref(1)
 const itemsPerPage = ref(5)
 
-// Filtrar produtos por nome ou categoria
-const filteredProducts = computed(() => {
-    if (!search.value) return produtos.value
-    return produtos.value.filter(
-        (p) =>
-            p.nome.toLowerCase().includes(search.value.toLowerCase()) ||
-            p.categoria.toLowerCase().includes(search.value.toLowerCase())
-    )
-})
+const pageCount = computed(() => Math.ceil(filteredProducts.value.length / itemsPerPage.value))
+const startIndex = computed(() => filteredProducts.value.length === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1)
+const endIndex = computed(() => Math.min(page.value * itemsPerPage.value, filteredProducts.value.length))
+const paginatedProducts = computed(() => filteredProducts.value.slice((page.value - 1) * itemsPerPage.value, (page.value - 1) * itemsPerPage.value + itemsPerPage.value))
 
-// Função para adicionar produto à lista de extras
+function nextPage() { if (page.value < pageCount.value) page.value++ }
+function prevPage() { if (page.value > 1) page.value-- }
+
 const addProduto = (produto: Produto) => {
-    const qtd = quantidades[produto.nome] && quantidades[produto.nome] > 0 ? quantidades[produto.nome] : 1
-    const existente = produtosExtras.value.find((p) => p.nome === produto.nome)
+  const qtd = quantidades[produto.nome] && quantidades[produto.nome] > 0 ? quantidades[produto.nome] : 1
+  const existente = produtosExtras.value.find((p) => p.produto_id === produto.id)
 
-    if (existente) {
-        existente.qtd += qtd
-        existente.total += produto.preco * qtd
-    } else {
-        produtosExtras.value.push({
-            nome: produto.nome,
-            qtd,
-            total: produto.preco * qtd,
-        })
-    }
-
-    // Resetar quantidade para 1
-    quantidades[produto.nome] = 1
-    snackbar.value = true
+  if (existente) {
+    existente.qtd += qtd
+    existente.total += produto.preco * qtd
+  } else {
+    produtosExtras.value.push({
+      produto_id: produto.id,
+      nome: produto.nome,
+      qtd,
+      valor_unitario: produto.preco,
+      total: produto.preco * qtd,
+    })
+  }
+  quantidades[produto.nome] = 1
+  snackbar.value = true
 }
 
-// Função para remover 1 unidade do produto
 const removeProduto = (item: ItemConsulta) => {
-    const produto = produtosExtras.value.find((p) => p.nome === item.nome)
-    if (!produto) return
-
-    if (produto.qtd > 1) {
-        produto.qtd -= 1
-        produto.total -= produto.total / (produto.qtd + 1) // recalcula o valor unitário e diminui
-    } else {
-        produtosExtras.value = produtosExtras.value.filter((p) => p.nome !== item.nome)
-    }
+  const produto = produtosExtras.value.find((p) => p.nome === item.nome)
+  if (!produto) return
+  if (produto.qtd > 1) {
+    produto.qtd -= 1
+    produto.total -= produto.valor_unitario ?? 0
+  } else {
+    produtosExtras.value = produtosExtras.value.filter((p) => p.nome !== item.nome)
+  }
 }
 
-// Soma todos os itens da consulta + extras
-const totalGeral = computed(() => {
-    const totalConsulta = produtosConsulta.value.reduce((acc, item) => acc + item.total, 0)
-    const totalExtras = produtosExtras.value.reduce((acc, item) => acc + item.total, 0)
-    return totalConsulta + totalExtras
-})
+const pacientes = ref<any[]>([])
 
-
-watch(itemsPerPage, () => {
-  page.value = 1
-})
-
-const pageCount = computed(() =>
-  Math.ceil(filteredProducts.value.length / itemsPerPage.value)
-)
-
-const startIndex = computed(() =>
-  filteredProducts.value.length === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1
-)
-
-const endIndex = computed(() =>
-  Math.min(page.value * itemsPerPage.value, filteredProducts.value.length)
-)
-
-const paginatedProducts = computed(() => {
-  const start = (page.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredProducts.value.slice(start, end)
-})
-
-function nextPage() {
-  if (page.value < pageCount.value) page.value++
+async function loadPacientes() {
+  pacientes.value = await recuperarPacientes()
 }
 
-function prevPage() {
-  if (page.value > 1) page.value--
+// Carregar dados da consulta e produtos usados
+async function loadConsulta() {
+  try {
+    const c = await recuperarConsulta(consultaId)
+    if (!c) return
+
+    const paciente = pacientes.value.find(p => p.id === c.animal.id)
+    const tutor = paciente?.tutor?.nome_completo ?? '-'
+    textInputs.value['input-nome'] = c.animal?.nome ?? ''
+    textInputs.value['input-responsavel'] = tutor ?? ''
+
+    const produtosUsados = await recuperarProdutos(consultaId) // retorna [{produto, quantidade, valor_total}]
+    const listaProdutos = await recuperarProduto() // retorna lista completa com nome, categoria, valor etc.
+
+    produtosConsulta.value = produtosUsados.map((p: any) => {
+      // procurar o produto completo pelo ID
+      const produtoCompleto = listaProdutos.find((lp: any) => lp.id === p.produto)
+      return {
+        produto_id: p.produto,
+        nome: produtoCompleto?.nome ?? 'Produto não encontrado',
+        qtd: Number(p.quantidade),
+        valor_unitario: Number(produtoCompleto?.valor ?? p.valor_total),
+        total: Number(p.valor_total),
+      }
+    })
+  } catch (error) {
+    console.error("Erro ao carregar consulta:", error)
+  }
 }
 
-onMounted(() => {
-    textInputs.value['input-nome'] = 'Mingau'
-    textInputs.value['input-responsavel'] = 'Natália Bernini'
-})
 
+onMounted(async () => {
+    isLoading.value = true
+    await loadPacientes()
+  await loadConsulta()
+    isLoading.value = false
+})
 </script>
+
 
 
 <style lang="scss">

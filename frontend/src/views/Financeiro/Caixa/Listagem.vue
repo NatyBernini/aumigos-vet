@@ -7,30 +7,33 @@
         Caixa / <span class="page-active">Consultas e Serviços</span>
       </span>
 
-      <v-data-table :headers="headers" :items="paginatedPacientes" :items-per-page="-1" class="pt-15">
+      <v-data-table v-if="!isLoading" :headers="headers" :items="paginatedConsultas" :items-per-page="-1" class="pt-15">
 
         <!-- Colunas personalizadas -->
-        <template #item.nome="{ item }">
-          {{ item.nome }}
+        <template #item.animal="{ item }">
+          {{ item.animal }}
         </template>
-        <template #item.inicioTratamento="{ item }">
-          {{ item.inicioTratamento }}
+
+        <template #item.dataHora="{ item }">
+          {{ item.dataHora }}
         </template>
+
         <template #item.tutor="{ item }">
           {{ item.tutor }}
         </template>
+
         <template #item.veterinario="{ item }">
           {{ item.veterinario }}
         </template>
+
         <template #item.status="{ item }">
-          <span class="status" :class="item.status">
+          <span class="status" :class="item.status.toLowerCase()">
             {{ item.status }}
           </span>
         </template>
 
         <template #item.actions="{ item }">
-          <v-btn icon @click="visualizar(item)" :to="{ name: 'Pagamento', params: { id: item.id } }" color="#434343"
-            variant="text">
+          <v-btn icon @click="visualizar(item)" :to="{ name: 'Pagamento', params: { id: item.id } }" color="#434343" variant="text">
             <v-icon>mdi-eye</v-icon>
           </v-btn>
         </template>
@@ -38,12 +41,10 @@
         <!-- Rodapé customizado -->
         <template #bottom>
           <div class="custom-footer">
-            <!-- Contador -->
             <span>
-              {{ startIndex }} - {{ endIndex }} de {{ pacientes.length }}
+              {{ startIndex }} - {{ endIndex }} de {{ consultas.length }}
             </span>
 
-            <!-- Navegação manual -->
             <div class="container-pagination">
               <v-btn class="btn-pagination" icon @click="prevPage" :disabled="page <= 1">
                 <v-icon>mdi-chevron-left</v-icon>
@@ -53,7 +54,6 @@
               </v-btn>
             </div>
 
-            <!-- Itens por página -->
             <v-select v-model="itemsPerPage" :items="[5, 10, 20]" label="Itens por página" density="compact"
               hide-details variant="outlined" style="max-width: 90px" />
           </div>
@@ -61,76 +61,100 @@
       </v-data-table>
     </v-col>
   </v-row>
+      <!-- Spinner -->
+  <v-container v-if="isLoading" class="d-flex align-center justify-center">
+    <v-progress-circular indeterminate color="#ff8200" size="40" width="5"></v-progress-circular>
+  </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { recuperarConsultas } from '@/services/consulta'
+import { recuperarVeterinarios } from '@/services/veterinario'
+import { recuperarPacientes } from '@/services/paciente'
+import { formatarDataLocal } from '@/utils/formaUtils'
 
 defineOptions({
-  name: 'VeterinariosList',
+  name: 'ConsultasList',
 })
 
 const headers = ref([
-  { title: 'Nome do Paciente', key: 'nome' },
-  { title: 'Data e Hora da Consulta', key: 'inicioTratamento' },
+  { title: 'Animal', key: 'animal' },
+  { title: 'Data e Hora', key: 'dataHora' },
   { title: 'Responsável', key: 'tutor' },
   { title: 'Veterinário', key: 'veterinario' },
   { title: 'Status', key: 'status' },
   { title: 'Ações', key: 'actions', sortable: false },
 ])
 
-const pacientes = ref([
-  { id: 1, nome: 'Juju', inicioTratamento: '15/03/2025 13:30', tutor: 'Natália Bernini', veterinario: 'Maria', status: 'Pago' },
-  { id: 2, nome: 'Mel', inicioTratamento: '03/07/2025 13:30', tutor: 'Maria Malta', veterinario: 'Grabriela', status: 'Em aberto' },
-  { id: 3, nome: 'Luck', inicioTratamento: '01/01/2025 13:30', tutor: 'Rodrigo de Souza', veterinario: 'João', status: 'Pago' },
-  { id: 4, nome: 'Remi', inicioTratamento: '02/02/2025 13:30', tutor: 'Rodrigo de Souza', veterinario: 'Bruna', status: 'Em aberto' },
-  { id: 5, nome: 'Lua', inicioTratamento: '03/03/2025 13:30', tutor: 'Camila Reis', veterinario: 'Bruna', status: 'Em aberto' },
-  { id: 6, nome: 'Toby', inicioTratamento: '04/04/2025 13:30', tutor: 'José Silva', veterinario: 'Maria', status: 'Pago' },
-])
+const consultas = ref<any[]>([])
+const pacientes = ref<any[]>([])
+const veterinarios = ref<any[]>([])
+const isLoading = ref(false)
 
+async function loadPacientes() {
+  pacientes.value = await recuperarPacientes()
+}
+
+async function loadVeterinarios() {
+  const list = await recuperarVeterinarios()
+  veterinarios.value = list
+}
+
+async function loadConsultas() {
+  consultas.value = await recuperarConsultas()
+}
+
+onMounted(async () => {
+  isLoading.value = true
+  await loadPacientes()
+  await loadVeterinarios()
+  await loadConsultas()
+  isLoading.value = false
+})
+
+// Paginação
 const page = ref(1)
 const itemsPerPage = ref(5)
+watch(itemsPerPage, () => page.value = 1)
+const pageCount = computed(() => Math.ceil(consultas.value.length / itemsPerPage.value))
+const startIndex = computed(() => consultas.value.length === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1)
+const endIndex = computed(() => Math.min(page.value * itemsPerPage.value, consultas.value.length))
 
-// Quando itemsPerPage muda, resetar a página para 1
-watch(itemsPerPage, () => {
-  page.value = 1
-})
+function nextPage() { if (page.value < pageCount.value) page.value++ }
+function prevPage() { if (page.value > 1) page.value-- }
 
-const pageCount = computed(() =>
-  Math.ceil(pacientes.value.length / itemsPerPage.value)
-)
-
-const startIndex = computed(() =>
-  pacientes.value.length === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1
-)
-
-const endIndex = computed(() =>
-  Math.min(page.value * itemsPerPage.value, pacientes.value.length)
-)
-
-const paginatedPacientes = computed(() => {
+// Computed com dados combinados
+const paginatedConsultas = computed(() => {
   const start = (page.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
-  return pacientes.value.slice(start, end)
+
+  return consultas.value.slice(start, end).map(consulta => {
+    const paciente = pacientes.value.find(p => p.id === consulta.animal.id)
+    const tutor = paciente?.tutor?.nome_completo ?? '-'
+
+    const veterinario = veterinarios.value.find(v => v.id === consulta.veterinario.id)?.nome_completo ?? '-'
+
+    const dataHora = `${formatarDataLocal(consulta.data_consulta)} ${consulta.hora_consulta?.slice(0,5) ?? ''}`
+
+    const status = consulta.retorno ? 'Retorno' : 'Concluído'
+
+    return {
+      id: consulta.id,
+      animal: consulta.animal.nome,
+      dataHora,
+      tutor,
+      veterinario,
+      status
+    }
+  })
 })
 
-function nextPage() {
-  if (page.value < pageCount.value) {
-    page.value++
-  }
-}
-
-function prevPage() {
-  if (page.value > 1) {
-    page.value--
-  }
-}
-
 function visualizar(item: any) {
-  console.log('Visualizar:', item)
+  console.log('Visualizar consulta:', item)
 }
-
 </script>
+
 
 <style lang="scss">
 .status {

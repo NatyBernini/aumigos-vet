@@ -702,8 +702,8 @@ const salvaVermifugo = async () => {
     for (const v of vermifugos.value) {
       const dados = {
         nome: v.nome,
-        data_aplicacao: v.dataAplicacao,
-        data_proxima_dose: v.dataProximaDose,
+        data_aplicacao: v.data_aplicacao,
+        data_proxima_dose: v.data_proxima_dose,
         fabricante: v.fabricante,
         lote: v.lote,
         observacao: v.observacao || '',
@@ -726,8 +726,8 @@ const salvaVacina = async () => {
     for (const v of vacinas.value) {
       const dados = {
         nome: v.nome,
-        data_aplicacao: v.dataAplicacao,
-        data_proxima_dose: v.dataProximaDose,
+        data_aplicacao: v.data_aplicacao,
+        data_proxima_dose: v.data_proxima_dose,
         fabricante: v.fabricante,
         lote: v.lote,
         observacao: v.observacao || ''
@@ -736,7 +736,7 @@ const salvaVacina = async () => {
     }
     alert('Vacinas salvas com sucesso!')
   } catch (error: any) {
-   console.error('Erro ao salvar vacinas.', error)
+    console.error('Erro ao salvar vacinas.', error)
     alertMessage.value = 'Erro ao salvar vacinas.'
     alertType.value = 'error'
     showAlert.value = true
@@ -914,11 +914,25 @@ const filteredTutores = computed(() => {
 // Selecionar tutor e preencher campos
 function selecionarTutor(tutor: any) {
   textInputs.value['input-nome-tutor'] = tutor.nome_completo
-  textInputs.value['input-cpf'] = tutor.cpf
+  textInputs.value['input-cpf'] = formatCpf(tutor.cpf)
   textInputs.value['input-data-nascimento-tutor'] = tutor.data_nascimento
   textarea.value.ObservacoesGeraisTutor = tutor.observacoes
   dialogTutores.value = false
   idTutor.value = tutor.id
+
+  const endereco = tutor.enderecos?.[0] || {}
+  textInputs.value['input-cep'] = endereco.cep || ''
+  textInputs.value['input-estado'] = endereco.estado || ''
+  textInputs.value['input-cidade'] = endereco.cidade || ''
+  textInputs.value['input-bairro'] = endereco.bairro || ''
+  textInputs.value['input-rua'] = endereco.rua || ''
+  textInputs.value['input-numero-endereco'] = endereco.numero || ''
+  textInputs.value['input-complemento'] = endereco.complemento || ''
+
+  const contato = tutor.contatos?.[0] || {}
+  textInputs.value['input-email'] = contato.email || ''
+  phones.value = contato.telefones?.map((t: any) => ({ number: formatPhoneNumberRaw(t.numero) })) || [{ number: '' }]
+
   bloquearEdicaoTutor.value = true;
 }
 

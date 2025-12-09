@@ -7,7 +7,7 @@
     </span>
     <br>
     <!-- <p class="title-page mt-8">Relatórios</p> -->
-    <v-row class="row-cards mt-6">
+    <v-row  v-if="!isLoading"  class="row-cards mt-6">
 
       <v-card class="card-relatorio pa-2">
         <v-card-title>Histórico do Animal</v-card-title>
@@ -30,7 +30,7 @@
           <p v-if="showMsgValidation"> {{ msgValidation }}</p>
         </v-card-text>
         <v-card-actions>
-          <v-btn class="btn-padrao" @click="gerarRelatorio">Gerar relatório</v-btn>
+          <v-btn :loading="isLoadingBtn" class="btn-padrao" @click="gerarRelatorio">Gerar relatório</v-btn>
         </v-card-actions>
       </v-card>
       <v-card class="card-relatorio pa-2">
@@ -45,7 +45,7 @@
         </v-card-text>
 
         <v-card-actions>
-          <v-btn class="btn-padrao" @click="gerarRelatorioAtendimento">Gerar relatório</v-btn>
+          <v-btn :loading="isLoadingBtn" class="btn-padrao" @click="gerarRelatorioAtendimentoRealizados">Gerar relatório</v-btn>
         </v-card-actions>
       </v-card>
     </v-row>
@@ -79,7 +79,7 @@
 
       </v-row> -->
   </v-col>
-  <v-dialog v-model="dialogPacientes" max-width="900px">
+  <v-dialog v-if="!isLoading" v-model="dialogPacientes" max-width="900px">
     <v-card class="pa-5">
       <v-card-title>
         <span class="text-h6">Selecionar Paciente</span>
@@ -128,7 +128,7 @@
   </v-dialog> -->
 
   <!-- Modal de visualização PDF -->
-  <v-dialog v-model="dialogPdf" max-width="1000px">
+  <v-dialog v-if="!isLoading" v-model="dialogPdf" max-width="1000px">
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
         <span class="text-h6">Visualizar Documento</span>
@@ -143,6 +143,11 @@
     </v-card>
   </v-dialog>
 
+    <!-- Spinner -->
+  <v-container v-if="isLoading" class="d-flex align-center justify-center">
+    <v-progress-circular indeterminate color="#ff8200" size="40" width="5"></v-progress-circular>
+  </v-container>
+
 </template>
 
 <script setup lang="ts">
@@ -156,8 +161,9 @@ import ModalCadastroDocumento from './ModalCadastroDocumento.vue'
 
 // SERVICES
 import { recuperarPacientes } from '@/services/paciente'
-import { recuperarConsultaPorAnimal, recuperarAnamnese, recuperarHistoricoClinicoo } from '@/services/consulta'
+import { recuperarConsultaPorAnimal, recuperarAnamnese, recuperarHistoricoClinicoo, recuperarConsultas } from '@/services/consulta'
 import { recuperarVeterinarios } from '@/services/veterinario'
+import { formatarDataLocal } from '@/utils/formaUtils';
 
 defineOptions({
   name: 'RelatorioList',
@@ -237,6 +243,8 @@ const veterinarios = ref<any[]>([])
 const dialogPdf = ref(false)
 const pdfUrl = ref<string | undefined>(undefined)
 const nomeArquivoPdf = ref("")
+const isLoading = ref(false)
+const isLoadingBtn = ref(false)
 
 
 async function loadPacientes() {
@@ -277,8 +285,6 @@ function validarPeriodo(dataInicio: string, dataFinal: string, requirePaciente =
 
   return ""
 }
-
-
 
 // =================== FUNÇÕES AUXILIARES ===================
 
@@ -423,7 +429,7 @@ function calcularAlturaBlocoConsulta(
 
   let alturaRetorno = 0
   if (consulta.retorno) {
-    const retorno = `Retorno em ${new Date(consulta.data_retorno!).toLocaleDateString("pt-BR")} - ${consulta.motivo_retorno ?? ""}`
+    const retorno = `Retorno em ${formatarDataLocal(consulta.data_retorno!)} - ${consulta.motivo_retorno ?? ""}`
     const split = pdf.splitTextToSize(retorno, maxWidth)
     alturaRetorno = split.length * lineHeight + 2
   }
@@ -487,7 +493,7 @@ async function desenharCabecalhoPadrao(
   pdf.text(`Idade: ${animal.idade ? animal.idade + " anos" : "-"}`, colMid, yStart + 12)
 
   const castradoTexto = animal.castrado
-    ? `Castrado: Sim (${animal.data_castracao ? new Date(animal.data_castracao).toLocaleDateString("pt-BR") : "-"})`
+    ? `Castrado: Sim (${animal.data_castracao ? formatarDataLocal(animal.data_castracao) : "-"})`
     : "Castrado: Não"
   pdf.text(castradoTexto, colRight, yStart + 12)
 
@@ -526,7 +532,7 @@ function desenharBlocoConsulta(
 
   pdf.setFontSize(10)
   pdf.setFont("helvetica", "bold")
-  pdf.text(`Data: ${consulta.data_consulta} | Hora: ${consulta.hora_consulta}`, margin + padding, y + 7)
+  pdf.text(`Data: ${formatarDataLocal(consulta.data_consulta)} | Hora: ${consulta.hora_consulta}`, margin + padding, y + 7)
   pdf.text(`Veterinário: ${vet?.nome_completo ?? "-"}`, margin + padding, y + 13)
 
   let textY = y + headerHeight
@@ -572,7 +578,7 @@ function desenharBlocoConsulta(
   // Retorno
   if (consulta.retorno) {
     textY += 2
-    const retornoTexto = pdf.splitTextToSize(`Retorno em ${new Date(consulta.data_retorno!).toLocaleDateString("pt-BR")} - ${consulta.motivo_retorno ?? ""}`, maxWidth)
+    const retornoTexto = pdf.splitTextToSize(`Retorno em ${formatarDataLocal(consulta.data_retorno!)} - ${consulta.motivo_retorno ?? ""}`, maxWidth)
     pdf.setFont("helvetica", "italic")
     pdf.text(retornoTexto, margin + padding, textY)
     pdf.setFont("helvetica", "normal")
@@ -617,21 +623,6 @@ async function gerarPdfHistoricoAnimal(consultas: Consulta[]) {
   dialogPdf.value = true
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const gerarRelatorio = async () => {
   msgValidation.value = ""
   showMsgValidation.value = false
@@ -646,6 +637,7 @@ const gerarRelatorio = async () => {
   if (!pacienteSelecionado.value) return
 
   try {
+    isLoadingBtn.value = true
     const consultas: Consulta[] = await recuperarConsultaPorAnimal(
       pacienteSelecionado.value.id
     )
@@ -667,6 +659,8 @@ const gerarRelatorio = async () => {
 
   } catch (error) {
     console.error("Erro ao gerar relatório", error)
+  } finally {    
+    isLoadingBtn.value = false
   }
 }
 
@@ -685,6 +679,95 @@ const gerarRelatorioAtendimento = () => {
   // console.log("Gerando relatório atendimentos", { inicio: dataInicioAtendimento.value, final: dataFinalAtendimento.value })
 }
 
+const gerarRelatorioAtendimentoRealizados = async () => {
+  msgValidationAtendimento.value = ""
+  showMsgValidationAtendimento.value = false
+
+  const erro = validarPeriodo(dataInicioAtendimento.value, dataFinalAtendimento.value)
+  if (erro) {
+    msgValidationAtendimento.value = erro
+    showMsgValidationAtendimento.value = true
+    return
+  }
+
+  try {
+    
+    isLoadingBtn.value = true
+    // Recupera todas as consultas
+    const todasConsultas: Consulta[] = await recuperarConsultas()
+
+    // Filtra pelo período
+    const consultasFiltradas = filtrarConsultasPorPeriodo(
+      todasConsultas,
+      dataInicioAtendimento.value,
+      dataFinalAtendimento.value
+    )
+
+    if (!consultasFiltradas.length) {
+      alert("Nenhuma consulta encontrada para o período selecionado.")
+      return
+    }
+
+    // Cria PDF
+    const pdf = new jsPDF("p", "mm", "a4")
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const margin = 10
+
+    // Ordena por data
+    consultasFiltradas.sort(
+      (a, b) => new Date(a.data_consulta).getTime() - new Date(b.data_consulta).getTime()
+    )
+
+    function desenharCabecalhoAtendimentos(pdf: jsPDF) {
+      const titulo = `Histórico de atendimentos de ${formatarDataLocal(dataInicioAtendimento.value)} a ${formatarDataLocal(dataFinalAtendimento.value)}`
+      pdf.setFont("helvetica", "bold")
+      pdf.setFontSize(12)
+      pdf.text(titulo, pageWidth / 2, 15, { align: "center" })
+      pdf.setDrawColor(0)
+      pdf.setLineWidth(0.1)
+      pdf.line(margin, 18, pageWidth - margin, 18) // linha abaixo do título
+    }
+
+
+    // Desenha o cabeçalho na primeira página
+    desenharCabecalhoAtendimentos(pdf)
+
+    // Para cada atendimento, adiciona bloco
+    let y = 25
+    for (const consulta of consultasFiltradas) {
+      const anamnese = await recuperarAnamnese(consulta.id)
+      const historicoClinico = await recuperarHistoricoClinicoo(consulta.id)
+
+      const alturaBloco = calcularAlturaBlocoConsulta(pdf, consulta, anamnese, historicoClinico, margin, pageWidth)
+
+      if (y + alturaBloco > pageHeight - 40) {
+        pdf.addPage()
+        desenharCabecalhoAtendimentos(pdf)
+        y = 25
+      }
+
+      desenharBlocoConsulta(pdf, consulta, anamnese, historicoClinico, margin, y, pageWidth)
+      y += alturaBloco + 5
+    }
+
+    // Rodapé
+    desenharRodapePadrao(pdf)
+
+    const blob = pdf.output("blob")
+    pdfUrl.value = URL.createObjectURL(blob)
+    nomeArquivoPdf.value = `atendimentos_${dataInicioAtendimento.value}_a_${dataFinalAtendimento.value}.pdf`
+    dialogPdf.value = true
+  } catch (error) {
+    console.error("Erro ao gerar relatório de atendimentos:", error)
+    alert("Ocorreu um erro ao gerar o relatório.")
+  } finally {
+    
+    isLoadingBtn.value = false
+  }
+}
+
+
 watch(dialogPdf, (open) => {
   if (!open && pdfUrl.value) {
     URL.revokeObjectURL(pdfUrl.value)
@@ -694,8 +777,10 @@ watch(dialogPdf, (open) => {
 
 
 onMounted(async () => {
+  isLoading.value = true
   await loadPacientes()
   await loadVeterinarios()
+  isLoading.value = false
 })
 </script>
 

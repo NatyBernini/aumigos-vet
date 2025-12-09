@@ -41,7 +41,7 @@
                                                     append-inner-icon="mdi-account" required :maxLength="0" />
 
                                             
-                                                <inputText label="Telefone*" type="text" required
+                                                <inputText label="Telefone*" type="text" required classe="mb-4"
                                                     v-model:valueInput="textInputs['input-telefone']" id="input-telefone"
                                                     placeholder="(00) 00000-0000"  :max-length=15
                                                     :ocultaContador="true"/>

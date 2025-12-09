@@ -35,13 +35,13 @@
                                         :append-inner-icon="showPasswordCadastro ? 'mdi-eye-off' : 'mdi-eye'"
                                         @click:append-inner="showPasswordCadastro = !showPasswordCadastro"
                                         :maxLength="0" />
-                                    <div class="text-end mb-4">
+                                    <!-- <div class="text-end mb-4">
                                         <v-btn variant="text" color="primary" class="text-caption">
                                             Esqueceu a senha?
                                         </v-btn>
-                                    </div>
+                                    </div> -->
 
-                                    <v-btn :disabled="isLoading" :loading="isLoading" color="secondary" class="mb-4"
+                                    <v-btn :disabled="isLoading" :loading="isLoading" color="secondary" class="mb-4 mt-4"
                                         block @click="onLogin">
                                         Entrar
                                     </v-btn>
